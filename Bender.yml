@@ -8,7 +8,7 @@ package:
     - "Thomas Benz <tbenz@iis.ee.ethz.ch>"
 
 dependencies:
-  cheshire: { git: https://github.com/pulp-platform/cheshire.git, rev: 060fef2b6841e1ec81b2f50b90321326cf6a772d }
+  cheshire: { git: https://github.com/pulp-platform/cheshire.git, rev: ebc8ee9b0a61aa4afd4862599bacae8a9d647fae}
   hyperbus: { git: https://github.com/pulp-platform/hyperbus.git,     version: 0.0.1 }
 
 sources:
