@@ -97,7 +97,7 @@ packages:
     revision: 4dc9413990622dcbf4b37a19f792834c800da5c7
     version: 1.28.0
     source:
-      Git: https://github.com/pulp-platform/common_cells
+      Git: https://github.com/pulp-platform/common_cells.git
     dependencies:
     - common_verification
     - tech_cells_generic
@@ -108,10 +108,10 @@ packages:
       Git: https://github.com/pulp-platform/common_verification.git
     dependencies: []
   hyperbus:
-    revision: e260db5158c4d7277595925e30a947c91b72695f
-    version: null
+    revision: ffde18a52788d397d7dfa424a2a65b7f9e0422b1
+    version: 0.0.1
     source:
-      Git: git@github.com:pulp-platform/hyperbus.git
+      Git: https://github.com/pulp-platform/hyperbus.git
     dependencies:
     - axi
     - common_cells
