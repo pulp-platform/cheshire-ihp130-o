@@ -8,8 +8,8 @@ package:
     - "Thomas Benz <tbenz@iis.ee.ethz.ch>"
 
 dependencies:
-  cheshire: { git: https://github.com/pulp-platform/cheshire.git, rev: ebc8ee9b0a61aa4afd4862599bacae8a9d647fae}
-  hyperbus: { git: https://github.com/pulp-platform/hyperbus.git,     version: 0.0.1 }
+  cheshire: { git: https://github.com/pulp-platform/cheshire.git, rev: a8c0610b67b07712d8aa9bf4413c88c3da8b9004 }
+  hyperbus: { git: https://github.com/pulp-platform/hyperbus.git, version: 0.0.1                                }
 
 sources:
   # Source files grouped in levels. Files in level 0 have no dependencies on files in this
@@ -18,4 +18,5 @@ sources:
   # Level 0
   - hw/iguana_pkg.sv
   # Level 1
+  - hw/baby_iguana.sv
   - hw/iguana.sv
