@@ -47,7 +47,6 @@ module baby_iguana import cheshire_pkg::*;#(
   logic           sba_req;
   logic   [15:0]  sba_addr;
   logic   [63:0]  sba_addr_long;
-  logic           sba_gnt;
   logic   [31:0]  sba_rdata, sba_rdata_q;
   logic           sba_rvalid;
 
@@ -66,34 +65,34 @@ module baby_iguana import cheshire_pkg::*;#(
     .clk_i,
     .rst_ni,
     .testmode_i,
-    .ndmreset_o           (                    ),
-    .dmactive_o           (                    ),
-    .debug_req_o          ( /* NC */           ),
-    .unavailable_i        ( '0                 ),
-    .hartinfo_i           ( hartinfo           ),
-    .slave_req_i          ( '0                 ),
-    .slave_we_i           ( '0                 ),
-    .slave_addr_i         ( '0                 ),
-    .slave_be_i           ( '0                 ),
-    .slave_wdata_i        ( '0                 ),
-    .slave_rdata_o        ( /* NC */           ),
-    .master_req_o         ( sba_req            ),
-    .master_add_o         ( sba_addr_long      ),
-    .master_we_o          ( /* NC */           ),
-    .master_wdata_o       ( /* NC */           ),
-    .master_be_o          ( /* NC */           ),
-    .master_gnt_i         ( sba_gnt            ),
-    .master_r_valid_i     ( sba_rvalid         ),
-    .master_r_rdata_i     ( {32'd0, sba_rdata} ),
-    .master_r_err_i       ( 1'b0               ),
-    .master_r_other_err_i ( 1'b0               ),
-    .dmi_rst_ni           ( dmi_rst_n          ),
-    .dmi_req_valid_i      ( dmi_req_valid      ),
-    .dmi_req_ready_o      ( dmi_req_ready      ),
-    .dmi_req_i            ( dmi_req            ),
-    .dmi_resp_valid_o     ( dmi_resp_valid     ),
-    .dmi_resp_ready_i     ( dmi_resp_ready     ),
-    .dmi_resp_o           ( dmi_resp           )
+    .ndmreset_o           (                      ),
+    .dmactive_o           (                      ),
+    .debug_req_o          ( /* NC */             ),
+    .unavailable_i        ( '0                   ),
+    .hartinfo_i           ( hartinfo             ),
+    .slave_req_i          ( '0                   ),
+    .slave_we_i           ( '0                   ),
+    .slave_addr_i         ( '0                   ),
+    .slave_be_i           ( '0                   ),
+    .slave_wdata_i        ( '0                   ),
+    .slave_rdata_o        ( /* NC */             ),
+    .master_req_o         ( sba_req              ),
+    .master_add_o         ( sba_addr_long        ),
+    .master_we_o          ( /* NC */             ),
+    .master_wdata_o       ( /* NC */             ),
+    .master_be_o          ( /* NC */             ),
+    .master_gnt_i         ( sba_req              ),
+    .master_r_valid_i     ( sba_rvalid           ),
+    .master_r_rdata_i     ( {32'd0, sba_rdata_q} ),
+    .master_r_err_i       ( 1'b0                 ),
+    .master_r_other_err_i ( 1'b0                 ),
+    .dmi_rst_ni           ( dmi_rst_n            ),
+    .dmi_req_valid_i      ( dmi_req_valid        ),
+    .dmi_req_ready_o      ( dmi_req_ready        ),
+    .dmi_req_i            ( dmi_req              ),
+    .dmi_resp_valid_o     ( dmi_resp_valid       ),
+    .dmi_resp_ready_i     ( dmi_resp_ready       ),
+    .dmi_resp_o           ( dmi_resp             )
   );
 
   // Debug Transfer Module + Debug Module Interface
@@ -131,17 +130,17 @@ module baby_iguana import cheshire_pkg::*;#(
     .rst_ni,
     .req_i      ( sba_req     ),
     .addr_i     ( sba_addr    ),
-    .data_o     ( sba_rdata_q )
+    .data_o     ( sba_rdata   )
   );
 
   // State
   always_ff @(posedge clk_i or negedge rst_ni) begin : proc_state
     if(~rst_ni) begin
-      sba_rdata  <= '0;
-      sba_rvalid <= '0;
+      sba_rdata_q <= '0;
+      sba_rvalid  <= '0;
     end else begin
-      sba_rdata  <= sba_rdata_q;
-      sba_rvalid <= sba_req;
+      sba_rdata_q <= sba_rdata;
+      sba_rvalid  <= sba_req;
     end
   end
 
