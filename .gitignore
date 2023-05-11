@@ -1,0 +1,12 @@
+.bender
+.deps
+sw/
+
+target/sim/models
+# VSIM generated files
+target/sim/vsim/compile.*.tcl
+target/sim/vsim/*.log
+target/sim/vsim/modelsim.ini
+target/sim/vsim/transcript
+target/sim/vsim/vsim.wlf
+target/sim/vsim/work/
