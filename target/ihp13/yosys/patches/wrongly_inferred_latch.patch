@@ -1,0 +1,21 @@
+--- build/iguana_padframe_fixture.sv2v.v	2023-05-04 12:33:47.684448168 +0200
++++ build/iguana_padframe_fixture.sv2v.new.v	2023-05-04 12:32:54.335953900 +0200
+@@ -72677,7 +72677,7 @@
+ 	// Trace: /scratch/janniss/Documents/iguana-exploration/ihp13/opensynth/build/iguana_padframe_fixture.svase.sv:61115:3
+ 	wire [1:1] sv2v_tmp_24605;
+ 	assign sv2v_tmp_24605 = |mst_r_ready_tran;
+-	always @(*) mst_req[0] = sv2v_tmp_24605;
++	// always @(*) mst_req[0] = sv2v_tmp_24605;
+ 	// Trace: /scratch/janniss/Documents/iguana-exploration/ihp13/opensynth/build/iguana_padframe_fixture.svase.sv:61117:3
+ 	wire [4:0] arb_slv_ar_id;
+ 	// Trace: /scratch/janniss/Documents/iguana-exploration/ihp13/opensynth/build/iguana_padframe_fixture.svase.sv:61118:3
+@@ -73293,6 +73293,9 @@
+ 	// Trace: /scratch/janniss/Documents/iguana-exploration/ihp13/opensynth/build/iguana_padframe_fixture.svase.sv:61517:3
+ 	localparam axi_pkg_ATOP_R_RESP = 32'd5;
+ 	always @(*) begin
++    mst_req[0] = sv2v_tmp_24605;
++    mst_req[1] = sv2v_tmp_i_mst_ar_arb_req_o;
++    mst_req[85-:84] = sv2v_tmp_i_mst_ar_arb_data_o;
+ 		// Trace: /scratch/janniss/Documents/iguana-exploration/ihp13/opensynth/build/iguana_padframe_fixture.svase.sv:61518:5
+ 		inject_aw_into_ar_req = 1'b0;
+ 		// Trace: /scratch/janniss/Documents/iguana-exploration/ihp13/opensynth/build/iguana_padframe_fixture.svase.sv:61520:5

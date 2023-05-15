@@ -1,0 +1,17 @@
+--- build/iguana.pickle.sv	2023-04-27 03:07:24.424464425 +0200
++++ build/iguana.pickle.sv2	2023-04-27 03:26:15.800326268 +0200
+@@ -135341,7 +135341,13 @@
+   ////////////////
+   //   DDR IN   //
+   ////////////////
+-  always_ff @(negedge ddr_rcv_clk_i, negedge rst_ni) ddr_q <= !rst_ni ? '0 : ddr_i;
++  always_ff @(posedge ~ddr_rcv_clk_i, negedge rst_ni) begin
++    if (!rst_ni) begin
++      ddr_q <= '0;
++    end else begin
++      ddr_q <= ddr_i;
++    end
++  end
+   assign data_in = {ddr_i, ddr_q};
+ 
+ endmodule

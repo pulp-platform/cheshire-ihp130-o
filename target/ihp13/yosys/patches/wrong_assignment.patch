@@ -1,0 +1,12 @@
+--- copy.v	2023-04-28 23:40:28.338544545 +0200
++++ iguana_padframe_fixture.sv2v.v	2023-04-28 23:41:16.338944739 +0200
+@@ -72700,7 +72700,8 @@
+ 	localparam [0:0] sv2v_uu_i_slv_ar_arb_ext_rr_i_0 = 1'sb0;
+ 	// rewrote reg-to-output bindings
+ 	wire [2:1] sv2v_tmp_i_slv_ar_arb_gnt_o;
+-	always @(*) {inject_aw_into_ar_gnt, slv_resp_o[86]} = sv2v_tmp_i_slv_ar_arb_gnt_o;
++  assign inject_aw_into_ar_gnt = sv2v_tmp_i_slv_ar_arb_gnt_o[2];
++	always @(*) slv_resp_o[86] = sv2v_tmp_i_slv_ar_arb_gnt_o[1];
+ 	rr_arb_tree__4869958972093960626 i_slv_ar_arb(
+ 		.clk_i(clk_i),
+ 		.rst_ni(rst_ni),

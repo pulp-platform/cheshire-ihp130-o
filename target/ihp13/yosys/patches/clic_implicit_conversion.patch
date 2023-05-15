@@ -1,0 +1,11 @@
+--- build/iguana_chip.pickle.sv	2023-05-15 22:01:36.443259269 +0200
++++ build/iguana_chip.pickle.mod.sv	2023-05-15 22:08:20.900544403 +0200
+@@ -158984,7 +158984,7 @@
+     .clic_irq_valid_i ( '0 ),
+     .clic_irq_id_i    ( '0 ),
+     .clic_irq_level_i ( '0 ),
+-    .clic_irq_priv_i  ( '0 ),
++    .clic_irq_priv_i  ( riscv::priv_lvl_t'(0) ),
+     .clic_irq_shv_i   ( '0 ),
+     .clic_irq_ready_o ( ),
+     .clic_kill_req_i  ( '0 ),
