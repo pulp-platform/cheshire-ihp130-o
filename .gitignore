@@ -2,6 +2,9 @@
 .deps
 sw/
 
+.setup_done
+target/ihp13/common/nina/scripts/analyze.tcl
+
 target/sim/models
 # VSIM generated files
 target/sim/vsim/compile.*.tcl
@@ -10,3 +13,5 @@ target/sim/vsim/modelsim.ini
 target/sim/vsim/transcript
 target/sim/vsim/vsim.wlf
 target/sim/vsim/work/
+
+sources.json

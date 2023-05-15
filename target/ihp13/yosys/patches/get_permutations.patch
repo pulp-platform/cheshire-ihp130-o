@@ -1,0 +1,26 @@
+--- build/iguana.pickle.sv	2023-04-27 02:57:54.852098577 +0200
++++ build/iguana.pickle.sv2	2023-04-27 02:59:04.091678122 +0200
+@@ -1631,6 +1631,7 @@
+     longint unsigned index   = 0;
+     longint unsigned advance = 0;
+     longint unsigned rand_number = (A * seed + C) % M;
++    longint unsigned rand_number_prg [NoRounds];
+ 
+     // do it for each round
+     for (int unsigned r = 0; r < NoRounds; r++) begin
+@@ -1654,9 +1655,13 @@
+       // advance the PRG a bit
+       rand_number = (A * rand_number + C) % M;
+       advance     = rand_number % NoRounds;
++
++      rand_number_prg[0] = rand_number;
+-      for (int unsigned i = 0; i < advance; i++) begin
++      for (int unsigned i = 0; i < NoRounds; i++) begin
+-        rand_number = (A * rand_number + C) % M;
++        rand_number_prg[i+1] = (A * rand_number_prg[i] + C) % M;
++        //rand_number = (A * rand_number + C) % M;
+       end
++      rand_number = rand_number_prg[advance];
+     end
+     return perm_array;
+   endfunction : get_permutations
