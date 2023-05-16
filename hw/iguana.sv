@@ -12,8 +12,8 @@
 /// Top-level implementation of Iguana
 module iguana import iguana_pkg::*; import cheshire_pkg::*;#(
     parameter cheshire_cfg_t IguanaCfg = DefaultCfg,
-    parameter int unsigned HypNumPhys  = 1,
-    parameter int unsigned HypNumChips = 1
+    parameter int unsigned HypNumPhys  = HyperBusNumPhys,
+    parameter int unsigned HypNumChips = HyperBusNumChips
   ) (
     input   logic               clk_i,
     input   logic               rst_ni,
@@ -85,7 +85,7 @@ module iguana import iguana_pkg::*; import cheshire_pkg::*;#(
     output logic [HypNumPhys-1:0]                  hyper_rwds_oe_no,
     input  logic [HypNumPhys-1:0][7:0]             hyper_dq_i,
     output logic [HypNumPhys-1:0][7:0]             hyper_dq_o,
-    output logic [HypNumPhys-1:0]                  hyper_dq_oe_o,
+    output logic [HypNumPhys-1:0]                  hyper_dq_oe_no,
     output logic [HypNumPhys-1:0]                  hyper_reset_no
   );
   // local AXI LLC -> Hyper
@@ -103,6 +103,7 @@ module iguana import iguana_pkg::*; import cheshire_pkg::*;#(
   logic [ 1:0] spih_csb_en;
   logic [ 3:0] spih_sd_en;
   logic        hyper_rwds_oe;
+  logic        hyper_dq_oe_o;
   logic [31:0] gpio_en;
 
   // gpio shortened
@@ -198,9 +199,9 @@ module iguana import iguana_pkg::*; import cheshire_pkg::*;#(
   );
 
   typedef struct packed {
-    aw_bt   idx;
-    doub_bt start_addr;
-    doub_bt end_addr;
+    int unsigned idx;
+    logic [IguanaCfg.AddrWidth-1:0] start_addr;
+    logic [IguanaCfg.AddrWidth-1:0] end_addr;
   } hyper_addr_rule_t;
 
   // hyperbus memory
@@ -224,12 +225,8 @@ module iguana import iguana_pkg::*; import cheshire_pkg::*;#(
     .reg_req_t        ( reg_req_t                                      ),
     .reg_rsp_t        ( reg_rsp_t                                      ),
     .axi_rule_t       ( hyper_addr_rule_t                              ),
-    .RxFifoLogDepth   ( 32'd2                                          ),
-    .TxFifoLogDepth   ( 32'd2                                          ),
-    .RstChipBase      ( 'h0                                            ),
-    .RstChipSpace     ( 'h1_0000                                       ),
-    .PhyStartupCycles ( 300 * 200                                      ),
-    .AxiLogDepth      ( 32'd3                                          )
+    .RstChipBase      ( IguanaCfg.LlcOutRegionStart                    ),
+    .RstChipSpace     ( 32'(RegOutHyperBusSize)                        )
   ) i_hyperbus (
     .clk_phy_i       ( hyp_clk_phy_i    ),
     .rst_phy_ni      ( hyp_rst_phy_ni   ),
@@ -238,8 +235,8 @@ module iguana import iguana_pkg::*; import cheshire_pkg::*;#(
     .test_mode_i     ( test_mode_i      ),
     .axi_req_i       ( dram_req         ),
     .axi_rsp_o       ( dram_resp        ),
-    .reg_req_i       ( external_reg_req[RegOutHyperBusIdx] ),
-    .reg_rsp_o       ( external_reg_rsp[RegOutHyperBusIdx] ),
+    .reg_req_i       ( external_reg_req ),
+    .reg_rsp_o       ( external_reg_rsp ),
     .hyper_cs_no,
     .hyper_ck_o,
     .hyper_ck_no,
@@ -260,5 +257,6 @@ module iguana import iguana_pkg::*; import cheshire_pkg::*;#(
   assign spih_sd_en_no    = ~spih_sd_en;
   assign hyper_rwds_oe_no = ~hyper_rwds_oe;
   assign gpio_all_en_no   = ~gpio_en;
+  assign hyper_dq_oe_no   = ~hyper_dq_oe_o;
 
 endmodule

@@ -9,6 +9,8 @@ package iguana_pkg;
   `include "cheshire/typedef.svh"
   import cheshire_pkg::*;
 
+  localparam int unsigned HyperBusNumPhys = 1;
+  localparam int unsigned HyperBusNumChips = 1;
   // the address iguana boots from
   localparam logic[63:0] iguana_boot_addr = 64'h0000_0000_0100_0000;
 
@@ -18,14 +20,16 @@ package iguana_pkg;
   } cheshire_reg_out_e;
 
   typedef enum doub_bt {
-    RegOutHyperBusBase = 'h0000_0000_2000_2000
+    RegOutHyperBusBase = 'h0000_0000_8000_0000
   } reg_start_t;
 
-  localparam doub_bt RegOutHyperBusSize = 'h0000_0000_0000_1000;
+  localparam doub_bt RegOutHyperBusSize = doub_bt'(HyperBusNumPhys * HyperBusNumChips * 'h800_0000);
 
   typedef enum doub_bt {
     RegOutHyperBusEnd = RegOutHyperBusBase + RegOutHyperBusSize
   } reg_end_t;
+
+
 
   localparam cheshire_cfg_t IguanaCfg = '{
     // CHANGED
