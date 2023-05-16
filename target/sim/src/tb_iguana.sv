@@ -39,6 +39,7 @@ module tb_iguana;
           fix.vip.jtag_elf_run(preload_elf);
           fix.vip.jtag_wait_for_eoc(exit_code);
         end 1: begin  // Serial Link
+          #600350ns; // this wating time is copied from hyperbus tb
           fix.vip.slink_elf_run(preload_elf);
           fix.vip.slink_wait_for_eoc(exit_code);
         end 2: begin  // UART
