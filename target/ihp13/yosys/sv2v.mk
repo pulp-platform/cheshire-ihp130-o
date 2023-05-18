@@ -1,6 +1,4 @@
 # Directories
-CDIR		:= $(dir $(realpath $(lastword $(MAKEFILE_LIST))))
-PRJ_ROOT 	?= $(CDIR)../..
 BUILD		?= build
 
 # Tools
@@ -22,12 +20,12 @@ run-sv2v: $(SV2V)  $(SV2V_FILE)
 $(SV2V_FILE): $(SVASE_FILE)
 	$(SV2V) --oversized-numbers --verbose --write $@ $<
 	sed "s|i < advance;|i < 0;|g" $@ > $@.tmp
-	sed -i "s|i < byte_idx_q;|i < AddrWidth;|g" $@.tmp > $@
-	sed -i "s|j < byte_idx_q;|j < AddrWidth;|g" $@ > $@.tmp
-	sed -i "s|rst_addr_q <= boot_addr_i;|rst_addr_q <= 64'h0000000002000000;|g" $@.tmp > $@
+	sed "s|i < byte_idx_q;|i < AddrWidth;|g" $@.tmp > $@
+	sed "s|j < byte_idx_q;|j < AddrWidth;|g" $@ > $@.tmp
+	sed "s|rst_addr_q <= boot_addr_i;|rst_addr_q <= 64'h0000000002000000;|g" $@.tmp > $@
 	rm $@.tmp
 	patch -u $@ -i patches/wrong_assignment.patch
-	patch -u $@ -i patches/wrongly_inferred_latch.patch
+	patch -u $@ -i patches/i_core_cva6_ext_clic_irq_id.patch
 
 sv2v:
 	@if ! which sv2v > /dev/null 2>&1; then \
