@@ -1,22 +1,18 @@
 # Directories
 # Todo: create a common 'project.mk' to set project config variables (or use iguana.mk for that?)
-CDIR		:= $(dir $(realpath $(lastword $(MAKEFILE_LIST))))
-PRJ_ROOT 	?= $(realpath $(CDIR)../../../..)
-IC_ROOT		?= $(realpath $(CDIR)..)
+SCRIPT_DIR	:= $(dir $(realpath $(lastword $(MAKEFILE_LIST))))
+PRJ_ROOT 	?= $(realpath $(SCRIPT_DIR)../../../..)
+IC_ROOT		?= $(realpath $(CURDIR)/..)
 BUILD		?= build
-WORK		?= $(CDIR)WORK
-REPORTS		?= $(CDIR)reports
+WORK		?= $(CURDIR)/WORK
+REPORTS		?= $(CURDIR)/reports
 TECH_DIR	?= $(IC_ROOT)/technology/lib
 
 # Tools
 include tools.mk
 
 # Project variables
-TECH_CELLS 	?= $(TECH_DIR)/sg13g2_stedwardell_typ_1p20V_25C.lib
-TECH_MACROS	?= $(addprefix $(TECH_DIR)/,RM_IHPSG13_1P_64x64_c2_bm_bist_tc_1d20V_25C.lib \
-										RM_IHPSG13_1P_256x64_c2_bm_bist_tc_1d20V_25C.lib \
-										RM_IHPSG13_1P_1024x64_c2_bm_bist_tc_1d20V_25C.lib \
-										plankton_typ_1p2V_3p3V_25C.lib)
+include technology.mk
 
 TOP_DESIGN	?= iguana_chip
 PICKLE_FILE := $(BUILD)/$(TOP_DESIGN).pickle.sv
@@ -55,5 +51,8 @@ clean:
 	rm -rf $(BUILD)
 	rm -rf $(WORK)
 	rm -rf $(REPORTS) 
+	rm -f $(CURDIR)/tools.log
+	rm -f $(CURDIR)/svase.log
+	rm -f $(CURDIR)/yosys.log
 
-.PHONY: synth run-yosys clean
+.PHONY: synth run-yosys clean test

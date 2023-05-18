@@ -1,5 +1,4 @@
 # Directories
-CDIR		:= $(dir $(realpath $(lastword $(MAKEFILE_LIST))))
 BUILD		?= build
 
 # Tools

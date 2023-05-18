@@ -1,9 +1,8 @@
 # Directories
-CDIR		:= $(dir $(realpath $(lastword $(MAKEFILE_LIST))))
 BUILD		?= build
 
 # Tools
-BENDER 	?= bender	# https://github.com/pulp-platform/bender
+BENDER 		?= bender	# https://github.com/pulp-platform/bender
 MORTY		?= morty	# https://github.com/pulp-platform/morty
 
 # Project variables
