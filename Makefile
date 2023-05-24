@@ -4,7 +4,7 @@
 #
 # Jannis Schönleber <jannissc@iis.ee.ethz.ch>
 
-IG_ROOT ?= .
+IG_ROOT ?= $(shell pwd)
 
 include iguana.mk
 
