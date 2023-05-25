@@ -53,7 +53,7 @@ module fixture_iguana;
 
   iguana_chip i_chip (
     .clk_io             ( clk       ),
-    .rst_io             ( rst_n     ),
+    .rst_n_io           ( rst_n     ),
     .boot_mode_0_io     ( boot_mode[0] ),
     .boot_mode_1_io     ( boot_mode[1] ),
     .testmode_io        ( test_mode ),

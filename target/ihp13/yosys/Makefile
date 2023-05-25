@@ -47,6 +47,19 @@ run-yosys: $(SV2V_FILE)
 	REPORTS="$(REPORTS)" \
 	yosys -c scripts/yosys_synthesis.tcl | tee -a yosys.log
 
+yosys-read-and-write: $(SV2V_FILE)
+	sed -i "/unread__6142509188972423790 i_/d" $(SV2V_FILE) # hot fix as yosys is not opt yet and drops this into netlist
+	@mkdir -p $(BUILD)
+	@rm -f yosys.log
+	VLOG_FILES="$(SV2V_FILE)" \
+	TOP_DESIGN="$(UNIQUE_TOP)" \
+	TECH_CELLS="$(TECH_CELLS)" \
+	TECH_MACROS="$(TECH_MACROS)" \
+	BUILD="$(BUILD)" \
+	WORK="$(WORK)" \
+	REPORTS="$(REPORTS)" \
+	yosys -c scripts/yosys_read_and_write.tcl | tee -a yosys.log
+
 clean:
 	rm -rf $(BUILD)
 	rm -rf $(WORK)
