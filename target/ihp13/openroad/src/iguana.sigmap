@@ -67,7 +67,7 @@ pad_jtag_tdi         jtag_tdi_io
 pad_jtag_tdo         jtag_tdo_io
 pad_jtag_tms         jtag_tms_io
 pad_jtag_trst        jtag_trst_n_io
-pad_rst              rst_io
+pad_rst              rst_n_io
 pad_rtc              rtc_io
 pad_slink_link_i_clk slink_link_clk_i_io
 pad_slink_link_i_0   slink_link_i_0_io
