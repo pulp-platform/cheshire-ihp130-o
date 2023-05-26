@@ -147,8 +147,9 @@ set haloBlock     10.0
 
 
 # offset to not start just ad the edge of the floor (maybe need to consider the pad ring)
-set floorW                 6000.0
-set floorH                 6000.0
+set die_area               [ord::get_die_area]
+set floorW                 [lindex $die_area 2]
+set floorH                 [lindex $die_area 3]
 set pad_length             310.0
 set floorMargin            120.0
 set macroMargin            50.0
@@ -178,7 +179,7 @@ set channel_vert  10.0
 
 
 # axi_data_0
-set X [ expr 6000 - $sram_initX_L - $RamSize1024_H ]
+set X [ expr $floorW - $sram_initX_L - $RamSize1024_H ]
 set Y $sram_initY
 placeInstance  $axi_data_0_low $X $Y MXR90
 addHaloToBlock $haloBlock $axi_data_0_low

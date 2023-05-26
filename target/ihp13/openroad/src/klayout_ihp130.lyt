@@ -4,8 +4,7 @@
  <description/>
  <group/>
  <dbu>0.001</dbu>
- <base-path>/home/sem23f17/semester_thesis/iguana-exploration/ihp13/openroad/technology</base-path>
- <original-base-path>/home/sem23f17/.klayout/tech/IHP130</original-base-path>
+ <base-path>./src</base-path>
  <layer-properties_file/>
  <add-other-layers>true</add-other-layers>
  <reader-options>
@@ -67,13 +66,13 @@
    <special-routing-suffix-string/>
    <special-routing-datatype-string>0</special-routing-datatype-string>
    <via-cellname-prefix>VIA_</via-cellname-prefix>
-   <lef-files>/home/sem23f17/semester_thesis/iguana-exploration/ihp13/technology/lef/ixc013g2ng_tech.lef</lef-files>
-   <lef-files>/home/sem23f17/semester_thesis/iguana-exploration/ihp13/technology/lef/ixc013g2ng_phys.lef</lef-files>
-   <lef-files>/home/sem23f17/semester_thesis/iguana-exploration/ihp13/technology/lef/ixc013g2ng_stedwardell_v5p7.lef</lef-files>
-   <lef-files>/home/sem23f17/semester_thesis/iguana-exploration/ihp13/technology/lef/plankton_v5p8.lef</lef-files>
-   <lef-files>/home/sem23f17/semester_thesis/iguana-exploration/ihp13/technology/lef/RM_IHPSG13_1P_64x64_c2_bm_bist.lef</lef-files>
-   <lef-files>/home/sem23f17/semester_thesis/iguana-exploration/ihp13/technology/lef/RM_IHPSG13_1P_256x64_c2_bm_bist.lef</lef-files>
-   <lef-files>/home/sem23f17/semester_thesis/iguana-exploration/ihp13/technology/lef/RM_IHPSG13_1P_1024x64_c2_bm_bist.lef</lef-files>
+   <lef-files>../../technology/lef/ixc013g2ng_tech.lef</lef-files>
+   <lef-files>../../technology/lef/ixc013g2ng_phys.lef</lef-files>
+   <lef-files>../../technology/lef/ixc013g2ng_stedwardell_v5p7.lef</lef-files>
+   <lef-files>../../technology/lef/plankton_v5p8.lef</lef-files>
+   <lef-files>../../technology/lef/RM_IHPSG13_1P_64x64_c2_bm_bist.lef</lef-files>
+   <lef-files>../../technology/lef/RM_IHPSG13_1P_256x64_c2_bm_bist.lef</lef-files>
+   <lef-files>../../technology/lef/RM_IHPSG13_1P_1024x64_c2_bm_bist.lef</lef-files>
    <read-lef-with-def>true</read-lef-with-def>
    <macro-resolution-mode>default</macro-resolution-mode>
    <separate-groups>false</separate-groups>
