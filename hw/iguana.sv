@@ -11,7 +11,6 @@
 
 /// Top-level implementation of Iguana
 module iguana import iguana_pkg::*; import cheshire_pkg::*;#(
-    parameter cheshire_cfg_t IguanaCfg = DefaultCfg,
     parameter int unsigned HypNumPhys  = HyperBusNumPhys,
     parameter int unsigned HypNumChips = HyperBusNumChips
   ) (
