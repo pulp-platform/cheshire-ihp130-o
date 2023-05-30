@@ -14,7 +14,7 @@ UNIQUE_TOP	 = $(shell sed -n 's|module \($(TOP_DESIGN)[[:alnum:]_]*\)\s.*$$|\1|p
 run-svase: $(SVASE) $(SVASE_FILE)
 $(SVASE_FILE): $(PICKLE_FILE)
 	$(SVASE) $(TOP_DESIGN) $@ $< | tee svase.log
-	sed "s|RegOut.num_out|6'h0c|g" $@ > $@.tmp # Todo: fix this, is this even correct? (svase pass?) +1 due to regbus
+	sed "s|RegOut.num_out|6'h0d|g" $@ > $@.tmp # Todo: fix this, is this even correct? (svase pass?) +1 due to regbus
 	sed "s|localparam int unsigned SlinkMaxClkDiv  =|//// localparam int unsigned SlinkMaxClkDiv  =|g" $@.tmp > $@
 	rm $@.tmp
 
