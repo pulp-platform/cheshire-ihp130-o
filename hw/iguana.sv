@@ -224,7 +224,7 @@ module iguana import iguana_pkg::*; import cheshire_pkg::*;#(
     .reg_req_t        ( reg_req_t                                      ),
     .reg_rsp_t        ( reg_rsp_t                                      ),
     .axi_rule_t       ( hyper_addr_rule_t                              ),
-    .RstChipBase      ( IguanaCfg.LlcOutRegionStart                    ),
+    .RstChipBase      ( RegOutHyperBusBase                             ),
     .RstChipSpace     ( 32'(RegOutHyperBusSize)                        )
   ) i_hyperbus (
     .clk_phy_i       ( hyp_clk_phy_i    ),

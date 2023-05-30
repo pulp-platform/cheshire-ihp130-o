@@ -22,6 +22,7 @@ $(PICKLE_FILE): sources.json
 	sed "s/module slib_mv_filter #(parameter WIDTH = 4, THRESHOLD = 10).*/module slib_mv_filter #(parameter WIDTH = 4, parameter THRESHOLD = 10) (/g" $@.tmp > $@
 	patch -u $@ -i patches/serial_link_ddr_in_ff.patch # Todo: Change in source as per IEEE 1364.1 
 	patch -u $@ -i patches/clic_implicit_conversion.patch # Todo: Make conversion explicit in RTL
+	sed -i "s|default: return '{default: '{0, 0}};|default: return cva6_id_map_t'{default: '0};|g" $@
 	rm $@.tmp
 
 # patch -u $@ -i patches/get_permutations.patch

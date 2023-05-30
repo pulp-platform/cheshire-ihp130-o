@@ -15,12 +15,12 @@ package iguana_pkg;
   localparam logic[63:0] iguana_boot_addr = 64'h0000_0000_0100_0000;
 
   // Cheshire regbus out
-  typedef enum int {
+  typedef enum byte_bt {
     RegOutHyperBusIdx = 'd0
   } cheshire_reg_out_e;
 
   typedef enum doub_bt {
-    RegOutHyperBusBase = 'h0000_0000_8000_0000
+    RegOutHyperBusBase = 'h0000_0001_0000_0000
   } reg_start_t;
 
   localparam doub_bt RegOutHyperBusSize = doub_bt'(HyperBusNumPhys * HyperBusNumChips * 'h800_0000);
@@ -28,7 +28,6 @@ package iguana_pkg;
   typedef enum doub_bt {
     RegOutHyperBusEnd = RegOutHyperBusBase + RegOutHyperBusSize
   } reg_end_t;
-
 
 
   localparam cheshire_cfg_t IguanaCfg = '{
@@ -53,8 +52,8 @@ package iguana_pkg;
     Cva6ExtCieLength  : 'h2000_0000,
     // Harts
     DualCore          : 0,  // Only one core, but rest of config allows for two
+    CoreMaxTxns       : 8,
     CoreMaxTxnsPerId  : 4,
-    CoreMaxUniqIds    : 4,
     // Interconnect
     AddrWidth         : 48,
     AxiDataWidth      : 64,
@@ -105,8 +104,8 @@ package iguana_pkg;
     SlinkMaxTxnsPerId : 4,
     SlinkMaxUniqIds   : 4,
     SlinkMaxClkDiv    : 1024,
-    SlinkRegionStart  : doub_bt'('h1_0000_0000),
-    SlinkRegionEnd    : doub_bt'('h2_0000_0000),
+    SlinkRegionStart  : doub_bt'('h2_0000_0000),
+    SlinkRegionEnd    : doub_bt'('h3_0000_0000),
     SlinkTxAddrMask   : 'hFFFF_FFFF,
     SlinkTxAddrDomain : 'h0000_0000,
     SlinkUserAmoBit   : 1,  // Upper atomics bit for serial link
@@ -118,6 +117,9 @@ package iguana_pkg;
     // GPIOs
     GpioInputSyncs    : 1,
     // All non-set values should be zero
+    // AXI RT
+    AxiRtNumPending   : 16,
+    AxiRtWBufferDepth : 16,
     default: '0
   };
   `CHESHIRE_TYPEDEF_ALL(, IguanaCfg)

@@ -15,3 +15,8 @@ target/sim/vsim/vsim.wlf
 target/sim/vsim/work/
 
 sources.json
+
+
+.dvt
+dvt_build.log
+.vscode

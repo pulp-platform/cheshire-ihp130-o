@@ -59,4 +59,19 @@ module tb_iguana;
     $finish;
   end
 
+  initial begin
+      #100ms;
+      $display("Time: %tms\n", $time/1e9);
+      $display("100ms all sims should be finished\n");
+      $fatal(1, "Simulation timeout!");
+  end
+
+  initial begin
+    while (1) begin
+      #1ms;
+      // display progress
+      $display("Time: %tms\n", $time/1e9);
+    end
+  end
+
 endmodule
