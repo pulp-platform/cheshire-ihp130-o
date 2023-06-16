@@ -10,7 +10,7 @@ package iguana_pkg;
   import cheshire_pkg::*;
 
   localparam int unsigned HyperBusNumPhys = 1;
-  localparam int unsigned HyperBusNumChips = 1;
+  localparam int unsigned HyperBusNumChips = 2;
   // the address iguana boots from
   localparam logic[63:0] iguana_boot_addr = 64'h0000_0000_0100_0000;
 

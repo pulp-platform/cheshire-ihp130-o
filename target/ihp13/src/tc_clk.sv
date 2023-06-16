@@ -40,34 +40,11 @@ module tc_clk_gating #(
     output logic clk_o
   );
 
-  wire ena;
-
-  sg13g2_or2_1 i_or (
-    .A ( en_i      ),
-    .B ( test_en_i ),
-    .X ( ena       )
-  );
-
-//   sg13g2_slgcp_1 i_clkgate (
-//     .GATE (     ),
-//     .SCE  ( ena   ),
-//     .CLK  ( clk_i ),
-//     .GCLK ( clk_o )
-//   );
-
-  // latch based icg cell using latch and and cell
-  // TODO: remove when DZ updated to the newer version on GitHub of the lib file
-  wire latch_out;
-  sg13g2_and2_1 i_and (
-    .A ( clk_i ),
-    .B ( latch_out ),
-    .X ( clk_o )
-  );
-
-  sg13g2_dlhq_1 i_clkgate (
-    .GATE ( ~clk_i  ),
-    .D ( ena ),
-    .Q ( latch_out )
+  sg13g2_slgcp_1 i_clkgate (
+    .GATE ( en_i ),
+    .SCE  ( test_en_i   ),
+    .CLK  ( clk_i ),
+    .GCLK ( clk_o )
   );
 
 endmodule

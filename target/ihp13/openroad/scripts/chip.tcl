@@ -1,6 +1,9 @@
 set DESIGN_NAME iguana_yosys
 set time [elapsed_run_time]
 
+set step_by_step_debug 0
+set routing_repairs 1
+
 source scripts/checkpoint.tcl
 source scripts/reports.tcl
 
@@ -9,7 +12,7 @@ source scripts/init_tech.tcl
 
 # read and check design
 puts "Read netlist"
-read_verilog ./src/iguana_yosys_fixed_flat.v
+read_verilog ../yosys/build/iguana_chip_yosys_blackboxed.v
 link_design iguana_chip__6142509188972423790
 
 puts "Read constraints"
@@ -23,11 +26,16 @@ set time [elapsed_run_time]
 puts "Time: $time sec deltaT: $deltaT"
 
 # floorplan -> Few seconds
-source scripts/floorplan_yosys.tcl
+source scripts/yosys_macros.tcl
+source scripts/floorplan.tcl
 save_checkpoint $DESIGN_NAME.floorplan
 set deltaT [expr [elapsed_run_time] - $time]
 set time [elapsed_run_time]
 puts "Time: $time sec deltaT: $deltaT"
+if { $step_by_step_debug } {
+    puts "Pause after Floorplan"
+    gui::pause
+}
 
 ## power intent -> Few seconds
 source scripts/power_grid.tcl
@@ -35,6 +43,10 @@ save_checkpoint $DESIGN_NAME.power_grid
 set deltaT [expr [elapsed_run_time] - $time]
 set time [elapsed_run_time]
 puts "Time: $time sec deltaT: $deltaT"
+if { $step_by_step_debug } {
+    puts "Pause after Power Grid"
+    gui::pause
+}
 
 #Add Placement blockage
 proc add_macro_blockage {negative_padding name1 name2} {
@@ -78,8 +90,9 @@ cut_rows -halo_width_y 5 -halo_width_x 5
 # Dont touch IO pads as "remove_buffers" removes some of them
 set_dont_touch [get_cells -hierarchical -filter "ref_name == spongebob"]
 set_dont_touch [get_cells -hierarchical -filter "ref_name == ixc013_i16m"]
+set_dont_touch [get_cells -hierarchical -filter "ref_name == sandypup"]
 # Dont use pads for buffering during repair_design
-set_dont_use {spongebob ixc013_i16m}
+set_dont_use $dont_use_cells
 
 # Used for estimate_parasitics
 set_wire_rc -clock -layer Metal4
@@ -90,6 +103,7 @@ remove_buffers
 # Unset dont touch or repair_hold crashes
 unset_dont_touch [get_cells -hierarchical -filter "ref_name == spongebob"]
 unset_dont_touch [get_cells -hierarchical -filter "ref_name == ixc013_i16m"]
+unset_dont_touch [get_cells -hierarchical -filter "ref_name == sandypup"]
 # Set dont touch for io nets -> repair_hold otherwise tries to insert hold buffer into that net
 set_dont_touch [get_nets *_io]
 
@@ -99,23 +113,27 @@ puts "Repair design"
 repair_design -max_utilization 100
 save_reports 0 "$DESIGN_NAME.preplace_repaired"
 
-set_placement_padding -instances [get_cells *i_ariane_regfile*] -right 7 -left 7
-set_placement_padding -instances [get_cells *i_ariane_fp_regfile*] -right 7 -left 7
+set_placement_padding -instances [get_cells *i_bootrom*] -right 5 -left 5
+set_placement_padding -instances [get_cells *float_regfile_gen.gen_asic_fp_regfile.i_ariane_fp_regfile*] -right 7 -left 7
+set_placement_padding -instances [get_cells *gen_asic_regfile.i_ariane_regfile*] -right 7 -left 7
 set_placement_padding -instances [get_cells *i_scoreboard*] -right 5 -left 5
-#set_placement_padding -instances [get_cells *i_bootrom*] -right 5 -left 5
-#set_placement_padding -instances [get_cells *i_multiplier*] -right 5 -left 5
+set_placement_padding -instances [get_cells *i_multiplier*] -right 5 -left 5
 #Hotspots: Bootrom, Regfiles, Scoreboard, Multiplier
 
 puts "Global Placement"
 global_placement \
-    -density 0.80 \
+    -density 0.70 \
     -pad_left 1 \
     -pad_right 1
 
-#gui::pause
+if { $step_by_step_debug } {
+    puts "Pause after Global Placement"
+    gui::pause
+}
 
 puts "Buffer ports"
 buffer_ports
+# Hangs if placement density overlay is enabled or timing path
 puts "Repair tie fanout"
 source scripts/repair_tie.tcl
 
@@ -138,18 +156,15 @@ save_checkpoint $DESIGN_NAME.placed
 set deltaT [expr [elapsed_run_time] - $time]
 set time [elapsed_run_time]
 puts "Time: $time sec deltaT: $deltaT"
-
-#gui::pause
+if { $step_by_step_debug } {
+    puts "Pause after Detailed Placement"
+    gui::pause
+}
 
 #### cts -> Takes forever with 14 buffers ca. 2.5h
 
 puts "Repair clock inverters"
 repair_clock_inverters
-
-set ctsBuf [ list BUFJIX20 ]
-#set ctsBuf [ list \
-#               BUFJIX20 BUJIX20 BUFJIX16 BUJIX16 BUFJIX12 BUJIX12 BUFJIX8 BUJIX8 BUFJIX4 BUJIX4 BUFJIX2 BUJIX2 BUFJIX1 BUJIX1 \
-#           ]
 
 puts "Clock Tree Synthesis"
 set_wire_rc -clock -layer TopMetal1
@@ -187,14 +202,18 @@ save_checkpoint $DESIGN_NAME.post_cts
 set deltaT [expr [elapsed_run_time] - $time]
 set time [elapsed_run_time]
 puts "Time: $time sec deltaT: $deltaT"
+if { $step_by_step_debug } {
+    puts "Pause after Clock Tree Synthesis"
+    gui::pause
+}
 
 #### global routing -> Few seconds
 set_global_routing_layer_adjustment Metal1-TopMetal2 0.0
-set_routing_layers -signal Metal1-TopMetal2 -clock Metal2-TopMetal2
+set_routing_layers -signal Metal2-TopMetal2 -clock Metal2-TopMetal2
 
 puts "Global route"
-global_route -guide_file route.guide \
-    -congestion_report_file congestion.rpt \
+global_route -guide_file reports/route.guide \
+    -congestion_report_file reports/congestion.rpt \
     -congestion_iterations 20 \
     -allow_congestion \
     -verbose
@@ -206,10 +225,12 @@ save_checkpoint $DESIGN_NAME.global_route
 set deltaT [expr [elapsed_run_time] - $time]
 set time [elapsed_run_time]
 puts "Time: $time sec deltaT: $deltaT"
+if { $step_by_step_debug } {
+    puts "Pause after Global Routing"
+    gui::pause
+}
 
-#gui::pause
-
-if { 1 } {
+if { $routing_repairs } {
     grt::set_verbose 0
     puts "Repair setup"
     repair_timing -setup -repair_tns 100 -max_utilization 100
@@ -218,7 +239,7 @@ if { 1 } {
     estimate_parasitics -global_routing
     save_reports 0 "$DESIGN_NAME.global_route_setup_repaired"
     puts "Repair hold"
-    repair_timing -hold -allow_setup_violations -max_buffer_percent 100 -max_utilization 100 -hold_margin 0.1
+    repair_timing -hold -allow_setup_violations -max_buffer_percent 100 -max_utilization 100 -hold_margin 0.2
     estimate_parasitics -global_routing
     save_reports 1 "$DESIGN_NAME.global_route_hold_repaired"
     puts "Repair design"
@@ -241,25 +262,27 @@ if { 1 } {
     puts "Estimate parasitics"
     estimate_parasitics -global_routing
     save_reports 1 "$DESIGN_NAME.global_route_repaired"
-
-    #gui::pause
+    save_checkpoint $DESIGN_NAME.routing_repairs
+    set deltaT [expr [elapsed_run_time] - $time]
+    set time [elapsed_run_time]
+    puts "Time: $time sec deltaT: $deltaT"
+    if { $step_by_step_debug } {
+        puts "Pause after Routing Repairs"
+        gui::pause
+    }
 }
 # Prints whole report to console -> Slow
 #check_antennas -report_file antenna_post_route.log
 #repair_antennas ANTENNACELLN2JI
 #check_antennas -report_file antenna_final.log
-save_checkpoint $DESIGN_NAME.routing_optimized
-set deltaT [expr [elapsed_run_time] - $time]
-set time [elapsed_run_time]
-puts "Time: $time sec deltaT: $deltaT"
 
 ### detail route
 set_propagated_clock [all_clocks]
-set_thread_count 12
+set_thread_count 8
 
 puts "Detailed route"
-detailed_route -output_drc route_drc.rpt \
-               -output_maze maze.log \
+detailed_route -output_drc reports/route_drc.rpt \
+               -output_maze reports/maze.log \
                -bottom_routing_layer Metal1 \
                -top_routing_layer TopMetal2 \
                -save_guide_updates \
@@ -275,6 +298,10 @@ report_design_area
 set deltaT [expr [elapsed_run_time] - $time]
 set time [elapsed_run_time]
 puts "Time: $time sec deltaT: $deltaT"
+if { $step_by_step_debug } {
+    puts "Pause after Detailed Routing"
+    gui::pause
+}
 
 exit
 
