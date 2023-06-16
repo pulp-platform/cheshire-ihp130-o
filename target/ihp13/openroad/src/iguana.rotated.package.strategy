@@ -1,0 +1,174 @@
+puts "Loading library IO cell meta-data"
+source src/library.ihp13_io.tcl
+
+puts "Loaded library IO cell data"
+Footprint definition {
+  Type wirebond
+
+  die_area {0 0 6250.000 6250.000}
+  core_area {410.000 410.000 5840.000 5840.000}
+
+  power_nets  "VDD VDDIO"
+  ground_nets "VSS VSSIO"
+
+  offsets 0
+  # tracks platforms/sky130/tracks_hs.info
+  # pin_layer Metal3
+
+  pad_inst_name "%s"
+  pad_pin_name "%s"
+
+  paedwardell { 
+    pad_vddpad_4          {type vdd_pad   side left   cell {origin {x    0.000 y 5860.000}} pin 23}
+    pad_vddpad_5          {type vdd_pad   side left   cell {origin {x    0.000 y 5710.000}} pin 23}
+    pad_gndpad_4          {type vss_pad   side left   cell {origin {x    0.000 y 5560.000}} pin 89}
+    pad_gndpad_5          {type vss_pad   side left   cell {origin {x    0.000 y 5410.000}} pin 89}
+    pad_uart_rx           {type sig_io    side left   cell {origin {x    0.000 y 5260.000}} pin 24}
+    pad_uart_tx           {type sig_io    side left   cell {origin {x    0.000 y 5110.000}} pin 25}
+    pad_gpio_11           {type sig_io    side left   cell {origin {x    0.000 y 4960.000}} pin 26}
+    pad_hyper_0_cs        {type sig_io    side left   cell {origin {x    0.000 y 4810.000}} pin 27}
+    pad_hyper_1_cs        {type sig_io    side left   cell {origin {x    0.000 y 4660.000}} pin 28}
+    pad_hyper_ck          {type sig_i     side left   cell {origin {x    0.000 y 4510.000}} pin 29}
+    pad_hyper_ck_n        {type sig_i     side left   cell {origin {x    0.000 y 4360.000}} pin 30}
+    pad_hyper_rwds        {type sig_i     side left   cell {origin {x    0.000 y 4210.000}} pin 31}
+    pad_hyper_reset       {type sig_i     side left   cell {origin {x    0.000 y 4060.000}} pin 32}
+    pad_gnedwardore_6         {type vss_core  side left   cell {origin {x    0.000 y 3910.000}} pin 89}
+    pad_gnedwardore_7         {type vss_core  side left   cell {origin {x    0.000 y 3760.000}} pin 89}
+    pad_vdedwardore_6         {type vdd_core  side left   cell {origin {x    0.000 y 3610.000}} pin 33}
+    pad_vdedwardore_7         {type vdd_core  side left   cell {origin {x    0.000 y 3460.000}} pin 33}
+    pad_gnedwardore_8         {type vss_core  side left   cell {origin {x    0.000 y 3310.000}} pin 89}
+    pad_vdedwardore_8         {type vdd_core  side left   cell {origin {x    0.000 y 3160.000}} pin 34}
+    pad_vdedwardore_9         {type vdd_core  side left   cell {origin {x    0.000 y 3010.000}} pin 34}
+    pad_gnedwardore_9         {type vss_core  side left   cell {origin {x    0.000 y 2860.000}} pin 89}
+    pad_vdedwardore_10        {type vdd_core  side left   cell {origin {x    0.000 y 2710.000}} pin 35}
+    pad_vdedwardore_11        {type vdd_core  side left   cell {origin {x    0.000 y 2560.000}} pin 35}
+    pad_gnedwardore_10        {type vss_core  side left   cell {origin {x    0.000 y 2410.000}} pin 89}
+    pad_gnedwardore_11        {type vss_core  side left   cell {origin {x    0.000 y 2260.000}} pin 89}
+    pad_hyper_dq_0        {type sig_i     side left   cell {origin {x    0.000 y 2110.000}} pin 36}
+    pad_hyper_dq_1        {type sig_i     side left   cell {origin {x    0.000 y 1960.000}} pin 37}
+    pad_hyper_dq_2        {type sig_io    side left   cell {origin {x    0.000 y 1810.000}} pin 38}
+    pad_hyper_dq_3        {type sig_i     side left   cell {origin {x    0.000 y 1660.000}} pin 39}
+    pad_hyper_dq_4        {type sig_i     side left   cell {origin {x    0.000 y 1510.000}} pin 40}
+    pad_hyper_dq_5        {type sig_i     side left   cell {origin {x    0.000 y 1360.000}} pin 41}
+    pad_hyper_dq_6        {type sig_i     side left   cell {origin {x    0.000 y 1210.000}} pin 42}
+    pad_hyper_dq_7        {type sig_io    side left   cell {origin {x    0.000 y 1060.000}} pin 43}
+    pad_gndpad_6          {type vss_pad   side left   cell {origin {x    0.000 y  910.000}} pin 89}
+    pad_gndpad_7          {type vss_pad   side left   cell {origin {x    0.000 y  760.000}} pin 89}
+    pad_vddpad_6          {type vdd_pad   side left   cell {origin {x    0.000 y  610.000}} pin 44}
+    pad_vddpad_7          {type vdd_pad   side left   cell {origin {x    0.000 y  460.000}} pin 44}
+
+    pad_vddpad_8          {type vdd_pad   side bottom cell {origin {x  400.000 y    0.000}} pin 45}
+    pad_vddpad_9          {type vdd_pad   side bottom cell {origin {x  550.000 y    0.000}} pin 45}
+    pad_gndpad_8          {type vss_pad   side bottom cell {origin {x  700.000 y    0.000}} pin 89}
+    pad_gndpad_9          {type vss_pad   side bottom cell {origin {x  850.000 y    0.000}} pin 89}
+    pad_gpio_6            {type sig_i     side bottom cell {origin {x 1000.000 y    0.000}} pin 46}
+    pad_i2c_sda           {type sig_io    side bottom cell {origin {x 1150.000 y    0.000}} pin 47}
+    pad_i2c_scl           {type sig_io    side bottom cell {origin {x 1300.000 y    0.000}} pin 48}
+    pad_slink_link_i_clk  {type sig_io    side bottom cell {origin {x 1450.000 y    0.000}} pin 49}
+    pad_slink_link_i_0    {type sig_io    side bottom cell {origin {x 1600.000 y    0.000}} pin 50}
+    pad_slink_link_i_1    {type sig_io    side bottom cell {origin {x 1750.000 y    0.000}} pin 51}
+    pad_slink_link_i_2    {type sig_io    side bottom cell {origin {x 1900.000 y    0.000}} pin 52}
+    pad_slink_link_i_3    {type sig_io    side bottom cell {origin {x 2050.000 y    0.000}} pin 53}
+    pad_gpio_7            {type sig_io    side bottom cell {origin {x 2200.000 y    0.000}} pin 54}
+    pad_gnedwardore_12        {type vss_core  side bottom cell {origin {x 2350.000 y    0.000}} pin 89}
+    pad_gnedwardore_13        {type vss_core  side bottom cell {origin {x 2500.000 y    0.000}} pin 89}
+    pad_vdedwardore_12        {type vdd_core  side bottom cell {origin {x 2650.000 y    0.000}} pin 55}
+    pad_vdedwardore_13        {type vdd_core  side bottom cell {origin {x 2800.000 y    0.000}} pin 55}
+    pad_gnedwardore_14        {type vss_core  side bottom cell {origin {x 2950.000 y    0.000}} pin 89}
+    pad_vdedwardore_14        {type vdd_core  side bottom cell {origin {x 3100.000 y    0.000}} pin 56}
+    pad_vdedwardore_15        {type vdd_core  side bottom cell {origin {x 3250.000 y    0.000}} pin 56}
+    pad_gnedwardore_15        {type vss_core  side bottom cell {origin {x 3400.000 y    0.000}} pin 89}
+    pad_vdedwardore_16        {type vdd_core  side bottom cell {origin {x 3550.000 y    0.000}} pin 57}
+    pad_vdedwardore_17        {type vdd_core  side bottom cell {origin {x 3700.000 y    0.000}} pin 57}
+    pad_gnedwardore_16        {type vss_core  side bottom cell {origin {x 3850.000 y    0.000}} pin 89}
+    pad_gnedwardore_17        {type vss_core  side bottom cell {origin {x 4000.000 y    0.000}} pin 89}
+    pad_gpio_8            {type sig_io    side bottom cell {origin {x 4150.000 y    0.000}} pin 58}
+    pad_slink_link_o_clk  {type sig_io    side bottom cell {origin {x 4300.000 y    0.000}} pin 59}
+    pad_slink_link_o_0    {type sig_io    side bottom cell {origin {x 4450.000 y    0.000}} pin 60}
+    pad_slink_link_o_1    {type sig_io    side bottom cell {origin {x 4600.000 y    0.000}} pin 61}
+    pad_slink_link_o_2    {type sig_io    side bottom cell {origin {x 4750.000 y    0.000}} pin 62}
+    pad_slink_link_o_3    {type sig_io    side bottom cell {origin {x 4900.000 y    0.000}} pin 63}
+    pad_gpio_9            {type sig_io    side bottom cell {origin {x 5050.000 y    0.000}} pin 64}
+    pad_gpio_10           {type sig_io    side bottom cell {origin {x 5200.000 y    0.000}} pin 65}
+    pad_gndpad_10         {type vss_pad   side bottom cell {origin {x 5350.000 y    0.000}} pin 89}
+    pad_gndpad_11         {type vss_pad   side bottom cell {origin {x 5500.000 y    0.000}} pin 89}
+    pad_vddpad_10         {type vdd_pad   side bottom cell {origin {x 5650.000 y    0.000}} pin 66}
+    pad_vddpad_11         {type vdd_pad   side bottom cell {origin {x 5800.000 y    0.000}} pin 66}
+    
+    pad_vddpad_12         {type vdd_pad   side right  cell {origin {x 6250.000 y  400.000}} pin 67}
+    pad_vddpad_13         {type vdd_pad   side right  cell {origin {x 6250.000 y  550.000}} pin 67}
+    pad_gndpad_12         {type vss_pad   side right  cell {origin {x 6250.000 y  700.000}} pin 89}
+    pad_gndpad_13         {type vss_pad   side right  cell {origin {x 6250.000 y  850.000}} pin 89}
+    pad_vga_blue_1        {type sig_io    side right  cell {origin {x 6250.000 y 1000.000}} pin 68}
+    pad_vga_blue_0        {type sig_io_pu side right  cell {origin {x 6250.000 y 1150.000}} pin 69}
+    pad_vga_green_2       {type sig_io_pu side right  cell {origin {x 6250.000 y 1300.000}} pin 70}
+    pad_vga_green_1       {type sig_i     side right  cell {origin {x 6250.000 y 1450.000}} pin 71}
+    pad_vga_green_0       {type sig_i     side right  cell {origin {x 6250.000 y 1600.000}} pin 72}
+    pad_vga_red_1         {type sig_i     side right  cell {origin {x 6250.000 y 1750.000}} pin 73}
+    pad_vga_red_2         {type sig_i     side right  cell {origin {x 6250.000 y 1900.000}} pin 74}
+    pad_vga_red_0         {type sig_i     side right  cell {origin {x 6250.000 y 2050.000}} pin 75}
+    pad_vga_vsync         {type sig_io    side right  cell {origin {x 6250.000 y 2200.000}} pin 76}
+    pad_gnedwardore_18        {type vss_core  side right  cell {origin {x 6250.000 y 2350.000}} pin 89}
+    pad_gnedwardore_19        {type vss_core  side right  cell {origin {x 6250.000 y 2500.000}} pin 89}
+    pad_vdedwardore_18        {type vdd_core  side right  cell {origin {x 6250.000 y 2650.000}} pin 77}
+    pad_vdedwardore_19        {type vdd_core  side right  cell {origin {x 6250.000 y 2800.000}} pin 77}
+    pad_gnedwardore_20        {type vss_core  side right  cell {origin {x 6250.000 y 2950.000}} pin 89}
+    pad_vdedwardore_20        {type vdd_core  side right  cell {origin {x 6250.000 y 3100.000}} pin 78}
+    pad_vdedwardore_21        {type vdd_core  side right  cell {origin {x 6250.000 y 3250.000}} pin 78}
+    pad_gnedwardore_21        {type vss_core  side right  cell {origin {x 6250.000 y 3400.000}} pin 89}
+    pad_vdedwardore_22        {type vdd_core  side right  cell {origin {x 6250.000 y 3550.000}} pin 79}
+    pad_vdedwardore_23        {type vdd_core  side right  cell {origin {x 6250.000 y 3700.000}} pin 79}
+    pad_gnedwardore_22        {type vss_core  side right  cell {origin {x 6250.000 y 3850.000}} pin 89}
+    pad_gnedwardore_23        {type vss_core  side right  cell {origin {x 6250.000 y 4000.000}} pin 89}
+    pad_vga_hsync         {type sig_io    side right  cell {origin {x 6250.000 y 4150.000}} pin 80}
+    pad_spih_sck          {type sig_io    side right  cell {origin {x 6250.000 y 4300.000}} pin 81}
+    pad_spih_csb_0        {type sig_io    side right  cell {origin {x 6250.000 y 4450.000}} pin 82}
+    pad_spih_csb_1        {type sig_io    side right  cell {origin {x 6250.000 y 4600.000}} pin 83}
+    pad_spih_sd_0         {type sig_io    side right  cell {origin {x 6250.000 y 4750.000}} pin 84}
+    pad_spih_sd_1         {type sig_io    side right  cell {origin {x 6250.000 y 4900.000}} pin 85}
+    pad_spih_sd_2         {type sig_io    side right  cell {origin {x 6250.000 y 5050.000}} pin 86}
+    pad_spih_sd_3         {type sig_io    side right  cell {origin {x 6250.000 y 5200.000}} pin 87}
+    pad_gndpad_14         {type vss_pad   side right  cell {origin {x 6250.000 y 5350.000}} pin 89}
+    pad_gndpad_15         {type vss_pad   side right  cell {origin {x 6250.000 y 5500.000}} pin 89}
+    pad_vddpad_14         {type vdd_pad   side right  cell {origin {x 6250.000 y 5650.000}} pin 88}
+    pad_vddpad_15         {type vdd_pad   side right  cell {origin {x 6250.000 y 5800.000}} pin 88}
+    
+    pad_vddpad_0          {type vdd_pad   side top    cell {origin {x 5860.000 y 6250.000}} pin  1}
+    pad_vddpad_1          {type vdd_pad   side top    cell {origin {x 5710.000 y 6250.000}} pin  1}
+    pad_gndpad_0          {type vss_pad   side top    cell {origin {x 5560.000 y 6250.000}} pin 89}
+    pad_gndpad_1          {type vss_pad   side top    cell {origin {x 5410.000 y 6250.000}} pin 89}
+    pad_gpio_0            {type sig_io    side top    cell {origin {x 5260.000 y 6250.000}} pin  2}
+    pad_gpio_1            {type sig_io    side top    cell {origin {x 5110.000 y 6250.000}} pin  3}
+    pad_gpio_2            {type sig_io    side top    cell {origin {x 4960.000 y 6250.000}} pin  4}
+    pad_gpio_3            {type sig_io    side top    cell {origin {x 4810.000 y 6250.000}} pin  5}
+    pad_gpio_4            {type sig_io    side top    cell {origin {x 4660.000 y 6250.000}} pin  6}
+    pad_rtc               {type sig_io    side top    cell {origin {x 4510.000 y 6250.000}} pin  7}
+    pad_clk               {type sig_io    side top    cell {origin {x 4360.000 y 6250.000}} pin  8}
+    pad_jtag_tck          {type sig_io    side top    cell {origin {x 4210.000 y 6250.000}} pin  9}
+    pad_jtag_tms          {type sig_io    side top    cell {origin {x 4060.000 y 6250.000}} pin 10}
+    pad_gnedwardore_0         {type vss_core  side top    cell {origin {x 3910.000 y 6250.000}} pin 89}
+    pad_gnedwardore_1         {type vss_core  side top    cell {origin {x 3760.000 y 6250.000}} pin 89}
+    pad_vdedwardore_0         {type vdd_core  side top    cell {origin {x 3610.000 y 6250.000}} pin 11}
+    pad_vdedwardore_1         {type vdd_core  side top    cell {origin {x 3460.000 y 6250.000}} pin 11}
+    pad_gnedwardore_2         {type vss_core  side top    cell {origin {x 3310.000 y 6250.000}} pin 89}
+    pad_vdedwardore_2         {type vdd_core  side top    cell {origin {x 3160.000 y 6250.000}} pin 12}
+    pad_vdedwardore_3         {type vdd_core  side top    cell {origin {x 3010.000 y 6250.000}} pin 12}
+    pad_gnedwardore_3         {type vss_core  side top    cell {origin {x 2860.000 y 6250.000}} pin 89}
+    pad_vdedwardore_4         {type vdd_core  side top    cell {origin {x 2710.000 y 6250.000}} pin 13}
+    pad_vdedwardore_5         {type vdd_core  side top    cell {origin {x 2560.000 y 6250.000}} pin 13}
+    pad_gnedwardore_4         {type vss_core  side top    cell {origin {x 2410.000 y 6250.000}} pin 89}
+    pad_gnedwardore_5         {type vss_core  side top    cell {origin {x 2260.000 y 6250.000}} pin 89}
+    pad_jtag_tdi          {type sig_io    side top    cell {origin {x 2110.000 y 6250.000}} pin 14}
+    pad_jtag_trst         {type sig_io_pu side top    cell {origin {x 1960.000 y 6250.000}} pin 15}
+    pad_jtag_tdo          {type sig_io_pu side top    cell {origin {x 1810.000 y 6250.000}} pin 16}
+    pad_rst               {type sig_io_pu side top    cell {origin {x 1660.000 y 6250.000}} pin 17}
+    pad_boot_mode_0       {type sig_io_pu side top    cell {origin {x 1510.000 y 6250.000}} pin 18}
+    pad_boot_mode_1       {type sig_io_pu side top    cell {origin {x 1360.000 y 6250.000}} pin 19}
+    pad_testmode          {type sig_io_pu side top    cell {origin {x 1210.000 y 6250.000}} pin 20}
+    pad_gpio_5            {type sig_io_pu side top    cell {origin {x 1060.000 y 6250.000}} pin 21}
+    pad_gndpad_2          {type vss_pad   side top    cell {origin {x  910.000 y 6250.000}} pin 89}
+    pad_gndpad_3          {type vss_pad   side top    cell {origin {x  760.000 y 6250.000}} pin 89}
+    pad_vddpad_2          {type vdd_pad   side top    cell {origin {x  610.000 y 6250.000}} pin 22}
+    pad_vddpad_3          {type vdd_pad   side top    cell {origin {x  460.000 y 6250.000}} pin 22}
+  }
+}

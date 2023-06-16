@@ -14,7 +14,13 @@ foreach inst $insts {
 # Floorplan: Die Size and Padring 
 ##########################################################################
 
-ICeWall::load_footprint src/iguana.package.strategy
+if {[info exists OPEN_CELLS]} {
+  puts "Rotated Floorplan"
+  ICeWall::load_footprint src/iguana.rotated.package.strategy
+} else {
+  puts "Normal Floorplan"
+  ICeWall::load_footprint src/iguana.package.strategy
+}
 
 initialize_floorplan \
   -die_area  [ICeWall::get_die_area] \
@@ -27,24 +33,47 @@ ICeWall::init_footprint src/iguana.sigmap
 # Tracks 
 ##########################################################################
 
-make_tracks Metal1    -x_offset 0.21 -x_pitch 0.42 -y_offset 0.21 -y_pitch 0.42
-make_tracks Metal2    -x_offset 0.21 -x_pitch 0.42 -y_offset 0.21 -y_pitch 0.42
-make_tracks Metal3    -x_offset 0.21 -x_pitch 0.42 -y_offset 0.21 -y_pitch 0.42
-make_tracks Metal4    -x_offset 0.21 -x_pitch 0.42 -y_offset 0.21 -y_pitch 0.42
-make_tracks Metal5    -x_offset 0.21 -x_pitch 0.42 -y_offset 0.21 -y_pitch 0.42
-make_tracks TopMetal1 -x_offset 1.64 -x_pitch 2.28 -y_offset 1.64 -y_pitch 2.28
-make_tracks TopMetal2 -x_offset 2.00 -x_pitch 4.00 -y_offset 2.00 -y_pitch 4.00
+if {[info exists OPEN_CELLS]} {
+  make_tracks Metal1    -x_offset 0 -x_pitch 0.48 -y_offset 0 -y_pitch 0.42
+  make_tracks Metal2    -x_offset 0 -x_pitch 0.48 -y_offset 0 -y_pitch 0.42
+  make_tracks Metal3    -x_offset 0 -x_pitch 0.48 -y_offset 0 -y_pitch 0.42
+  make_tracks Metal4    -x_offset 0 -x_pitch 0.48 -y_offset 0 -y_pitch 0.42
+  make_tracks Metal5    -x_offset 0 -x_pitch 0.48 -y_offset 0 -y_pitch 0.42
+  make_tracks TopMetal1 -x_offset 1.64 -x_pitch 3.28 -y_offset 1.64 -y_pitch 3.28
+  make_tracks TopMetal2 -x_offset 2.00 -x_pitch 4.00 -y_offset 2.00 -y_pitch 4.00
+} else {
+  make_tracks Metal1    -x_offset 0.21 -x_pitch 0.42 -y_offset 0.21 -y_pitch 0.42
+  make_tracks Metal2    -x_offset 0.21 -x_pitch 0.42 -y_offset 0.21 -y_pitch 0.42
+  make_tracks Metal3    -x_offset 0.21 -x_pitch 0.42 -y_offset 0.21 -y_pitch 0.42
+  make_tracks Metal4    -x_offset 0.21 -x_pitch 0.42 -y_offset 0.21 -y_pitch 0.42
+  make_tracks Metal5    -x_offset 0.21 -x_pitch 0.42 -y_offset 0.21 -y_pitch 0.42
+  make_tracks TopMetal1 -x_offset 1.64 -x_pitch 2.28 -y_offset 1.64 -y_pitch 2.28
+  make_tracks TopMetal2 -x_offset 2.00 -x_pitch 4.00 -y_offset 2.00 -y_pitch 4.00
+}
 
 ##########################################################################
 # Placing macros
 ##########################################################################
 
 proc placeInstance { name x y orient } {
+  global OPEN_CELLS
   set block [ord::get_db_block]
   set inst [odb::dbBlock_findInst $block $name]
   odb::dbInst_setPlacementStatus $inst "none"
-  odb::dbInst_setOrient $inst $orient
-  odb::dbInst_setLocation $inst [ord::microns_to_dbu $x] [ord::microns_to_dbu $y]
+  if {[info exists OPEN_CELLS]} {
+    if {$orient == "R90"} {
+      set orient MX
+    }
+    if {$orient == "MXR90"} {
+      set orient R0
+    }
+
+    odb::dbInst_setOrient $inst $orient
+    odb::dbInst_setLocation $inst [ord::microns_to_dbu $y] [ord::microns_to_dbu $x]
+  } else {
+    odb::dbInst_setOrient $inst $orient
+    odb::dbInst_setLocation $inst [ord::microns_to_dbu $x] [ord::microns_to_dbu $y]
+  }
   odb::dbInst_setPlacementStatus $inst "firm"
 }
 
@@ -63,7 +92,7 @@ proc addHaloToBlock {halo name} {
   set maxx [expr $maxx + [ord::microns_to_dbu $halo]]
   set maxy [expr $maxy + [ord::microns_to_dbu $halo]]
 
-  odb::dbBlockage_create [ord::get_db_block] $minx $miny $maxx $maxy
+  #odb::dbBlockage_create [ord::get_db_block] $minx $miny $maxx $maxy
   #set tech [ord::get_db_tech]
   #set layer [odb::dbTech_findRoutingLayer $tech 5]
   #odb::dbObstruction_create [ord::get_db_block] $layer $minx $miny $maxx $maxy
@@ -72,59 +101,6 @@ proc addHaloToBlock {halo name} {
   #set layer [odb::dbTech_findRoutingLayer $tech 7]
   #odb::dbObstruction_create [ord::get_db_block] $layer $minx $miny $maxx $maxy
 }
-
-# cva6_icache
-# tag sram
-set cva6_icache_tag_0   i_iguana/i_cheshire_soc/i_core_cva6/genblk3_i_cache_subsystem/i_cva6_icache/gen_sram_0__tag_sram/i_tc_sram/gen_256x45xBx1_i_RM_IHPSG13_1P_256x64_c2_bm_bist
-set cva6_icache_tag_1   i_iguana/i_cheshire_soc/i_core_cva6/genblk3_i_cache_subsystem/i_cva6_icache/gen_sram_1__tag_sram/i_tc_sram/gen_256x45xBx1_i_RM_IHPSG13_1P_256x64_c2_bm_bist
-set cva6_icache_tag_2   i_iguana/i_cheshire_soc/i_core_cva6/genblk3_i_cache_subsystem/i_cva6_icache/gen_sram_2__tag_sram/i_tc_sram/gen_256x45xBx1_i_RM_IHPSG13_1P_256x64_c2_bm_bist
-set cva6_icache_tag_3   i_iguana/i_cheshire_soc/i_core_cva6/genblk3_i_cache_subsystem/i_cva6_icache/gen_sram_3__tag_sram/i_tc_sram/gen_256x45xBx1_i_RM_IHPSG13_1P_256x64_c2_bm_bist
-
-# data sram
-set cva6_icache_data_0_low   i_iguana/i_cheshire_soc/i_core_cva6/genblk3_i_cache_subsystem/i_cva6_icache/gen_sram_0__data_sram/i_tc_sram/gen_256x128xBx1_i_RM_IHPSG13_1P_256x64_c2_bm_bist_low
-set cva6_icache_data_1_low   i_iguana/i_cheshire_soc/i_core_cva6/genblk3_i_cache_subsystem/i_cva6_icache/gen_sram_1__data_sram/i_tc_sram/gen_256x128xBx1_i_RM_IHPSG13_1P_256x64_c2_bm_bist_low 
-set cva6_icache_data_2_low   i_iguana/i_cheshire_soc/i_core_cva6/genblk3_i_cache_subsystem/i_cva6_icache/gen_sram_2__data_sram/i_tc_sram/gen_256x128xBx1_i_RM_IHPSG13_1P_256x64_c2_bm_bist_low
-set cva6_icache_data_3_low   i_iguana/i_cheshire_soc/i_core_cva6/genblk3_i_cache_subsystem/i_cva6_icache/gen_sram_3__data_sram/i_tc_sram/gen_256x128xBx1_i_RM_IHPSG13_1P_256x64_c2_bm_bist_low 
-set cva6_icache_data_0_high  i_iguana/i_cheshire_soc/i_core_cva6/genblk3_i_cache_subsystem/i_cva6_icache/gen_sram_0__data_sram/i_tc_sram/gen_256x128xBx1_i_RM_IHPSG13_1P_256x64_c2_bm_bist_high
-set cva6_icache_data_1_high  i_iguana/i_cheshire_soc/i_core_cva6/genblk3_i_cache_subsystem/i_cva6_icache/gen_sram_1__data_sram/i_tc_sram/gen_256x128xBx1_i_RM_IHPSG13_1P_256x64_c2_bm_bist_high 
-set cva6_icache_data_2_high  i_iguana/i_cheshire_soc/i_core_cva6/genblk3_i_cache_subsystem/i_cva6_icache/gen_sram_2__data_sram/i_tc_sram/gen_256x128xBx1_i_RM_IHPSG13_1P_256x64_c2_bm_bist_high 
-set cva6_icache_data_3_high  i_iguana/i_cheshire_soc/i_core_cva6/genblk3_i_cache_subsystem/i_cva6_icache/gen_sram_3__data_sram/i_tc_sram/gen_256x128xBx1_i_RM_IHPSG13_1P_256x64_c2_bm_bist_high
-
-
-# cva6_wt_edwardache
-# tag sram 
-set cva6_wt_edwardache_tag_3   i_iguana/i_cheshire_soc/i_core_cva6/genblk3_i_cache_subsystem/i_wt_edwardache/i_wt_edwardache_mem/gen_tag_srams_3__i_tag_sram/i_tc_sram/gen_256x45xBx1_i_RM_IHPSG13_1P_256x64_c2_bm_bist 
-set cva6_wt_edwardache_tag_2   i_iguana/i_cheshire_soc/i_core_cva6/genblk3_i_cache_subsystem/i_wt_edwardache/i_wt_edwardache_mem/gen_tag_srams_2__i_tag_sram/i_tc_sram/gen_256x45xBx1_i_RM_IHPSG13_1P_256x64_c2_bm_bist 
-set cva6_wt_edwardache_tag_1   i_iguana/i_cheshire_soc/i_core_cva6/genblk3_i_cache_subsystem/i_wt_edwardache/i_wt_edwardache_mem/gen_tag_srams_1__i_tag_sram/i_tc_sram/gen_256x45xBx1_i_RM_IHPSG13_1P_256x64_c2_bm_bist 
-set cva6_wt_edwardache_tag_0   i_iguana/i_cheshire_soc/i_core_cva6/genblk3_i_cache_subsystem/i_wt_edwardache/i_wt_edwardache_mem/gen_tag_srams_0__i_tag_sram/i_tc_sram/gen_256x45xBx1_i_RM_IHPSG13_1P_256x64_c2_bm_bist 
-
-# data sram 
-set cva6_wt_edwardache_data_3_high   i_iguana/i_cheshire_soc/i_core_cva6/genblk3_i_cache_subsystem/i_wt_edwardache/i_wt_edwardache_mem/gen_data_banks_0__i_data_sram/i_tc_sram/gen_256x256xBx1_i_RM_IHPSG13_1P_256x64_c2_bm_bist_3
-set cva6_wt_edwardache_data_3_low    i_iguana/i_cheshire_soc/i_core_cva6/genblk3_i_cache_subsystem/i_wt_edwardache/i_wt_edwardache_mem/gen_data_banks_0__i_data_sram/i_tc_sram/gen_256x256xBx1_i_RM_IHPSG13_1P_256x64_c2_bm_bist_2
-set cva6_wt_edwardache_data_2_high   i_iguana/i_cheshire_soc/i_core_cva6/genblk3_i_cache_subsystem/i_wt_edwardache/i_wt_edwardache_mem/gen_data_banks_0__i_data_sram/i_tc_sram/gen_256x256xBx1_i_RM_IHPSG13_1P_256x64_c2_bm_bist_1
-set cva6_wt_edwardache_data_2_low    i_iguana/i_cheshire_soc/i_core_cva6/genblk3_i_cache_subsystem/i_wt_edwardache/i_wt_edwardache_mem/gen_data_banks_0__i_data_sram/i_tc_sram/gen_256x256xBx1_i_RM_IHPSG13_1P_256x64_c2_bm_bist_0
-set cva6_wt_edwardache_data_1_high   i_iguana/i_cheshire_soc/i_core_cva6/genblk3_i_cache_subsystem/i_wt_edwardache/i_wt_edwardache_mem/gen_data_banks_1__i_data_sram/i_tc_sram/gen_256x256xBx1_i_RM_IHPSG13_1P_256x64_c2_bm_bist_3
-set cva6_wt_edwardache_data_1_low    i_iguana/i_cheshire_soc/i_core_cva6/genblk3_i_cache_subsystem/i_wt_edwardache/i_wt_edwardache_mem/gen_data_banks_1__i_data_sram/i_tc_sram/gen_256x256xBx1_i_RM_IHPSG13_1P_256x64_c2_bm_bist_2
-set cva6_wt_edwardache_data_0_high   i_iguana/i_cheshire_soc/i_core_cva6/genblk3_i_cache_subsystem/i_wt_edwardache/i_wt_edwardache_mem/gen_data_banks_1__i_data_sram/i_tc_sram/gen_256x256xBx1_i_RM_IHPSG13_1P_256x64_c2_bm_bist_1
-set cva6_wt_edwardache_data_0_low    i_iguana/i_cheshire_soc/i_core_cva6/genblk3_i_cache_subsystem/i_wt_edwardache/i_wt_edwardache_mem/gen_data_banks_1__i_data_sram/i_tc_sram/gen_256x256xBx1_i_RM_IHPSG13_1P_256x64_c2_bm_bist_0
-
-# axi_llc_hit_miss_unit tag macro
-set axi_hitmiss_tag_3   i_iguana/i_cheshire_soc/gen_llc_i_llc/i_axi_llc_top_raw/i_hit_miss_unit/i_tag_store/gen_tag_macros_3__i_tag_store/gen_256x36xBx1_i_RM_IHPSG13_1P_256x64_c2_bm_bist 
-set axi_hitmiss_tag_2   i_iguana/i_cheshire_soc/gen_llc_i_llc/i_axi_llc_top_raw/i_hit_miss_unit/i_tag_store/gen_tag_macros_2__i_tag_store/gen_256x36xBx1_i_RM_IHPSG13_1P_256x64_c2_bm_bist
-set axi_hitmiss_tag_1   i_iguana/i_cheshire_soc/gen_llc_i_llc/i_axi_llc_top_raw/i_hit_miss_unit/i_tag_store/gen_tag_macros_1__i_tag_store/gen_256x36xBx1_i_RM_IHPSG13_1P_256x64_c2_bm_bist 
-set axi_hitmiss_tag_0   i_iguana/i_cheshire_soc/gen_llc_i_llc/i_axi_llc_top_raw/i_hit_miss_unit/i_tag_store/gen_tag_macros_0__i_tag_store/gen_256x36xBx1_i_RM_IHPSG13_1P_256x64_c2_bm_bist 
-
-
-# axi_llc_data_ways data macro
-set axi_data_3_high   i_iguana/i_cheshire_soc/gen_llc_i_llc/i_axi_llc_top_raw/i_llc_ways/gen_data_ways_3__i_data_way/i_data_sram/gen_2048x64xBx1_i_RM_IHPSG13_1P_256x64_c2_bm_bist_high 
-set axi_data_3_low    i_iguana/i_cheshire_soc/gen_llc_i_llc/i_axi_llc_top_raw/i_llc_ways/gen_data_ways_3__i_data_way/i_data_sram/gen_2048x64xBx1_i_RM_IHPSG13_1P_256x64_c2_bm_bist_low 
-set axi_data_2_high   i_iguana/i_cheshire_soc/gen_llc_i_llc/i_axi_llc_top_raw/i_llc_ways/gen_data_ways_2__i_data_way/i_data_sram/gen_2048x64xBx1_i_RM_IHPSG13_1P_256x64_c2_bm_bist_high 
-set axi_data_2_low    i_iguana/i_cheshire_soc/gen_llc_i_llc/i_axi_llc_top_raw/i_llc_ways/gen_data_ways_2__i_data_way/i_data_sram/gen_2048x64xBx1_i_RM_IHPSG13_1P_256x64_c2_bm_bist_low
-set axi_data_1_high   i_iguana/i_cheshire_soc/gen_llc_i_llc/i_axi_llc_top_raw/i_llc_ways/gen_data_ways_1__i_data_way/i_data_sram/gen_2048x64xBx1_i_RM_IHPSG13_1P_256x64_c2_bm_bist_high
-set axi_data_1_low    i_iguana/i_cheshire_soc/gen_llc_i_llc/i_axi_llc_top_raw/i_llc_ways/gen_data_ways_1__i_data_way/i_data_sram/gen_2048x64xBx1_i_RM_IHPSG13_1P_256x64_c2_bm_bist_low 
-set axi_data_0_high   i_iguana/i_cheshire_soc/gen_llc_i_llc/i_axi_llc_top_raw/i_llc_ways/gen_data_ways_0__i_data_way/i_data_sram/gen_2048x64xBx1_i_RM_IHPSG13_1P_256x64_c2_bm_bist_high 
-set axi_data_0_low    i_iguana/i_cheshire_soc/gen_llc_i_llc/i_axi_llc_top_raw/i_llc_ways/gen_data_ways_0__i_data_way/i_data_sram/gen_2048x64xBx1_i_RM_IHPSG13_1P_256x64_c2_bm_bist_low
-
 
 ##########################################################################
 # RAM size
@@ -148,8 +124,13 @@ set haloBlock     10.0
 
 # offset to not start just ad the edge of the floor (maybe need to consider the pad ring)
 set die_area               [ord::get_die_area]
-set floorW                 [lindex $die_area 2]
-set floorH                 [lindex $die_area 3]
+if {[info exists OPEN_CELLS]} {
+  set floorW                 [lindex $die_area 3]
+  set floorH                 [lindex $die_area 2]
+} else {
+  set floorW                 [lindex $die_area 2]
+  set floorH                 [lindex $die_area 3]
+}
 set pad_length             310.0
 set floorMargin            120.0
 set macroMargin            50.0
@@ -264,13 +245,13 @@ addHaloToBlock $haloBlock $axi_hitmiss_tag_0
 # Place data sram 
 # #########################################################################
 
-set channel 140.0
+set channel 250.0
 set channel_hori  10.0
 set channel_vert  0.0
 
 # cva6_wt_edwardache_data_3_high
 set X [ expr $sram_initX_L ]
-set Y [ expr $sram_initY256_T - 900 ]
+set Y [ expr $sram_initY256_T - 1100 ]
 placeInstance  $cva6_wt_edwardache_data_3_high $X $Y R90
 addHaloToBlock $haloBlock $cva6_wt_edwardache_data_3_high
 
@@ -328,7 +309,7 @@ addHaloToBlock $haloBlock $cva6_wt_edwardache_data_0_low
 # Place cva6_wt_edwardache_tag
 ##########################################################################
 
-set channel 140.0
+set channel 250.0
 set channel_hori  10.0
 set channel_vert  0.0
 
@@ -451,3 +432,14 @@ addHaloToBlock $haloBlock $cva6_icache_data_0_low
 
 # Cut rows under macros such that pdngen knows about the macros
 cut_rows
+
+##########################################################################
+# Place delay line
+##########################################################################
+
+if {[info exists OPEN_CELLS]} {
+  placeInstance $delay_line_rx 4218.48 1601.28 R0
+  placeInstance $delay_line_tx 4339.44 1656.96 R0
+} else {
+  #placeInstance $delay_line 3130.68 1504.44 R0
+}

@@ -66,14 +66,10 @@ module iguana import iguana_pkg::*; import cheshire_pkg::*;#(
     // CLINT
     input  logic                rtc_i,
 
-    // hyperbus clocks
-    input  logic                hyp_clk_phy_i,
-    input  logic                hyp_rst_phy_ni,
-
     // GPIO interface
-    input  logic [ 7:0]         gpio_i,
-    output logic [ 7:0]         gpio_o,
-    output logic [ 7:0]         gpio_en_no,
+    input  logic [11:0]         gpio_i,
+    output logic [11:0]         gpio_o,
+    output logic [11:0]         gpio_en_no,
 
     // Hyperbus
     output logic [HypNumPhys-1:0][HypNumChips-1:0] hyper_cs_no,
@@ -110,9 +106,20 @@ module iguana import iguana_pkg::*; import cheshire_pkg::*;#(
   logic [31:0] gpio_all_o;
   logic [31:0] gpio_all_en_no;
 
-  assign gpio_all_i = {24'b0, gpio_i};
-  assign gpio_o = gpio_all_o[7:0];
-  assign gpio_en_no = gpio_all_en_no[7:0];
+  assign gpio_all_i = {20'b0, gpio_i};
+  assign gpio_o     = gpio_all_o[11:0];
+  assign gpio_en_no = gpio_all_en_no[11:0];
+
+  // Shared reset synchronizer
+  logic synced_rst_n;
+
+  rstgen i_rstgen_sys (
+      .clk_i,
+      .rst_ni,
+      .test_mode_i,
+      .rst_no  ( synced_rst_n ),
+      .init_no ( )
+  );
 
   // the SoC
   cheshire_soc #(
@@ -124,7 +131,7 @@ module iguana import iguana_pkg::*; import cheshire_pkg::*;#(
     .reg_ext_rsp_t     ( reg_rsp_t   )
   ) i_cheshire_soc (
     .clk_i,
-    .rst_ni,
+    .rst_ni ( synced_rst_n ),
     .test_mode_i,
     .boot_mode_i,
     .rtc_i,
@@ -207,7 +214,7 @@ module iguana import iguana_pkg::*; import cheshire_pkg::*;#(
   hyperbus #(
     .NumChips         ( HypNumChips                                    ),
     .NumPhys          ( HypNumPhys                                     ),
-    .IsClockODelayed  ( 0                                              ),
+    .IsClockODelayed  ( 1                                              ),
     .AxiAddrWidth     ( IguanaCfg.AddrWidth                            ),
     .AxiDataWidth     ( IguanaCfg.AxiDataWidth                         ),
     .AxiIdWidth       ( $bits(axi_slv_id_t) + IguanaCfg.LlcNotBypass   ),
@@ -224,13 +231,15 @@ module iguana import iguana_pkg::*; import cheshire_pkg::*;#(
     .reg_req_t        ( reg_req_t                                      ),
     .reg_rsp_t        ( reg_rsp_t                                      ),
     .axi_rule_t       ( hyper_addr_rule_t                              ),
-    .RstChipBase      ( RegOutHyperBusBase                             ),
+    .RstChipBase      ( 32'(RegOutHyperBusBase)                        ),
     .RstChipSpace     ( 32'(RegOutHyperBusSize)                        )
   ) i_hyperbus (
-    .clk_phy_i       ( hyp_clk_phy_i    ),
-    .rst_phy_ni      ( hyp_rst_phy_ni   ),
+    // WARNING: Keeping system and PHY synchronous works only
+    // with careful design and constraints; DO NOT copy-paste!
+    .clk_phy_i       ( clk_i            ),
+    .rst_phy_ni      ( synced_rst_n     ),
     .clk_sys_i       ( clk_i            ),
-    .rst_sys_ni      ( rst_ni           ),
+    .rst_sys_ni      ( synced_rst_n     ),
     .test_mode_i     ( test_mode_i      ),
     .axi_req_i       ( dram_req         ),
     .axi_rsp_o       ( dram_resp        ),

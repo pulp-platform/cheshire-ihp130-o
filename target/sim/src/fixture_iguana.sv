@@ -15,7 +15,8 @@ module fixture_iguana;
   logic       test_mode;
   logic [1:0] boot_mode;
   logic       rtc;
-  // External AXI LLC (DRAM) port here for implicit connection not needed!!
+  // External AXI LLC (DRAM) port here for implicit connection not needed!! But will be implicitly connected with vip
+  // So leave them here :-)
   axi_llc_req_t axi_llc_mst_req;
   axi_llc_rsp_t axi_llc_mst_rsp;
   // JTAG interface
@@ -84,7 +85,8 @@ module fixture_iguana;
     .slink_link_o_1_io  ( slink_o[0][1] ),
     .slink_link_o_2_io  ( slink_o[0][2] ),
     .slink_link_o_3_io  ( slink_o[0][3] ),
-    .hyperbus_cs_n_io   ( hyper_cs_no ),
+    .hyperbus_cs_0_n_io ( hyper_cs_no[0][0] ),
+    .hyperbus_cs_1_n_io ( hyper_cs_no[0][1] ),
     .hyperbus_ck_io     ( hyper_ck_o ),
     .hyperbus_ck_n_io   ( hyper_ck_no ),
     .hyperbus_rwds_io   ( hyper_rwds ),
@@ -96,8 +98,6 @@ module fixture_iguana;
     .hyperbus_dq_5_io   ( hyper_dq[0][5] ),
     .hyperbus_dq_6_io   ( hyper_dq[0][6] ),
     .hyperbus_dq_7_io   ( hyper_dq[0][7] ),
-    .hyperbus_clk_phy_io( clk ),
-    .hyperbus_rst_phy_n_io ( rst_n ),
     .hyperbus_reset_n_io ( hyper_reset_no )
   );
 
@@ -106,30 +106,37 @@ module fixture_iguana;
   // HyperBus  //
   //////////////
 
-  // use generate for multi chip or phy (look into hyperbus_fixture)
-  s27ks0641 # (
-    .TimingModel   ( "S27KS0641DPBHI020"    )
-  ) i_hyper ( // needs to be named i_hyper as we patch that it sdf annotation works
-    .RWDS ( hyper_rwds ),
-    .CSNeg ( hyper_cs_no ),
-    .CK ( hyper_ck_o ),
-    .CKNeg ( hyper_ck_no ),
-    .RESETNeg ( hyper_reset_no ),
-    .DQ0 ( hyper_dq[0][0] ),
-    .DQ1 ( hyper_dq[0][1] ),
-    .DQ2 ( hyper_dq[0][2] ),
-    .DQ3 ( hyper_dq[0][3] ),
-    .DQ4 ( hyper_dq[0][4] ),
-    .DQ5 ( hyper_dq[0][5] ),
-    .DQ6 ( hyper_dq[0][6] ),
-    .DQ7 ( hyper_dq[0][7] )
-  );
+  generate
+    for (genvar i=0; i<HyperBusNumChips; i++) begin : chips
+      s27ks0641 # (
+        .TimingModel   ( "S27KS0641DPBHI020"    )
+      ) i_hyper ( // needs to be named i_hyper as we patch that it sdf annotation works
+        .RWDS ( hyper_rwds ),
+        .CSNeg ( hyper_cs_no[0][i] ),
+        .CK ( hyper_ck_o ),
+        .CKNeg ( hyper_ck_no ),
+        .RESETNeg ( hyper_reset_no ),
+        .DQ0 ( hyper_dq[0][0] ),
+        .DQ1 ( hyper_dq[0][1] ),
+        .DQ2 ( hyper_dq[0][2] ),
+        .DQ3 ( hyper_dq[0][3] ),
+        .DQ4 ( hyper_dq[0][4] ),
+        .DQ5 ( hyper_dq[0][5] ),
+        .DQ6 ( hyper_dq[0][6] ),
+        .DQ7 ( hyper_dq[0][7] )
+      );
+    end // block: chips
+  endgenerate
 
+  generate
+    for (genvar l=0; l<HyperBusNumChips; l++) begin : sdf_annotation
+      initial begin
+        automatic string sdf_file_path = "../models/s27ks0641.sdf";
+        $sdf_annotate(sdf_file_path, chips[l].i_hyper);
+      end
+    end
+  endgenerate
 
-  initial begin
-      automatic string sdf_file_path = "../models/s27ks0641.sdf";
-      $sdf_annotate(sdf_file_path, i_hyper);
-  end
 
   ///////////
   //  VIP  //
@@ -138,7 +145,10 @@ module fixture_iguana;
   vip_cheshire_soc #(
     .DutCfg            ( IguanaCfg ),
     .axi_ext_llc_req_t ( axi_llc_req_t ),
-    .axi_ext_llc_rsp_t ( axi_llc_rsp_t )
+    .axi_ext_llc_rsp_t ( axi_llc_rsp_t ),
+    .ClkPeriodSys (10ns), // sdf file of hyperbus specifies 6ns period
+    .ClkPeriodJtag (40ns),
+    .RstCycles (20)
   ) vip (.*);
 
 endmodule
