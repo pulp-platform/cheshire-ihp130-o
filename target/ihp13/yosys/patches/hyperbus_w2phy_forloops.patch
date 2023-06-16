@@ -1,0 +1,27 @@
+--- iguana_chip.pickle.sv.orig	2023-06-17 16:47:29.069807093 +0200
++++ iguana_chip.pickle.sv	2023-06-17 17:13:06.853870388 +0200
+@@ -173971,16 +173971,20 @@
+             data_buffer_d.strb = data_i.strb;
+             data_buffer_d.last = data_i.last;
+             if(first_tx_q) begin
+-               for (int i=0; i<byte_idx_q; i++)
+-                 data_buffer_d.strb[i]='0;
++              for (int i=0; i < AddrWidth; i++) begin
++                if(i < byte_idx_q)
++                  data_buffer_d.strb[i]='0;
++              end
+             end
+          end else begin
+             data_buffer_d.strb[byte_idx_q +: (2*NumPhys)] = data_i.strb[byte_idx_q +: (2*NumPhys)];
+             data_buffer_d.data[byte_idx_q*8 +: (8*NumPhys)] = data_i.data[byte_idx_q*8 +: (8*NumPhys)];
+             data_buffer_d.last = data_i.last;
+             if(first_tx_q) begin
+-               for (int j=0; j<byte_idx_q; j++)
+-                 data_buffer_d.strb[j]='0;
++               for (int j=0; j< AddrWidth; j++) begin
++                  if(j < byte_idx_q)
++                    data_buffer_d.strb[j]='0;
++               end
+             end
+          end
+       end 

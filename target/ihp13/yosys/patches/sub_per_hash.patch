@@ -1,0 +1,137 @@
+--- iguana_chip.svase.sv	2023-06-15 13:47:31.022671842 +0200
++++ iguana_chip.svase_fix.sv	2023-06-15 14:01:31.208114920 +0200
+@@ -21762,37 +21762,42 @@
+ module sub_per_hash__13202488268366534217 #(
+   parameter int unsigned InpWidth   =32'd12,
+   parameter int unsigned HashWidth  =32'd6,
+   parameter int unsigned NoRounds   =32'd1,
+   parameter int unsigned PermuteKey =32'd299034753,
+   parameter int unsigned XorKey     =32'd4094834
+ ) (
+   // is purely combinational
+   input  logic [InpWidth-1:0]     data_i,
+   output logic [HashWidth-1:0]    hash_o,
+   output logic [2**HashWidth-1:0] hash_onehot_o
+ );
+   // typedefs and respective localparams
+   typedef int unsigned perm_lists_t [0:0][0:11];
+   perm_lists_t Permutations;
+-  assign Permutations = get_permutations(PermuteKey);
++  assign Permutations = '{{32'd1,32'd2,32'd10,32'd4,32'd0,32'd8,32'd7,32'd5,32'd9,32'd11,32'd6,32'd3}};
+   // encoding for inner most array:
+   // position 0 indicates the number of inputs, 2 or 3
+   // the other positions 1 - 3 indicate the inputs
+   typedef int unsigned xor_stages_t [0:0][0:11][0:2];
+   xor_stages_t XorStages;
+-  assign XorStages = get_xor_stages(XorKey);
++  assign XorStages = '{'{'{32'd11, 32'd2, 32'd1},  '{32'd11, 32'd2, 32'd9}, 
++  						 '{32'd11, 32'd2, 32'd1},  '{32'd7, 32'd6, 32'd9}, 
++						 '{32'd11, 32'd10, 32'd9}, '{32'd11, 32'd2, 32'd1}, 
++						 '{32'd11, 32'd10, 32'd1}, '{32'd3, 32'd2, 32'd5}, 
++						 '{32'd7, 32'd10, 32'd5},  '{32'd7, 32'd6, 32'd1}, 
++						 '{32'd11, 32'd6, 32'd1},  '{32'd7, 32'd6, 32'd9}}};
+   // stage signals
+   logic [NoRounds-1:0][InpWidth-1:0] permuted, xored;
+ if (1) begin :  gen_round
+ if (1) begin : __0
+ localparam  r =0;
+ if (1) begin :  gen_sub_per
+ if (1) begin : __0
+ localparam  i =0;
+ if (1) begin : gen_input
+         assign permuted[r][i] = data_i[Permutations[r][i]];
+       end
+       // assign the xor substitution
+       assign xored[r][i] = permuted[r][XorStages[r][i][0]] ^
+                            permuted[r][XorStages[r][i][1]] ^
+                            permuted[r][XorStages[r][i][2]];
+@@ -22035,37 +22040,42 @@
+ module sub_per_hash__1898454097102328077 #(
+   parameter int unsigned InpWidth   =32'd12,
+   parameter int unsigned HashWidth  =32'd6,
+   parameter int unsigned NoRounds   =32'd1,
+   parameter int unsigned PermuteKey =32'd19921030,
+   parameter int unsigned XorKey     =32'd995713
+ ) (
+   // is purely combinational
+   input  logic [InpWidth-1:0]     data_i,
+   output logic [HashWidth-1:0]    hash_o,
+   output logic [2**HashWidth-1:0] hash_onehot_o
+ );
+   // typedefs and respective localparams
+   typedef int unsigned perm_lists_t [0:0][0:11];
+   perm_lists_t Permutations;
+-  assign Permutations = get_permutations(PermuteKey);
++  assign Permutations = '{{32'd7,32'd5,32'd3,32'd6,32'd9,32'd8,32'd4,32'd1,32'd11,32'd0,32'd2,32'd10}};
+   // encoding for inner most array:
+   // position 0 indicates the number of inputs, 2 or 3
+   // the other positions 1 - 3 indicate the inputs
+   typedef int unsigned xor_stages_t [0:0][0:11][0:2];
+   xor_stages_t XorStages;
+-  assign XorStages = get_xor_stages(XorKey);
++  assign XorStages = '{'{'{32'd10, 32'd1, 32'd8}, '{32'd6, 32'd5, 32'd8}, 
++  						 '{32'd10, 32'd9, 32'd4}, '{32'd6, 32'd1, 32'd4}, 
++						 '{32'd2, 32'd9, 32'd4},  '{32'd2, 32'd9, 32'd8}, 
++						 '{32'd10, 32'd5, 32'd8}, '{32'd6, 32'd5, 32'd8}, 
++						 '{32'd10, 32'd9, 32'd8}, '{32'd10, 32'd5, 32'd0}, 
++						 '{32'd6, 32'd5, 32'd0},  '{32'd2, 32'd9, 32'd8}}};
+   // stage signals
+   logic [NoRounds-1:0][InpWidth-1:0] permuted, xored;
+ if (1) begin :  gen_round
+ if (1) begin : __0
+ localparam  r =0;
+ if (1) begin :  gen_sub_per
+ if (1) begin : __0
+ localparam  i =0;
+ if (1) begin : gen_input
+         assign permuted[r][i] = data_i[Permutations[r][i]];
+       end
+       // assign the xor substitution
+       assign xored[r][i] = permuted[r][XorStages[r][i][0]] ^
+                            permuted[r][XorStages[r][i][1]] ^
+                            permuted[r][XorStages[r][i][2]];
+@@ -22308,37 +22318,42 @@
+ module sub_per_hash__2413030449931794156 #(
+   parameter int unsigned InpWidth   =32'd12,
+   parameter int unsigned HashWidth  =32'd6,
+   parameter int unsigned NoRounds   =32'd1,
+   parameter int unsigned PermuteKey =32'd294388,
+   parameter int unsigned XorKey     =32'd65146511
+ ) (
+   // is purely combinational
+   input  logic [InpWidth-1:0]     data_i,
+   output logic [HashWidth-1:0]    hash_o,
+   output logic [2**HashWidth-1:0] hash_onehot_o
+ );
+   // typedefs and respective localparams
+   typedef int unsigned perm_lists_t [0:0][0:11];
+   perm_lists_t Permutations;
+-  assign Permutations = get_permutations(PermuteKey);
++  assign Permutations = '{{32'd7,32'd3,32'd8,32'd5,32'd1,32'd2,32'd10,32'd6,32'd0,32'd11,32'd9,32'd4}};
+   // encoding for inner most array:
+   // position 0 indicates the number of inputs, 2 or 3
+   // the other positions 1 - 3 indicate the inputs
+   typedef int unsigned xor_stages_t [0:0][0:11][0:2];
+   xor_stages_t XorStages;
+-  assign XorStages = get_xor_stages(XorKey);
++  assign XorStages = '{'{'{32'd8, 32'd3, 32'd2},   '{32'd0, 32'd11, 32'd2}, 
++  						 '{32'd4, 32'd3, 32'd10},  '{32'd8, 32'd11, 32'd6}, 
++						 '{32'd0, 32'd11, 32'd2},  '{32'd0, 32'd3, 32'd10}, 
++						 '{32'd4, 32'd11, 32'd2},  '{32'd0, 32'd3, 32'd10}, 
++						 '{32'd8, 32'd7, 32'd6},   '{32'd0, 32'd11, 32'd10}, 
++						 '{32'd4, 32'd11, 32'd10}, '{32'd8, 32'd7, 32'd2}}};
+   // stage signals
+   logic [NoRounds-1:0][InpWidth-1:0] permuted, xored;
+ if (1) begin :  gen_round
+ if (1) begin : __0
+ localparam  r =0;
+ if (1) begin :  gen_sub_per
+ if (1) begin : __0
+ localparam  i =0;
+ if (1) begin : gen_input
+         assign permuted[r][i] = data_i[Permutations[r][i]];
+       end
+       // assign the xor substitution
+       assign xored[r][i] = permuted[r][XorStages[r][i][0]] ^
+                            permuted[r][XorStages[r][i][1]] ^
+                            permuted[r][XorStages[r][i][2]];
