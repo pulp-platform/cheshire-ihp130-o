@@ -1,11 +1,18 @@
---- build/iguana.pickle.sv	2023-04-27 03:07:24.424464425 +0200
-+++ build/iguana.pickle.sv2	2023-04-27 03:26:15.800326268 +0200
-@@ -135341,7 +135341,13 @@
+--- iguana_chip.pickle.sv.raw	2023-06-23 09:31:10.809704289 +0200
++++ iguana_chip.pickle.sv.fix	2023-06-23 09:34:44.110287714 +0200
+@@ -154010,7 +154010,20 @@
    ////////////////
    //   DDR IN   //
    ////////////////
 -  always_ff @(negedge ddr_rcv_clk_i, negedge rst_ni) ddr_q <= !rst_ni ? '0 : ddr_i;
-+  always_ff @(posedge ~ddr_rcv_clk_i, negedge rst_ni) begin
++  logic ddr_rcv_clk_neg;
++  tc_clk_inverter i_ddr_rcv_clk_inv (
++    .clk_i(ddr_rcv_clk_i),
++    .clk_o(ddr_rcv_clk_neg)
++  );
++
++  // always_ff @(negedge ddr_rcv_clk_i, negedge rst_ni) ddr_q <= !rst_ni ? '0 : ddr_i;
++  always_ff @(posedge ddr_rcv_clk_neg, negedge rst_ni) begin
 +    if (!rst_ni) begin
 +      ddr_q <= '0;
 +    end else begin

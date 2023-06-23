@@ -6,7 +6,7 @@
              if(first_tx_q) begin
 -               for (int i=0; i<byte_idx_q; i++)
 -                 data_buffer_d.strb[i]='0;
-+              for (int i=0; i < AddrWidth; i++) begin
++              for (int i=0; i < (2**AddrWidth)-1; i++) begin
 +                if(i < byte_idx_q)
 +                  data_buffer_d.strb[i]='0;
 +              end
@@ -18,7 +18,7 @@
              if(first_tx_q) begin
 -               for (int j=0; j<byte_idx_q; j++)
 -                 data_buffer_d.strb[j]='0;
-+               for (int j=0; j< AddrWidth; j++) begin
++               for (int j=0; j < (2**AddrWidth)-1; j++) begin
 +                  if(j < byte_idx_q)
 +                    data_buffer_d.strb[j]='0;
 +               end
