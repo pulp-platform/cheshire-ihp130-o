@@ -1,0 +1,22 @@
+--- iguana_chip.svase.sv	2023-06-19 20:08:28.000000000 +0200
++++ iguana_chip.svasefix.sv	2023-06-20 11:06:47.744395451 +0200
+@@ -135805,15 +135805,15 @@
+     /// - `AXI_LITE`: AXI Lite
+     /// - `OBI`: OBI
+     typedef enum logic[1:0] {
+-        AXI,
+-        AXI_LITE,
+-        OBI
++        protocol_e_AXI,
++        protocol_e_AXI_LITE,
++        protocol_e_OBI
+     } protocol_e;
+     /// Determines the maximum number of beats allowed within a burst depending on the protocol
+     /// - `protocol`: The protocol that is used
+     function automatic int unsigned determineMaxBeatsPerBurst(protocol_e protocol);
+         case (protocol)
+-        AXI:        return 256;
++        protocol_e_AXI: return 256;
+         // AXI-Lite and OBI do not have bursts
+         default:    return 1;
+         enedwardase

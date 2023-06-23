@@ -1,3 +1,11 @@
+# Copyright (c) 2022 ETH Zurich and University of Bologna.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Author:  Philippe Sauter <phsauter@student.ethz.ch>
+# Description:
+# Third step of preprocessing, convert SystemVerilog to Verilog
+
 # Directories
 BUILD		?= build
 
@@ -16,14 +24,16 @@ SV2V_FILE	?= $(BUILD)/$(TOP_DESIGN).sv2v.v
 
 # Warning: Number literal 'h100000000 exceeds 32 bits; truncating to 'h0.
 # we use --oversized-numbers to avoid this warning --> Probably a TODO in svase
-run-sv2v: $(SV2V)  $(SV2V_FILE)
 $(SV2V_FILE): $(SVASE_FILE)
-	$(SV2V) --oversized-numbers --verbose --write $@ $<
-	sed "s|i < advance;|i < 0;|g" $@ > $@.tmp
-	sed "s|rst_addr_q <= boot_addr_i;|rst_addr_q <= 64'h0000000002000000;|g" $@.tmp > $@
-	rm $@.tmp
-	patch -u $@ -i patches/wrong_assignment.patch
-	patch -u $@ -i patches/i_core_cva6_ext_clic_irq_id.patch
+	@$(MAKE) run-sv2v
+
+run-sv2v: $(SVASE_FILE) $(SV2V)
+	$(SV2V) --oversized-numbers --verbose --write $(SV2V_FILE) $<
+	sed "s|i < advance;|i < 0;|g" $(SV2V_FILE) > $(SV2V_FILE).tmp
+	sed "s|rst_addr_q <= boot_addr_i;|rst_addr_q <= 64'h0000000002000000;|g" $(SV2V_FILE).tmp > $(SV2V_FILE)
+	rm $(SV2V_FILE).tmp
+	patch -u $(SV2V_FILE) -i patches/wrong_assignment.patch
+	patch -u $(SV2V_FILE) -i patches/i_core_cva6_ext_clic_irq_id.patch
 
 sv2v:
 	@if ! which sv2v > /dev/null 2>&1; then \
