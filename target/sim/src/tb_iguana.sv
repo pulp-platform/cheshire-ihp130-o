@@ -3,9 +3,11 @@
 // SPDX-License-Identifier: SHL-0.51
 //
 // Jannis Schönleber <janniss@student.ethz.ch>
-// heavily influenced by cheshire :-)
 
 module tb_iguana;
+
+  parameter time          HypPowerupTime = 600us;
+  parameter int unsigned  HypPowerupItvs = 5;
 
   fixture_iguana fix();
 
@@ -30,6 +32,14 @@ module tb_iguana;
     // Wait for reset
     fix.vip.wait_for_reset();
 
+    // Wait for Hyperbus to power up
+    $timeformat(-6, 0, "", 5);
+    $display("[TB] Waiting for HyperRAM powerup (%0t us)", HypPowerupTime);
+    for (int i = 1; i <= HypPowerupItvs; ++i) begin
+      automatic time delta = HypPowerupTime / HypPowerupItvs;
+      #(delta) $display("[TB] - %0t/%0t us (%0d%%)", i*delta, HypPowerupTime, 100*i/HypPowerupItvs);
+    end
+
     // Preload in idle mode or wait for completion in autonomous boot
     if (boot_mode == 0) begin
       // Idle boot: preload with the specified mode
@@ -39,7 +49,6 @@ module tb_iguana;
           fix.vip.jtag_elf_run(preload_elf);
           fix.vip.jtag_wait_for_eoc(exit_code);
         end 1: begin  // Serial Link
-          #600350ns; // this wating time is copied from hyperbus tb
           fix.vip.slink_elf_run(preload_elf);
           fix.vip.slink_wait_for_eoc(exit_code);
         end 2: begin  // UART
@@ -47,7 +56,7 @@ module tb_iguana;
         end default: begin
           $fatal(1, "Unsupported preload mode %d (reserved)!", boot_mode);
         end
-      enedwardase
+      endcase
     end else if (boot_mode == 1) begin
       $fatal(1, "Unsupported boot mode %d (SD Card)!", boot_mode);
     end else begin
@@ -57,21 +66,6 @@ module tb_iguana;
     end
 
     $finish;
-  end
-
-  initial begin
-      #100ms;
-      $display("Time: %tms\n", $time/1e9);
-      $display("100ms all sims should be finished\n");
-      $fatal(1, "Simulation timeout!");
-  end
-
-  initial begin
-    while (1) begin
-      #1ms;
-      // display progress
-      $display("Time: %tms\n", $time/1e9);
-    end
   end
 
 endmodule

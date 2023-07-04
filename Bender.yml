@@ -1,0 +1,53 @@
+# Copyright 2023 ETH Zurich and University of Bologna.
+# Solderpad Hardware License, Version 0.51, see LICENSE for details.
+# SPDX-License-Identifier: SHL-0.51
+
+package:
+  name: iguana
+  authors:
+    - "Thomas Benz <tbenz@iis.ee.ethz.ch>"
+    - "Jannis Schönleber <janniss@iis.ee.ethz.ch>"
+    - "Paul Scheffler <janniss@iis.ee.ethz.ch>"
+    - "Tobias Senti <tsenti@student.ethz.ch>"
+    - "Philippe Sauter <phsauter@student.ethz.ch>"
+
+dependencies:
+  axi:                { git: https://github.com/pulp-platform/axi,                version: 0.39.0-beta.10 }
+  cheshire:           { git: https://github.com/pulp-platform/cheshire,           rev:     ea7648c  } # TODO: master commit; request release
+  hyperbus:           { git: https://github.com/pulp-platform/hyperbus,           rev:     e11b1ae  } # TODO: master commit; request release
+  register_interface: { git: https://github.com/pulp-platform/register_interface, version: 0.4.1    }
+
+sources:
+
+  # - asic + rtl:                        RTL only (no tech wrappers or sim models)
+  # - asic + ihp13 + rtl:                RTL with IHP13 tech wrappers (for IHP13 synthesis)
+  # - asic + ihp13 + rtl + simulation:   RTL with IHP13 tech wrappers and sim models (for IHP13 sim)
+  # - asic + ihp13 + gate + simulation:  IHP13 PL netlist with IHP13 sim models (for PL sim)
+
+  - target: rtl
+    files:
+      - hw/iguana_pkg.sv
+      - hw/iguana_soc.sv
+      - hw/iguana_chip.sv
+
+  - target: any(test, simulation)
+    files:
+      - target/sim/src/fixture_iguana.sv
+      - target/sim/src/tb_iguana.sv
+
+  - target: all(rtl, ihp13)
+    files:
+      - target/ihp13/src/tc_sram.sv
+      - target/ihp13/src/tc_clk.sv
+      - target/ihp13/src/mc_pad.sv
+
+  - target: all(ihp13, simulation)
+    files:
+      #- target/ihp13/mc_delay/out/mc_delay.behav.v
+      - target/ihp13/pdk/ihp-sg13g2/libs.ref/sg13g2_stdcell/verilog/sg13g2_stdcell.v
+      - target/ihp13/future/sg13g2_sram.behav.sv
+      - target/ihp13/future/sg13g2_iocell.behav.sv
+
+  - target: all(gate, ihp13)
+    files:
+      - target/ihp13/openroad/out/iguana_chip.v

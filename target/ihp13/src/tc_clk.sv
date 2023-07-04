@@ -1,3 +1,10 @@
+// Copyright 2023 ETH Zurich and University of Bologna.
+// Solderpad Hardware License, Version 0.51, see LICENSE for details.
+// SPDX-License-Identifier: SHL-0.51
+//
+// Thomas Benz <tbenz@iis.ee.ethz.ch>
+// Tobias Senti <tsenti@student.ethz.ch>
+
 module tc_clk_inverter (
     input  logic clk_i,
     output logic clk_o
@@ -27,11 +34,6 @@ module tc_clk_mux2 (
 endmodule
 
 module tc_clk_gating #(
-    /// This parameter is a hint for tool/technology specific mappings of this
-    /// tech_cell. It indicates weather this particular clk gate instance is
-    /// required for functional correctness or just instantiated for power
-    /// savings. If IS_FUNCTIONAL == 0, technology specific mappings might
-    /// replace this cell with a feed through connection without any gating.
     parameter bit IS_FUNCTIONAL = 1'b1
   )(
     input  logic clk_i,

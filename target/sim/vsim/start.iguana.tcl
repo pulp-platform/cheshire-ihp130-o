@@ -12,7 +12,7 @@ set TESTBENCH tb_iguana
 # Set voptargs only if not already set to make overridable.
 # Default on fast simulation flags.
 if {![info exists VOPTARGS]} {
-    set VOPTARGS "-O5 +acc=p+tb_iguana. +noacc=p+iguana. +acc=r+stream_xbar"
+    set VOPTARGS "-O5 +acc=p+tb_iguana. +noacc=p+iguana_chip. +acc=r+stream_xbar"
 }
 
 set flags "-permissive -suppress 3009 -suppress 8386 -error 7"
