@@ -8,12 +8,6 @@ IG_ROOT ?= $(shell pwd)
 
 include iguana.mk
 
-# Inside the repo, forward (prefixed) all and nonfree targets
+# Inside the repo, forward all target
 all:
 	@$(MAKE) ig-all
-
-%-all:
-	@$(MAKE) ig-$*-all
-
-
-

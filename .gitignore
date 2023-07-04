@@ -1,12 +1,7 @@
 .bender
-.deps
-sw/
 
-.setup_done
-target/ihp13/common/nina/scripts/analyze.tcl
-
+# target/sim
 target/sim/models
-# VSIM generated files
 target/sim/vsim/compile.*.tcl
 target/sim/vsim/*.log
 target/sim/vsim/modelsim.ini
@@ -14,9 +9,10 @@ target/sim/vsim/transcript
 target/sim/vsim/vsim.wlf
 target/sim/vsim/work/
 
-sources.json
+# target/ihp13
+target/ihp13/pickle/out
 
-
+# Editor fun
 .dvt
 dvt_build.log
 .vscode
