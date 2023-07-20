@@ -1,0 +1,72 @@
+/* Copyright 2023 ETH Zurich and University of Bologna. */
+/* Solderpad Hardware License, Version 0.51, see LICENSE for details. */
+/* SPDX-License-Identifier: SHL-0.51 */
+
+/* Dummy LIB for the RM_IHPSG13_1P_256x64_c2_bm_bist memory */
+
+/* Information extracted from the SRAM data sheet available openly at: */
+/* https://github.com/IHP-GmbH/IHP-Open-PDK/tree/main/ihp-sg13g2/libs.ref/sg13g2_sram/doc */
+
+library(RM_IHPSG13_1P_256x64_c2_bm_bist_dummy) {
+	type (DATA_BUS_63) {
+		base_type : array;
+		data_type : bit;
+		bit_width : 64;
+		bit_from : 63;
+		bit_to : 0;
+		downto : true;
+	 }
+	type (ADDR_BUS_7) {
+		base_type : array;
+		data_type : bit;
+		bit_width : 8;
+		bit_from : 7;
+		bit_to : 0;
+		downto : true;
+	 }
+	cell(RM_IHPSG13_1P_256x64_c2_bm_bist) {
+			bus_naming_style : "%s[%d]" ;
+			area : 93180.53 ;
+	 	pin(A_DLY) {
+			direction : input ; }
+		bus(A_ADDR) {
+	 		bus_type : ADDR_BUS_7 ;
+	 		direction : input ; }
+		pin(A_WEN) {
+	 		direction : input ; }
+		pin(A_REN) {
+	 		direction : input ; }
+		pin(A_MEN) {
+	 		direction : input ; }
+		bus(A_BM) {
+	 		bus_type : DATA_BUS_63 ;
+	 		direction : input ; }
+	 	pin(A_CLK) {
+		 	direction : input ; }
+	 	bus(A_DIN) {
+		 	bus_type : DATA_BUS_63 ;
+		 	direction : input ; }
+	 	pin(A_BIST_EN) {
+		 	direction : input ; }
+		bus(A_BIST_ADDR) {
+	 		bus_type : ADDR_BUS_7;
+	 		direction : input ; }
+		pin(A_BIST_WEN) {
+	 		direction : input ; }
+		pin(A_BIST_REN) {
+	 		direction : input ; }
+		pin(A_BIST_MEN) {
+	 		direction : input ; }
+		bus(A_BIST_BM) {
+	 		bus_type : DATA_BUS_63;
+	 		direction : input ; }
+	 	pin(A_BIST_CLK) {
+		 	direction : input ; }
+	 	bus(A_BIST_DIN) {
+		 	bus_type : DATA_BUS_63;
+		 	direction : input ; }
+		bus(A_DOUT) {
+		 	bus_type : DATA_BUS_63;
+		 	direction : output ; }
+	}
+}
