@@ -1,0 +1,429 @@
+# Copyright 2023 ETH Zurich and University of Bologna.
+# Solderpad Hardware License, Version 0.51, see LICENSE for details.
+# SPDX-License-Identifier: SHL-0.51
+#
+# Dummy LEF for the sg13g2_pad library
+
+# Size information extracted from the die shot of Iguana:
+# https://wiki.f-si.org/images/7/75/Iguana_fsic23_v4.pdf
+
+VERSION 5.8 ;
+
+SITE  IOSite
+    CLASS PAD ;
+    SYMMETRY R90 ;
+    SIZE 1.00 BY 310.00 ;
+END  IOSite
+
+MACRO sg13g2_pad_corner
+  CLASS PAD ;
+  ORIGIN 0 0 ;
+  FOREIGN sg13g2_pad_corner 0 0 ;
+  SIZE 310 BY 310 ;
+  SYMMETRY X Y R90 ;
+  SITE IOSite ;
+  OBS
+    LAYER Metal1 ;
+      RECT 0 0 310 310 ;
+    LAYER Metal2 ;
+      RECT 0 0 310 310 ;
+    LAYER Metal3 ;
+      RECT 0 0 310 310 ;
+    LAYER Metal4 ;
+      RECT 0 0 310 310 ;
+    LAYER Metal5 ;
+      RECT 0 0 310 310 ;
+    LAYER TopMetal1 ;
+      RECT 0 0 310 310 ;
+    LAYER TopMetal2 ;
+      RECT 0 0 310 310 ;
+  END
+END sg13g2_pad_corner
+
+MACRO sg13g2_pad_fill_1
+  CLASS PAD SPACER ;
+  ORIGIN 0 0 ;
+  FOREIGN sg13g2_pad_fill_1 0 0 ;
+  SIZE 1 BY 310 ;
+  SYMMETRY X Y R90 ;
+  SITE IOSite ;
+  OBS
+    LAYER Metal1 ;
+      RECT 0 0 1 310 ;
+    LAYER Metal2 ;
+      RECT 0 0 1 310 ;
+    LAYER Metal3 ;
+      RECT 0 0 1 310 ;
+    LAYER Metal4 ;
+      RECT 0 0 1 310 ;
+    LAYER Metal5 ;
+      RECT 0 0 1 310 ;
+    LAYER TopMetal1 ;
+      RECT 0 0 1 310 ;
+    LAYER TopMetal2 ;
+      RECT 0 0 1 310 ;
+  END
+END sg13g2_pad_fill_1
+
+MACRO sg13g2_pad_fill_10
+  CLASS PAD SPACER ;
+  ORIGIN 0 0 ;
+  FOREIGN sg13g2_pad_fill_10 0 0 ;
+  SIZE 10 BY 310 ;
+  SYMMETRY X Y R90 ;
+  SITE IOSite ;
+  OBS
+    LAYER Metal1 ;
+      RECT 0 0 10 310 ;
+    LAYER Metal2 ;
+      RECT 0 0 10 310 ;
+    LAYER Metal3 ;
+      RECT 0 0 10 310 ;
+    LAYER Metal4 ;
+      RECT 0 0 10 310 ;
+    LAYER Metal5 ;
+      RECT 0 0 10 310 ;
+    LAYER TopMetal1 ;
+      RECT 0 0 10 310 ;
+    LAYER TopMetal2 ;
+      RECT 0 0 10 310 ;
+  END
+END sg13g2_pad_fill_10
+
+MACRO sg13g2_pad_fill_80
+  CLASS PAD SPACER ;
+  ORIGIN 0 0 ;
+  FOREIGN sg13g2_pad_fill_80 0 0 ;
+  SIZE 80 BY 310 ;
+  SYMMETRY X Y R90 ;
+  SITE IOSite ;
+  OBS
+    LAYER Metal1 ;
+      RECT 0 0 80 310 ;
+    LAYER Metal2 ;
+      RECT 0 0 80 310 ;
+    LAYER Metal3 ;
+      RECT 0 0 80 310 ;
+    LAYER Metal4 ;
+      RECT 0 0 80 310 ;
+    LAYER Metal5 ;
+      RECT 0 0 80 310 ;
+    LAYER TopMetal1 ;
+      RECT 0 0 80 310 ;
+    LAYER TopMetal2 ;
+      RECT 0 0 80 310 ;
+  END
+END sg13g2_pad_fill_80
+
+MACRO sg13g2_pad_gndco
+  CLASS PAD ;
+  ORIGIN 0 0 ;
+  FOREIGN sg13g2_pad_gndco 0 0 ;
+  SIZE 60 BY 310 ;
+  SYMMETRY X Y R90 ;
+  SITE IOSite ;
+  OBS
+    LAYER Metal1 ;
+      RECT 0 0 60 310 ;
+    LAYER Metal2 ;
+      RECT 0 0 60 310 ;
+    LAYER Metal3 ;
+      RECT 0 0 60 310 ;
+    LAYER Metal4 ;
+      RECT 0 0 60 310 ;
+    LAYER Metal5 ;
+      RECT 0 0 60 310 ;
+    LAYER TopMetal1 ;
+      RECT 0 0 60 310 ;
+    LAYER TopMetal2 ;
+      RECT 0 0 60 310 ;
+  END
+END sg13g2_pad_gndco
+
+MACRO sg13g2_pad_vddco
+  CLASS PAD ;
+  ORIGIN 0 0 ;
+  FOREIGN sg13g2_pad_vddco
+ 0 0 ;
+  SIZE 60 BY 310 ;
+  SYMMETRY X Y R90 ;
+  SITE IOSite ;
+  OBS
+    LAYER Metal1 ;
+      RECT 0 0 60 310 ;
+    LAYER Metal2 ;
+      RECT 0 0 60 310 ;
+    LAYER Metal3 ;
+      RECT 0 0 60 310 ;
+    LAYER Metal4 ;
+      RECT 0 0 60 310 ;
+    LAYER Metal5 ;
+      RECT 0 0 60 310 ;
+    LAYER TopMetal1 ;
+      RECT 0 0 60 310 ;
+    LAYER TopMetal2 ;
+      RECT 0 0 60 310 ;
+  END
+END sg13g2_pad_vddco
+
+MACRO sg13g2_pad_gndio
+  CLASS PAD ;
+  ORIGIN 0 0 ;
+  FOREIGN sg13g2_pad_gndio 0 0 ;
+  SIZE 60 BY 310 ;
+  SYMMETRY X Y R90 ;
+  SITE IOSite ;
+  OBS
+    LAYER Metal1 ;
+      RECT 0 0 60 310 ;
+    LAYER Metal2 ;
+      RECT 0 0 60 310 ;
+    LAYER Metal3 ;
+      RECT 0 0 60 310 ;
+    LAYER Metal4 ;
+      RECT 0 0 60 310 ;
+    LAYER Metal5 ;
+      RECT 0 0 60 310 ;
+    LAYER TopMetal1 ;
+      RECT 0 0 60 310 ;
+    LAYER TopMetal2 ;
+      RECT 0 0 60 310 ;
+  END
+END sg13g2_pad_gndio
+
+MACRO sg13g2_pad_vddio
+  CLASS PAD ;
+  ORIGIN 0 0 ;
+  FOREIGN sg13g2_pad_vddio 0 0 ;
+  SIZE 60 BY 310 ;
+  SYMMETRY X Y R90 ;
+  SITE IOSite ;
+  OBS
+    LAYER Metal1 ;
+      RECT 0 0 60 310 ;
+    LAYER Metal2 ;
+      RECT 0 0 60 310 ;
+    LAYER Metal3 ;
+      RECT 0 0 60 310 ;
+    LAYER Metal4 ;
+      RECT 0 0 60 310 ;
+    LAYER Metal5 ;
+      RECT 0 0 60 310 ;
+    LAYER TopMetal1 ;
+      RECT 0 0 60 310 ;
+    LAYER TopMetal2 ;
+      RECT 0 0 60 310 ;
+  END
+END sg13g2_pad_vddio
+
+MACRO sg13g2_pad_in
+  CLASS PAD ;
+  ORIGIN 0 0 ;
+  FOREIGN sg13g2_pad_in 0 0 ;
+  SIZE 60 BY 310 ;
+  SYMMETRY X Y R90 ;
+  SITE IOSite ;
+  PIN d_o
+    DIRECTION OUTPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER Metal3 ;
+        RECT 10 309 15 310 ;
+    END
+  END d_o
+  PIN pad_io
+    DIRECTION INOUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER TopMetal2 ;
+        RECT 2 2 58 73 ;
+    END
+  END pad_io
+  OBS
+    LAYER Metal1 ;
+      RECT 0 0 60 310 ;
+    LAYER Metal2 ;
+      RECT 0 0 60 310 ;
+    LAYER Metal3 ;
+      RECT 0 0 60 310 ;
+    LAYER Metal4 ;
+      RECT 0 0 60 310 ;
+    LAYER Metal5 ;
+      RECT 0 0 60 310 ;
+    LAYER TopMetal1 ;
+      RECT 0 0 60 310 ;
+    LAYER TopMetal2 ;
+      RECT 0 0 60 310 ;
+  END
+END sg13g2_pad_in
+
+MACRO sg13g2_pad_io
+  CLASS PAD ;
+  ORIGIN 0 0 ;
+  FOREIGN sg13g2_pad_in 0 0 ;
+  SIZE 60 BY 310 ;
+  SYMMETRY X Y R90 ;
+  SITE IOSite ;
+  PIN d_i
+    DIRECTION INPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER Metal3 ;
+        RECT 45 309 50 310 ;
+    END
+  END d_i
+  PIN oe_i
+    DIRECTION INPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER Metal3 ;
+        RECT 25 309 30 310 ;
+    END
+  END oe_i
+  PIN d_o
+    DIRECTION OUTPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER Metal3 ;
+        RECT 10 309 15 310 ;
+    END
+  END d_o
+  PIN pad_io
+    DIRECTION INOUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER TopMetal2 ;
+        RECT 2 2 58 73 ;
+    END
+  END pad_io
+  OBS
+    LAYER Metal1 ;
+      RECT 0 0 60 310 ;
+    LAYER Metal2 ;
+      RECT 0 0 60 310 ;
+    LAYER Metal3 ;
+      RECT 0 0 60 310 ;
+    LAYER Metal4 ;
+      RECT 0 0 60 310 ;
+    LAYER Metal5 ;
+      RECT 0 0 60 310 ;
+    LAYER TopMetal1 ;
+      RECT 0 0 60 310 ;
+    LAYER TopMetal2 ;
+      RECT 0 0 60 310 ;
+  END
+END sg13g2_pad_io
+
+MACRO sg13g2_pad_io_pu
+  CLASS PAD ;
+  ORIGIN 0 0 ;
+  FOREIGN sg13g2_pad_in_pu 0 0 ;
+  SIZE 60 BY 310 ;
+  SYMMETRY X Y R90 ;
+  SITE IOSite ;
+  PIN d_i
+    DIRECTION INPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER Metal3 ;
+        RECT 45 309 50 310 ;
+    END
+  END d_i
+  PIN oe_i
+    DIRECTION INPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER Metal3 ;
+        RECT 25 309 30 310 ;
+    END
+  END oe_i
+  PIN d_o
+    DIRECTION OUTPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER Metal3 ;
+        RECT 10 309 15 310 ;
+    END
+  END d_o
+  PIN pad_io
+    DIRECTION INOUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER TopMetal2 ;
+        RECT 2 2 58 73 ;
+    END
+  END pad_io
+  OBS
+    LAYER Metal1 ;
+      RECT 0 0 60 310 ;
+    LAYER Metal2 ;
+      RECT 0 0 60 310 ;
+    LAYER Metal3 ;
+      RECT 0 0 60 310 ;
+    LAYER Metal4 ;
+      RECT 0 0 60 310 ;
+    LAYER Metal5 ;
+      RECT 0 0 60 310 ;
+    LAYER TopMetal1 ;
+      RECT 0 0 60 310 ;
+    LAYER TopMetal2 ;
+      RECT 0 0 60 310 ;
+  END
+END sg13g2_pad_io_pu
+
+MACRO sg13g2_pad_io_pd
+  CLASS PAD ;
+  ORIGIN 0 0 ;
+  FOREIGN sg13g2_pad_in_pd 0 0 ;
+  SIZE 60 BY 310 ;
+  SYMMETRY X Y R90 ;
+  SITE IOSite ;
+  PIN d_i
+    DIRECTION INPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER Metal3 ;
+        RECT 45 309 50 310 ;
+    END
+  END d_i
+  PIN oe_i
+    DIRECTION INPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER Metal3 ;
+        RECT 25 309 30 310 ;
+    END
+  END oe_i
+  PIN d_o
+    DIRECTION OUTPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER Metal3 ;
+        RECT 10 309 15 310 ;
+    END
+  END d_o
+  PIN pad_io
+    DIRECTION INOUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER TopMetal2 ;
+        RECT 2 2 58 73 ;
+    END
+  END pad_io
+  OBS
+    LAYER Metal1 ;
+      RECT 0 0 60 310 ;
+    LAYER Metal2 ;
+      RECT 0 0 60 310 ;
+    LAYER Metal3 ;
+      RECT 0 0 60 310 ;
+    LAYER Metal4 ;
+      RECT 0 0 60 310 ;
+    LAYER Metal5 ;
+      RECT 0 0 60 310 ;
+    LAYER TopMetal1 ;
+      RECT 0 0 60 310 ;
+    LAYER TopMetal2 ;
+      RECT 0 0 60 310 ;
+  END
+END sg13g2_pad_io_pd
