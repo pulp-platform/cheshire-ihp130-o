@@ -45,9 +45,9 @@ sources:
   - target: all(ihp13, simulation)
     files:
       - target/ihp13/macro_cells/sg13g2_delay/delay_line_D4_O1_6P000.behav.sv
-      - target/ihp13/pdk/ihp-sg13g2/libs.ref/sg13g2_stdcell/verilog/sg13g2_stdcell.v
-      - target/ihp13/future/sram/sg13g2_sram.behav.sv
-      - target/ihp13/future/io_cells/sg13g2_iocell.behav.sv
+      - target/ihp13/pdk/ihp-sg13g2/ihp-sg13g2/libs.ref/sg13g2_stdcell/verilog/sg13g2_stdcell.v
+      - target/ihp13/pdk/future/sg13g2_sram/RM_IHPSG13_1P_bm_bist.behav.sv
+      - target/ihp13/pdk/future/sg13g2_pad/sg13g2_pad.behav.sv
 
   - target: all(gate, ihp13)
     files:
