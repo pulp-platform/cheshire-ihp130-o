@@ -13,7 +13,7 @@ package:
 
 dependencies:
   axi:                { git: https://github.com/pulp-platform/axi,                version: 0.39.0-beta.10 }
-  cheshire:           { git: https://github.com/pulp-platform/cheshire,           rev:     ea7648c  } # TODO: master commit; request release
+  cheshire:           { git: https://github.com/pulp-platform/cheshire,           rev:     8e09eed  } # TODO: master commit + axi_lite "latch fix"; request release
   hyperbus:           { git: https://github.com/pulp-platform/hyperbus,           rev:     e11b1ae  } # TODO: master commit; request release
   register_interface: { git: https://github.com/pulp-platform/register_interface, version: 0.4.1    }
 

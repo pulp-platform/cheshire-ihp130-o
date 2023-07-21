@@ -13,11 +13,11 @@ set top_design  $::env(TOP_DESIGN)
 set tech_cells  $::env(TECH_CELLS)
 set tech_macros $::env(TECH_MACROS)
 set build_dir   $::env(BUILD)
-set work_dir	$::env(WORK)
+set work_dir	  $::env(WORK)
 set report_dir	$::env(REPORTS)
-set hier_dept   $::env(HIER_DEPTH)
-set tiehi		$::env(TIE_HIGH)
-set tielo		$::env(TIE_LOW)
+set hier_depth  $::env(HIER_DEPTH)
+set tiehi		    $::env(TIE_HIGH)
+set tielo		    $::env(TIE_LOW)
 
 set lib_list "-liberty ${tech_cells} "
 foreach file $tech_macros {
@@ -57,7 +57,7 @@ yosys techmap
 yosys opt -purge
 
 yosys dfflibmap -liberty "${tech_cells}"
-yosys abc -liberty "${tech_cells}" -constr abc.constr -D 5000
+yosys abc -liberty "${tech_cells}" -constr $work_dir/../src/abc.constr -D 5000
 
 # clean partial netlist
 yosys setundef -zero

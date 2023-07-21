@@ -5,10 +5,10 @@
 # Author:  Philippe Sauter <phsauter@student.ethz.ch>
 
 TECH_CELLS 	?= $(TECH_ROOT)/sg13g2_stdcell/lib/sg13g2_stdcell_typ_1p20V_25C.lib
-TECH_MACROS	?= $(addprefix $(IG_ROOT)/target/ihp13/future/sram/,RM_IHPSG13_1P_64x64_c2_bm_bist_dummy.lib \
+TECH_MACROS	?= $(addprefix $(IG_ROOT)/target/ihp13/pdk/future/sg13g2_sram/,RM_IHPSG13_1P_64x64_c2_bm_bist_dummy.lib \
 										RM_IHPSG13_1P_256x64_c2_bm_bist_dummy.lib \
 										RM_IHPSG13_1P_1024x64_c2_bm_bist_dummy.lib ) \
-				$(IG_ROOT)/target/ihp13/future/io_cells/sg13g2_pad_typ_1p2V_3p3V_25C.lib \
+				$(IG_ROOT)/target/ihp13/pdk/future/sg13g2_pad/sg13g2_pad_typ_1p2V_3p3V_25C.lib \
 				$(IG_ROOT)/target/ihp13/macro_cells/mc_sg13g2_delay/delay_line_D4_O1_6P000.lib
 
 TECH_CELL_TIEHI_CELL	:= sg13g2_tiehi

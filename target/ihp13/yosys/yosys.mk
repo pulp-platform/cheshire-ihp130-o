@@ -12,7 +12,7 @@
 # Directories
 # Todo: create a common 'project.mk' to set project config variables (or use iguana.mk for that?)
 YOSYS_DIR		?= $(IG_ROOT)/target/ihp13/yosys
-TECH_ROOT		?= $(IG_ROOT)/target/ihp13/pdk/ihp-sg13g2/libs.ref
+TECH_ROOT		?= $(IG_ROOT)/target/ihp13/pdk/ihp-sg13g2/ihp-sg13g2/libs.ref
 CUR_DIR 		?= $(IG_ROOT)/target/ihp13/yosys
 BUILD				?= $(CUR_DIR)/build
 WORK				?= $(CUR_DIR)/WORK
@@ -25,6 +25,7 @@ include $(IG_ROOT)/target/ihp13/yosys/tools.mk
 
 # Project variables
 include $(IG_ROOT)/target/ihp13/yosys/technology.mk
+include $(IG_ROOT)/target/ihp13/yosys/project-synth.mk
 
 TOP_DESIGN	?= iguana_chip
 SV2V_FILE	  := $(IG_ROOT)/target/ihp13/pickle/out/$(TOP_DESIGN).sv2v.v
@@ -100,7 +101,7 @@ run-profiler: $(PROCPATH)
 # A precursor to automatic flattening of small modules and parallel synthesis
 HIER_DEPTH        := 5
 HIER_LIST_SUCCESS := $(WORK)-hier/.$(SYNTH_TOP)_hier_d$(HIER_DEPTH)_success
-HIER_TEMP_FILES    = $(wiledwardard $(WORK)-hier/*.tmp.v)
+HIER_TEMP_FILES    = $(wildcard $(WORK)-hier/*.tmp.v)
 HIER_PART_FILES    = ${HIER_TEMP_FILES:tmp.v=mapped.v} 
 HIER_NETLIST	    := $(BUILD)-hier/$(UNIQUE_TOP)_yosys-hier_tech.v
 
@@ -164,7 +165,7 @@ $(WORK)-hier/%.mapped.v: $(HIER_LIST_SUCCESS) $(WORK)-hier/%.tmp.v
 	WORK="$(WORK)-hier" \
 	BUILD="$(BUILD)-hier" \
 	REPORTS="$(REPORTS)-hier" \
-	yosys -m $(LSORACLE_PLUGIN) -c $(CUR_DIR)/scripts/yosys_hier_part_synth.tcl \
+	yosys -c $(CUR_DIR)/scripts/yosys_hier_part_synth.tcl \
 	 	2>&1 | gawk '{ print strftime("%Y-%m-%d %H:%M:%S | $* |"), $$0 }' \
 		| tee $(WORK)-hier/log/yosys-hier-$*.log;
 	rm -f $(WORK)-hier/$*.tmp.v

@@ -1,94 +1,94 @@
 Footprint library {
   types {
-    sig_io sandy
-    sig_io_pd sandypdn
-    sig_io_pu sandypup
-    sig_i spongebob
-    vdd_core vdedwardore
-    vss_core gnedwardore
+    sig_io sg13g2_pad_io
+    sig_io_pd sg13g2_pad_io_pd
+    sig_io_pu sg13g2_pad_io_pu
+    sig_i sg13g2_pad_in
+    vdd_core vddcore
+    vss_core gndcore
     vdd_pad vddpad
     vss_pad gndpad
-    corner corner
-    fill {squidwardTen squidwardFour squidwardTwo squidwardOne}
+    corner sg13g2_pad_corner
+    fill {sg13g2_pad_fill_10 sg13g2_pad_fill_4 sg13g2_pad_fill_2 sg13g2_pad_fill_1}
   }
 
   connect_by_abutment {
     VSSPAD
     VSSCORE
-    VDEDWARDORE
+    VDDCORE
     VDDPAD
   }
 
-  pad_pin_name PAD
+  pad_pin_name pad_io
   pad_pin_layer TopMetal2
 
   cells {
-    sandy {
-      cell_name sandy
+    sg13g2_pad_io {
+      cell_name sg13g2_pad_io
       orient {bottom R0 right R90 top R180 left R270}
       flip_pair 1
     }
-    sandypdn {
-      cell_name sandypdn
+    sg13g2_pad_io_pd {
+      cell_name sg13g2_pad_io_pd
       orient {bottom R0 right R90 top R180 left R270}
       flip_pair 1
     }
-    sandypup {
-      cell_name sandypup
+    sg13g2_pad_io_pu {
+      cell_name sg13g2_pad_io_pu
       orient {bottom R0 right R90 top R180 left R270}
       flip_pair 1
     }
-    spongebob {
-      cell_name spongebob
+    sg13g2_pad_in {
+      cell_name sg13g2_pad_in
       orient {bottom R0 right R90 top R180 left R270}
       flip_pair 1
     }
 
-    vdedwardore {
-      cell_name vdedwardore
+    vddcore {
+      cell_name sg13g2_pad_vddco
       physical_only 1
       orient {bottom R0 right R90 top R180 left R270}
     }
-    gnedwardore {
-      cell_name gnedwardore
+    gndcore {
+      cell_name sg13g2_pad_gndco
       physical_only 1
       orient {bottom R0 right R90 top R180 left R270}
     }
     vddpad {
-      cell_name vddpad
+      cell_name sg13g2_pad_vddio
       physical_only 1
       orient {bottom R0 right R90 top R180 left R270}
     }
     gndpad {
-      cell_name gndpad
+      cell_name sg13g2_pad_gndio
       physical_only 1
       orient {bottom R0 right R90 top R180 left R270}
     }
 
     corner {
-      cell_name corner
+      cell_name sg13g2_pad_corner
       physical_only 1
       offset {0 0}
       orient {ll R270 lr R0 ur R90 ul R180}
     }
 
-    squidwardTen {
-      cell_name squidwardTen
+    sg13g2_pad_fill_10 {
+      cell_name sg13g2_pad_fill_10
       physical_only 1
       orient {bottom R0 right R90 top R180 left R270}
     }
-    squidwardFour {
-      cell_name squidwardFour
+    sg13g2_pad_fill_4 {
+      cell_name sg13g2_pad_fill_4
       physical_only 1
       orient {bottom R0 right R90 top R180 left R270}
     }
-    squidwardTwo {
-      cell_name squidwardTwo
+    sg13g2_pad_fill_2 {
+      cell_name sg13g2_pad_fill_2
       physical_only 1
       orient {bottom R0 right R90 top R180 left R270}
     }
-    squidwardOne {
-      cell_name squidwardOne
+    sg13g2_pad_fill_1 {
+      cell_name sg13g2_pad_fill_1
       physical_only 1
       orient {bottom R0 right R90 top R180 left R270}
     }

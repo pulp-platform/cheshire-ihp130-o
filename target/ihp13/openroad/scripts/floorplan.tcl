@@ -249,64 +249,64 @@ set channel 250.0
 set channel_hori  10.0
 set channel_vert  0.0
 
-# cva6_wt_edwardache_data_3_high
+# cva6_wt_dcache_data_3_high
 set X [ expr $sram_initX_L ]
 set Y [ expr $sram_initY256_T - 1100 ]
-placeInstance  $cva6_wt_edwardache_data_3_high $X $Y R90
-addHaloToBlock $haloBlock $cva6_wt_edwardache_data_3_high
+placeInstance  $cva6_wt_dcache_data_3_high $X $Y R90
+addHaloToBlock $haloBlock $cva6_wt_dcache_data_3_high
 
 
-# cva6_wt_edwardache_data_3_low
+# cva6_wt_dcache_data_3_low
 set X [ expr $X + $RamSize256_H + 2*$haloBlock + $channel ]
 set Y $Y
-placeInstance  $cva6_wt_edwardache_data_3_low $X $Y MXR90
-addHaloToBlock $haloBlock $cva6_wt_edwardache_data_3_low
+placeInstance  $cva6_wt_dcache_data_3_low $X $Y MXR90
+addHaloToBlock $haloBlock $cva6_wt_dcache_data_3_low
 
 
-# cva6_wt_edwardache_data_2_high
+# cva6_wt_dcache_data_2_high
 set X [ expr $sram_initX_L ]
 set Y [ expr $Y - $RamSize256_W - 2*$haloBlock - $channel_vert ]
-placeInstance  $cva6_wt_edwardache_data_2_high $X $Y R90
-addHaloToBlock $haloBlock $cva6_wt_edwardache_data_2_high
+placeInstance  $cva6_wt_dcache_data_2_high $X $Y R90
+addHaloToBlock $haloBlock $cva6_wt_dcache_data_2_high
 
 
-# cva6_wt_edwardache_data_2_low
+# cva6_wt_dcache_data_2_low
 set X [ expr $X + $RamSize256_H + 2*$haloBlock + $channel ]
 set Y $Y
-placeInstance  $cva6_wt_edwardache_data_2_low $X $Y MXR90
-addHaloToBlock $haloBlock $cva6_wt_edwardache_data_2_low
+placeInstance  $cva6_wt_dcache_data_2_low $X $Y MXR90
+addHaloToBlock $haloBlock $cva6_wt_dcache_data_2_low
 
 
-# cva6_wt_edwardache_data_1_high
+# cva6_wt_dcache_data_1_high
 set X [ expr $sram_initX_L ]
 set Y [ expr $Y - $RamSize256_W - 2*$haloBlock - $channel_vert ]
-placeInstance  $cva6_wt_edwardache_data_1_high $X $Y R90
-addHaloToBlock $haloBlock $cva6_wt_edwardache_data_1_high
+placeInstance  $cva6_wt_dcache_data_1_high $X $Y R90
+addHaloToBlock $haloBlock $cva6_wt_dcache_data_1_high
 
 
-# cva6_wt_edwardache_data_1_low
+# cva6_wt_dcache_data_1_low
 set X [ expr $X + $RamSize256_H + 2*$haloBlock + $channel ]
 set Y $Y
-placeInstance  $cva6_wt_edwardache_data_1_low $X $Y MXR90
-addHaloToBlock $haloBlock $cva6_wt_edwardache_data_1_low
+placeInstance  $cva6_wt_dcache_data_1_low $X $Y MXR90
+addHaloToBlock $haloBlock $cva6_wt_dcache_data_1_low
 
 
-# cva6_wt_edwardache_data_0_high
+# cva6_wt_dcache_data_0_high
 set X [ expr $sram_initX_L ]
 set Y [ expr $Y - $RamSize256_W - 2*$haloBlock - $channel_vert ]
-placeInstance  $cva6_wt_edwardache_data_0_high $X $Y R90
-addHaloToBlock $haloBlock $cva6_wt_edwardache_data_0_high
+placeInstance  $cva6_wt_dcache_data_0_high $X $Y R90
+addHaloToBlock $haloBlock $cva6_wt_dcache_data_0_high
 
 
-# cva6_wt_edwardache_data_0_low
+# cva6_wt_dcache_data_0_low
 set X [ expr $X + $RamSize256_H + 2*$haloBlock + $channel ]
 set Y $Y
-placeInstance  $cva6_wt_edwardache_data_0_low $X $Y MXR90
-addHaloToBlock $haloBlock $cva6_wt_edwardache_data_0_low
+placeInstance  $cva6_wt_dcache_data_0_low $X $Y MXR90
+addHaloToBlock $haloBlock $cva6_wt_dcache_data_0_low
 
 
 ##########################################################################
-# Place cva6_wt_edwardache_tag
+# Place cva6_wt_dcache_tag
 ##########################################################################
 
 set channel 250.0
@@ -314,32 +314,32 @@ set channel_hori  10.0
 set channel_vert  0.0
 
 
-# cva6_wt_edwardache_tag_3
+# cva6_wt_dcache_tag_3
 set X [ expr $sram_initX_L ]
 set Y [ expr $sram_initY256_T ]
-placeInstance  $cva6_wt_edwardache_tag_3 $X $Y R90
-addHaloToBlock $haloBlock $cva6_wt_edwardache_tag_3
+placeInstance  $cva6_wt_dcache_tag_3 $X $Y R90
+addHaloToBlock $haloBlock $cva6_wt_dcache_tag_3
 
 
-# cva6_wt_edwardache_tag_2
+# cva6_wt_dcache_tag_2
 set X [ expr $X + $RamSize256_H + 2*$haloBlock + $channel ]
 set Y $Y
-placeInstance  $cva6_wt_edwardache_tag_2 $X $Y MXR90
-addHaloToBlock $haloBlock $cva6_wt_edwardache_tag_2
+placeInstance  $cva6_wt_dcache_tag_2 $X $Y MXR90
+addHaloToBlock $haloBlock $cva6_wt_dcache_tag_2
 
 
-# cva6_wt_edwardache_tag_1
+# cva6_wt_dcache_tag_1
 set X [ expr $X + $RamSize256_H + 2*$haloBlock + $channel_hori ]
 set Y $Y
-placeInstance  $cva6_wt_edwardache_tag_1 $X $Y R90
-addHaloToBlock $haloBlock $cva6_wt_edwardache_tag_1
+placeInstance  $cva6_wt_dcache_tag_1 $X $Y R90
+addHaloToBlock $haloBlock $cva6_wt_dcache_tag_1
 
 
-# cva6_wt_edwardache_tag_0
+# cva6_wt_dcache_tag_0
 set X [ expr $X + $RamSize256_H + 2*$haloBlock + $channel ]
 set Y $Y
-placeInstance  $cva6_wt_edwardache_tag_0 $X $Y MXR90
-addHaloToBlock $haloBlock $cva6_wt_edwardache_tag_0
+placeInstance  $cva6_wt_dcache_tag_0 $X $Y MXR90
+addHaloToBlock $haloBlock $cva6_wt_dcache_tag_0
 
 
 ##########################################################################
