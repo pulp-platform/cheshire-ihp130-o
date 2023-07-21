@@ -8,42 +8,30 @@
 # Has three main targets:
 # - synth/run-yosys: fully open-source netlist with normal synthesis approach
 # - run-yosys-hier: fully open-source netlist, flattened N-levels below top
-# - blackboxed-theory: mixed open/closed source netlist, side-step yosys issues
 
 # Directories
 # Todo: create a common 'project.mk' to set project config variables (or use iguana.mk for that?)
-SCRIPT_DIR	:= $(dir $(realpath $(lastword $(MAKEFILE_LIST))))
-PRJ_ROOT 	?= $(realpath $(SCRIPT_DIR)../../../..)
-IC_ROOT		?= $(realpath $(CURDIR)/..)
-BUILD		?= $(CURDIR)/build
-WORK		?= $(CURDIR)/WORK
-REPORTS		?= $(CURDIR)/reports
-TECH_DIR	?= $(IC_ROOT)/technology/lib
+YOSYS_DIR		?= $(IG_ROOT)/target/ihp13/yosys
+TECH_ROOT		?= $(IG_ROOT)/target/ihp13/pdk/ihp-sg13g2/libs.ref
+CUR_DIR 		?= $(IG_ROOT)/target/ihp13/yosys
+BUILD				?= $(CUR_DIR)/build
+WORK				?= $(CUR_DIR)/WORK
+REPORTS			?= $(CUR_DIR)/reports
 
 # sed -n "s|^\s*Chip area.*module '\\\([^']*\)': \([0-9.]*\)|\1, \2|p" area_clean.rpt > area.csv
 
-# Tools
-include tools.mk
+# Tools: TODO remove
+include $(IG_ROOT)/target/ihp13/yosys/tools.mk
 
 # Project variables
-include technology.mk
-include project-synth.mk
+include $(IG_ROOT)/target/ihp13/yosys/technology.mk
 
 TOP_DESIGN	?= iguana_chip
-# TOP_DESIGN	?= highscore
-# TOP_DESIGN	?= scoreboard
-PICKLE_FILE := $(BUILD)/$(TOP_DESIGN).pickle.sv
-SVASE_FILE	:= $(BUILD)/$(TOP_DESIGN).svase.sv
-SV2V_FILE	:= $(BUILD)/$(TOP_DESIGN).sv2v.v
+SV2V_FILE	  := $(IG_ROOT)/target/ihp13/pickle/out/$(TOP_DESIGN).sv2v.v
 VLOG_FILES  := $(SV2V_FILE)
-UNIQUE_TOP	:= $(shell sed -n 's|module \($(TOP_DESIGN)__[[:alnum:]_]*\)\s.*$$|\1|p' $(SVASE_FILE) | tail -1)
-SYNTH_TOP	:= $(UNIQUE_TOP)
-NETLIST		:= $(BUILD)/$(TOP_DESIGN)_yosys.v
-
-# Preprocessing
-include pickle.mk
-include svase.mk
-include sv2v.mk
+UNIQUE_TOP	:= $(shell sed -n 's|module \($(TOP_DESIGN)__[[:alnum:]_]*\)\s.*$$|\1|p' $(SV2V_FILE) | tail -1)
+SYNTH_TOP	  := $(UNIQUE_TOP)
+NETLIST		  := $(BUILD)/$(TOP_DESIGN)_yosys.v
 
 # as dependency: re-generate netlist only when sv2v is out-of-date
 $(NETLIST): $(SV2V_FILE)
@@ -56,7 +44,7 @@ run-yosys: $(VLOG_FILES)
 	@mkdir -p $(BUILD)
 	@mkdir -p $(WORK)
 	@mkdir -p $(REPORTS)
-	@rm -f yosys.log
+	@rm -f $(CUR_DIR)/yosys.log
 	VLOG_FILES="$(VLOG_FILES)" \
 	TOP_DESIGN="$(SYNTH_TOP)" \
 	TECH_CELLS="$(TECH_CELLS)" \
@@ -67,9 +55,9 @@ run-yosys: $(VLOG_FILES)
 	BUILD="$(BUILD)" \
 	REPORTS="$(REPORTS)" \
 	NETLIST="$(NETLIST)" \
-	yosys -m $(LSORACLE_PLUGIN) -c scripts/yosys_synthesis.tcl \
-	 	2>&1 | TZ=UTC gawk '{ print strftime("[%Y-%m-%d %H:%M:%S %Z]", systime()), $$0 }' \
-		| tee yosys.log | grep -E "\[.*\] [0-9\.]+ Executing";
+	yosys -c $(CUR_DIR)/scripts/yosys_synthesis.tcl \
+		2>&1 | TZ=UTC gawk '{ print strftime("[%Y-%m-%d %H:%M:%S %Z]", systime()), $$0 }' \
+		| tee $(CUR_DIR)/yosys.log | grep -E "\[.*\] [0-9\.]+ Executing";
 
 # analyze timing of netlist
 run-sta: $(NETLIST)
@@ -80,7 +68,7 @@ run-sta: $(NETLIST)
 	TECH_CELLS="$(TECH_CELLS)" \
 	TECH_MACROS="$(TECH_MACROS)" \
 	REPORTS="$(REPORTS)" \
-	sta scripts/opensta_timings.tcl
+	sta $(CUR_DIR)/scripts/opensta_timings.tcl
 
 .PHONY: synth run-yosys run-sta 
 
@@ -114,7 +102,7 @@ HIER_DEPTH        := 5
 HIER_LIST_SUCCESS := $(WORK)-hier/.$(SYNTH_TOP)_hier_d$(HIER_DEPTH)_success
 HIER_TEMP_FILES    = $(wiledwardard $(WORK)-hier/*.tmp.v)
 HIER_PART_FILES    = ${HIER_TEMP_FILES:tmp.v=mapped.v} 
-HIER_NETLIST	  := $(BUILD)-hier/$(UNIQUE_TOP)_yosys-hier_tech.v
+HIER_NETLIST	    := $(BUILD)-hier/$(UNIQUE_TOP)_yosys-hier_tech.v
 
 # start hierarchically split synthesis
 run-yosys-hier: $(VLOG_FILES)
@@ -140,9 +128,9 @@ run-yosys-hier-synth: $(HIER_LIST_SUCCESS)
 	WORK="$(WORK)-hier" \
 	BUILD="$(BUILD)-hier" \
 	REPORTS="$(REPORTS)-hier" \
-	yosys -c scripts/yosys_hier_top_synth.tcl \
+	yosys -c $(CUR_DIR)/scripts/yosys_hier_top_synth.tcl \
 	 	2>&1 | gawk '{ print strftime("%Y-%m-%d %H:%M:%S | $(SYNTH_TOP) |"), $$0 }' \
-		| tee -a yosys-hier.log;
+		| tee -a $(CUR_DIR)/yosys-hier.log;
 #	awk -f scripts/combine_port_wire.awk $(HIER_NETLIST) > $(BUILD)-hier/tmp.v
 
 # create placeholder files for all needed subtrees/modules
@@ -156,16 +144,16 @@ $(HIER_LIST_SUCCESS): $(VLOG_FILES)
 	HIER_DEPTH="${HIER_DEPTH}" \
 	WORK="$(WORK)-hier" \
 	BUILD="$(BUILD)-hier" \
-	yosys -c scripts/yosys_gen_hier_list.tcl \
+	yosys -c $(CUR_DIR)/scripts/yosys_gen_hier_list.tcl \
 	 	2>&1 | gawk '{ print strftime("%Y-%m-%d %H:%M:%S | ENTIRE-DESIGN |"), $$0 }' \
-		| tee yosys-hier.log;
+		| tee $(CUR_DIR)/yosys-hier.log;
 	@touch $(HIER_LIST_SUCCESS)
 
 # synthesize each subtree
 $(WORK)-hier/%.mapped.v: $(HIER_LIST_SUCCESS) $(WORK)-hier/%.tmp.v
 	@echo "Starting $* ..." \
 		| gawk '{ print strftime("%Y-%m-%d %H:%M:%S |"), $$0 }' \
-		| tee -a yosys-hier.log;
+		| tee -a $(CUR_DIR)/yosys-hier.log;
 	VLOG_FILES="$(VLOG_FILES)" \
 	TOP_DESIGN="$*" \
 	TECH_CELLS="$(TECH_CELLS)" \
@@ -176,13 +164,13 @@ $(WORK)-hier/%.mapped.v: $(HIER_LIST_SUCCESS) $(WORK)-hier/%.tmp.v
 	WORK="$(WORK)-hier" \
 	BUILD="$(BUILD)-hier" \
 	REPORTS="$(REPORTS)-hier" \
-	yosys -m $(LSORACLE_PLUGIN) -c scripts/yosys_hier_part_synth.tcl \
+	yosys -m $(LSORACLE_PLUGIN) -c $(CUR_DIR)/scripts/yosys_hier_part_synth.tcl \
 	 	2>&1 | gawk '{ print strftime("%Y-%m-%d %H:%M:%S | $* |"), $$0 }' \
 		| tee $(WORK)-hier/log/yosys-hier-$*.log;
 	rm -f $(WORK)-hier/$*.tmp.v
 	@echo "MAPPED HIERARCHICAL MODULE $*" \
 		| gawk '{ print strftime("%Y-%m-%d %H:%M:%S |"), $$0 }' \
-		| tee -a yosys-hier.log;
+		| tee -a $(CUR_DIR)/yosys-hier.log;
 
 # analyze timing of hier-synth netlist
 run-sta-hier: $(HIER_NETLIST)
@@ -193,64 +181,9 @@ run-sta-hier: $(HIER_NETLIST)
 	TECH_CELLS="$(TECH_CELLS)" \
 	TECH_MACROS="$(TECH_MACROS)" \
 	REPORTS="$(REPORTS)" \
-	sta scripts/opensta_timings.tcl
+	sta $(CUR_DIR)/scripts/opensta_timings.tcl
 
 .PHONY: run-yosys-hier run-yosys-hier-synth run-sta-hier 
-
-
-# Blackboxed yosys + nina synthesis
-# Since yosys has some (currently unsolved) issues with a few modules,
-# this flow makes it possible to do most of the work in yosys while
-# leaving a few modules to be synthesized with nina
-BBOXED_NINA_FILES := $(foreach module,$(BBOXED_NINA_MODULES),$(WORK)/nina_split_$(module).v)
-BBOXED_NETLIST := $(TOP_DESIGN)_yosys_blackboxed.v
-BBOXED_VAR_FILE := $(IC_ROOT)/nina/reports/yosys_variables.tcl
-YOSYS_LIBERTY_ARGS := $(foreach cells,$(TECH_CELLS),-liberty $(cells)) \
-                      $(foreach macros,$(TECH_MACROS),-liberty $(macros))
-
-NINA_SPLITNET_CMD = read_verilog "$(WORK)/nina_$*.v"; \
-						splitnets;;; \
-						write_verilog -noattr -noexpr -nohex -nodec "$@";
-
-BBOXEDIZE_YOSYS_CMD = read_verilog -overwrite "$(WORK)/$(BBOXED_NETLIST)"; \
-						splitnets -ports -format LRT;;;  \
-						tee -q -o $(REPORTS)/$(TOP_DESIGN)_blackboxed_area.rpt stat -top $(SYNTH_TOP) $(YOSYS_LIBERTY_ARGS);  \
-						write_verilog -noattr -noexpr -nohex -nodec "$(BUILD)/$(BBOXED_NETLIST)";
-
-# run nina on missing modules
-$(IC_ROOT)/nina/netlists/%.v: $(SVASE_FILE)
-	@mkdir -p $(IC_ROOT)/nina/netlists
-	@mkdir -p $(IC_ROOT)/nina/reports
-	@echo "Building $* with Nina..."
-	@echo "set top_design $*" > $(BBOXED_VAR_FILE)
-	@echo "set vlog_file $(SVASE_FILE)" >> $(BBOXED_VAR_FILE)
-	@cd $(IC_ROOT)/nina && \
-	nina-2022.03 edwardnxt_shell -f $(IC_ROOT)/nina/scripts/synth_yosys_module.tcl \
-	| tee $(WORK)/nina__$*.log | grep -E "[[:space:]#]+Beginning";
-	rm $(BBOXED_VAR_FILE)
-
-# post-processing on nina-netlists
-$(WORK)/nina_split_%.v: $(IC_ROOT)/nina/netlists/%.v
-	cp $< $(WORK)/nina_$*.v
-	@echo "Splitting nets in $* with Yosys..."
-	yosys -p '$(NINA_SPLITNET_CMD)' 2>&1 \
-	 | tee $(WORK)/yosys_splitnet_$*.log | grep -E "[0-9.].*Executing";
-
-# blackboxed-flow, not sensitive to yosys netlist, will only regen nina modules
-blackboxedize: $(BBOXED_NINA_FILES)
-	cp $(NETLIST) $(WORK)/$(BBOXED_NETLIST)
-	@for module in $(BBOXED_NINA_MODULES); do \
-		echo "Adding module $$module from nina to yosys netlist..."; \
-		sed "/module $$module/,/endmodule/d" $(WORK)/$(BBOXED_NETLIST) > $(WORK)/$(BBOXED_NETLIST).tmp; \
-		{ cat $(WORK)/nina_split_$$module.v; cat $(WORK)/$(BBOXED_NETLIST).tmp; } \
-		 > $(WORK)/$(BBOXED_NETLIST); \
-	done
-	yosys -p '$(BBOXEDIZE_YOSYS_CMD)' \
-	 | grep -E "[0-9.].*Executing";
-
-# blackboxed-flow, sensitive to yosys netlist (will regenerate to renew)
-blackboxed-theory: $(NETLIST) $(BBOXED_NINA_FILES)
-	@$(MAKE) blackboxedize
 
 clean:
 	if [ -f $(WORK)/procpath.pid ]; then \
@@ -259,6 +192,6 @@ clean:
 	rm -rf $(BUILD)
 	rm -rf $(WORK)
 	rm -rf $(REPORTS) 
-	rm -f $(CURDIR)/*.log
- 
-.PHONY: blackboxedize blackboxed-theory clean
+	rm -f $(CUR_DIR)/*.log
+
+.PHONY: clean

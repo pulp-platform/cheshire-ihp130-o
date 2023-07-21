@@ -612,11 +612,6 @@ library (sg13g2_pad_slow_1p08V_3p3V_125C) {
     dont_use : true;
     timing_model_type : abstracted;
     pad_cell : true;
-    pin (oe_i) {
-      direction : input;
-      max_transition : 250;
-      capacitance : 12;
-    }
     pin (pad_io) {
       direction : inout;
       is_pad : true;

@@ -12,7 +12,7 @@ OPENROAD_ROOT := /usr/scratch/schneematt/janniss/Documents/openroad-build/instal
 # sourcing yosys, yosys-abc and sv2v
 export PATH := $(OPENROAD_ROOT)/bin:$(PATH)
 # sourcing svase and morty
-export PATH := $(PATH):/usr/scratch/pisoc11/sem23f30/tools/bin
+export PATH := $(PATH):/usr/scratch/schneematt/janniss/Documents/svase/build
 # LSOracle plugin
 LSORACLE_PLUGIN = /usr/scratch//pisoc11/sem23f30/tools/lsoracle/build/yosys-plugin/oracle.so
 # LSOracle binary
