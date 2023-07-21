@@ -40,13 +40,14 @@ sources:
       - target/ihp13/src/tc_sram.sv
       - target/ihp13/src/tc_clk.sv
       - target/ihp13/src/mc_pad.sv
+      - target/ihp13/src/delay_line_wrapper.sv
 
   - target: all(ihp13, simulation)
     files:
-      #- target/ihp13/mc_delay/out/mc_delay.behav.v
+      - target/ihp13/macro_cells/sg13g2_delay/delay_line_D4_O1_6P000.behav.sv
       - target/ihp13/pdk/ihp-sg13g2/libs.ref/sg13g2_stdcell/verilog/sg13g2_stdcell.v
-      - target/ihp13/future/sg13g2_sram.behav.sv
-      - target/ihp13/future/sg13g2_iocell.behav.sv
+      - target/ihp13/future/sram/sg13g2_sram.behav.sv
+      - target/ihp13/future/io_cells/sg13g2_iocell.behav.sv
 
   - target: all(gate, ihp13)
     files:

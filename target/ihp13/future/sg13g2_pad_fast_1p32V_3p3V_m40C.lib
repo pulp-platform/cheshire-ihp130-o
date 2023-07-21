@@ -612,11 +612,6 @@ library (sg13g2_pad_fast_1p32V_3p3V_m40C) {
     dont_use : true;
     timing_model_type : abstracted;
     pad_cell : true;
-    pin (oe_i) {
-      direction : input;
-      max_transition : 150;
-      capacitance : 8;
-    }
     pin (pad_io) {
       direction : inout;
       is_pad : true;

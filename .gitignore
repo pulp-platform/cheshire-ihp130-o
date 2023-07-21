@@ -16,3 +16,5 @@ target/ihp13/pickle/out
 .dvt
 dvt_build.log
 .vscode
+
+*.log

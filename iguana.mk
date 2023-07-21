@@ -6,7 +6,7 @@
 # Philippe Sauter <phsauter@student.ethz.ch>
 # Paul Scheffler <paulsc@iis.ee.ethz.ch>
 
-BENDER  ?= bender  # https://github.com/pulp-platform/bender
+BENDER   ?= bender  # https://github.com/pulp-platform/bender
 
 IG_ROOT  ?= $(shell $(BENDER) path iguana)
 CHS_ROOT := $(shell $(BENDER) path cheshire)
@@ -71,3 +71,5 @@ ig-sim-all: $(IG_ROOT)/target/sim/vsim/compile.ihp13.gate.tcl
 ########################
 
 include $(IG_ROOT)/target/ihp13/pickle/pickle.mk
+
+include $(IG_ROOT)/target/ihp13/yosys/yosys.mk
