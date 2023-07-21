@@ -22,7 +22,7 @@ read_verilog $vlog_netlist
 link_design $top_design
 
 # constraints
-read_sedward ../../common/openroad/src/iguana.sedward
+read_sdc ../../common/openroad/src/iguana.sdc
 
 # timing report
 report_checks -path_delay max -path_group clk_hyp

@@ -34,7 +34,7 @@ setLayerDirection Metal3 HORIZONTAL
 add_global_connection -net {VDD} -inst_pattern {.*} -pin_pattern {VDD} -power
 add_global_connection -net {VSS} -inst_pattern {.*} -pin_pattern {VSS} -ground
 # pads
-add_global_connection -net {VDD} -inst_pattern {.*} -pin_pattern {VDEDWARDORE} -power
+add_global_connection -net {VDD} -inst_pattern {.*} -pin_pattern {VDDCORE} -power
 add_global_connection -net {VSS} -inst_pattern {.*} -pin_pattern {VSSCORE} -ground
 # rams
 add_global_connection -net {VDD} -inst_pattern {.*} -pin_pattern {VDDARRAY} -power
@@ -124,7 +124,7 @@ add_pdn_ring -grid {grid}         \
 #    -connect_to_pads                    \
 #    -connect_to_pad_layers TopMetal2
 
-# M1 Standaredwardell Rows
+# M1 Standardcell Rows
 if {[info exists OPEN_CELLS]} {
     add_pdn_stripe -grid {grid} -layer {Metal1} -width {0.44} -offset {0} -followpins -extend_to_core_ring
 } else {

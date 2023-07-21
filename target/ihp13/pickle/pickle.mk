@@ -37,7 +37,7 @@ endef
 #########
 
 # Generate sources manifest for use by Morty
-$(PICKLE_DIR)/out/iguana_chip.sources.json: $(IG_ROOT)/Bender.yml
+$(PICKLE_DIR)/out/iguana_chip.sources.json: $(IG_ROOT)/Bender.yml ig-all
 	mkdir -p $(dir $@)
 	$(BENDER) sources -f -t rtl -t asic -t ihp13 -t cva6 -t cv64a6_imafdcsclic_sv39  > $@
 

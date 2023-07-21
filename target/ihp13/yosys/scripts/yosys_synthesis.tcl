@@ -13,11 +13,11 @@ set top_design  $::env(TOP_DESIGN)
 set tech_cells  $::env(TECH_CELLS)
 set tech_macros $::env(TECH_MACROS)
 set build_dir   $::env(BUILD)
-set work_dir	$::env(WORK)
+set work_dir	  $::env(WORK)
 set report_dir	$::env(REPORTS)
-set tiehi		$::env(TIE_HIGH)
-set tielo		$::env(TIE_LOW)
-set netlist		$::env(NETLIST)
+set tiehi		    $::env(TIE_HIGH)
+set tielo		    $::env(TIE_LOW)
+set netlist		  $::env(NETLIST)
 
 set lib_list "-liberty ${tech_cells} "
 foreach file $tech_macros {
@@ -133,7 +133,7 @@ yosys tee -q -o "${report_dir}/${top_design}_pre_map_stat.rpt" stat
 yosys autoname t:$*DFF*
 yosys dfflibmap -liberty "${tech_cells}"
 yosys opt -fast
-yosys abc -liberty "${tech_cells}" -constr abc.constr -D 10000
+yosys abc -liberty "${tech_cells}" -constr $work_dir/../src/abc.constr -D 10000
 yosys clean -purge
 
 yosys tee -q -o "${report_dir}/${top_design}_area_buff.rpt" stat -top ${top_design} {*}$lib_list

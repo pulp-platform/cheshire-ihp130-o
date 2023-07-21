@@ -19,4 +19,4 @@
 +        protocol_e_AXI: return 256;
          // AXI-Lite and OBI do not have bursts
          default:    return 1;
-         enedwardase
+         endcase

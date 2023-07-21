@@ -12,11 +12,11 @@ source scripts/init_tech.tcl
 
 # read and check design
 puts "Read netlist"
-read_verilog ../yosys/build/iguana_chip_yosys_blackboxed.v
+read_verilog ../yosys/build/iguana_chip_yosys.v
 link_design iguana_chip__6142509188972423790
 
 puts "Read constraints"
-read_sedward src/iguana.sedward
+read_sdc src/iguana.sdc -echo
 
 puts "Check constraints"
 check_setup
@@ -71,11 +71,11 @@ add_macro_blockage 0 $axi_data_3_low $axi_data_2_high
 add_macro_blockage 0 $axi_data_2_low $axi_data_1_high
 add_macro_blockage 0 $axi_data_1_low $axi_data_0_high
 
-add_macro_blockage 0 $cva6_wt_edwardache_data_3_high $cva6_wt_edwardache_data_0_high
-add_macro_blockage 0 $cva6_wt_edwardache_data_3_low $cva6_wt_edwardache_data_0_low
+add_macro_blockage 0 $cva6_wt_dcache_data_3_high $cva6_wt_dcache_data_0_high
+add_macro_blockage 0 $cva6_wt_dcache_data_3_low $cva6_wt_dcache_data_0_low
 
-add_macro_blockage 0 $cva6_wt_edwardache_tag_2 $cva6_wt_edwardache_tag_1
-add_macro_blockage 0 $cva6_wt_edwardache_tag_0 $cva6_icache_tag_0
+add_macro_blockage 0 $cva6_wt_dcache_tag_2 $cva6_wt_dcache_tag_1
+add_macro_blockage 0 $cva6_wt_dcache_tag_0 $cva6_icache_tag_0
 add_macro_blockage 0 $cva6_icache_tag_1 $cva6_icache_tag_2
 add_macro_blockage 0 $cva6_icache_tag_3 $cva6_icache_data_3_high
 add_macro_blockage 0 $cva6_icache_data_3_low $cva6_icache_data_2_high
@@ -88,9 +88,9 @@ cut_rows -halo_width_y 5 -halo_width_x 5
 
 ### Repair config 
 # Dont touch IO pads as "remove_buffers" removes some of them
-set_dont_touch [get_cells -hierarchical -filter "ref_name == spongebob"]
-set_dont_touch [get_cells -hierarchical -filter "ref_name == ixc013_i16m"]
-set_dont_touch [get_cells -hierarchical -filter "ref_name == sandypup"]
+set_dont_touch [get_cells -hierarchical -filter "ref_name == sg13g2_pad_in"]
+set_dont_touch [get_cells -hierarchical -filter "ref_name == sg13g2_pad_io"]
+set_dont_touch [get_cells -hierarchical -filter "ref_name == sg13g2_pad_io_pu"]
 # Dont use pads for buffering during repair_design
 set_dont_use $dont_use_cells
 
@@ -101,9 +101,9 @@ set_wire_rc -signal -layer Metal3
 puts "Remove buffers"
 remove_buffers
 # Unset dont touch or repair_hold crashes
-unset_dont_touch [get_cells -hierarchical -filter "ref_name == spongebob"]
-unset_dont_touch [get_cells -hierarchical -filter "ref_name == ixc013_i16m"]
-unset_dont_touch [get_cells -hierarchical -filter "ref_name == sandypup"]
+unset_dont_touch [get_cells -hierarchical -filter "ref_name == sg13g2_pad_in"]
+unset_dont_touch [get_cells -hierarchical -filter "ref_name == sg13g2_pad_io"]
+unset_dont_touch [get_cells -hierarchical -filter "ref_name == sg13g2_pad_io_pu"]
 # Set dont touch for io nets -> repair_hold otherwise tries to insert hold buffer into that net
 set_dont_touch [get_nets *_io]
 

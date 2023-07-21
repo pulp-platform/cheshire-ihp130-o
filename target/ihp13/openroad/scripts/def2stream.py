@@ -14,7 +14,7 @@ in_def = "./save/iguana.routed.def"
 out_file = "./out/iguana.routed.gds"
 
 tech_file = "./src/klayout_ihp130.lyt"
-in_files  = "../technology/gds/plankton.gds ../technology/gds/sg13g2_stedwardell.gds ../delay_line/generic_delay_D4_O1_3P000_CG0.gds ../technology/gds/RM_IHPSG13_1P_64x64_c2_bm_bist.gds ../technology/gds/RM_IHPSG13_1P_256x64_c2_bm_bist.gds ../technology/gds/RM_IHPSG13_1P_1024x64_c2_bm_bist.gds"
+in_files  = "../technology/gds/plankton.gds ../technology/gds/sg13g2_stdcell.gds ../delay_line/generic_delay_D4_O1_3P000_CG0.gds ../technology/gds/RM_IHPSG13_1P_64x64_c2_bm_bist.gds ../technology/gds/RM_IHPSG13_1P_256x64_c2_bm_bist.gds ../technology/gds/RM_IHPSG13_1P_1024x64_c2_bm_bist.gds"
 config_file = ""
 seal_file = ""
 layer_map = ""

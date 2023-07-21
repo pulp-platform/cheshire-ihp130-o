@@ -67,7 +67,7 @@
    <special-routing-datatype-string>0</special-routing-datatype-string>
    <via-cellname-prefix>VIA_</via-cellname-prefix>
    <lef-files>../../technology/lef/sg13g2_tech.lef</lef-files>
-   <lef-files>../../technology/lef/sg13g2_stedwardell_v5p7.lef</lef-files>
+   <lef-files>../../technology/lef/sg13g2_stdcell_v5p7.lef</lef-files>
    <lef-files>../../delay_line/generic_delay_D4_O1_3P000_CG0.lef</lef-files>
    <lef-files>../../technology/lef/plankton_v5p8.lef</lef-files>
    <lef-files>../../technology/lef/RM_IHPSG13_1P_64x64_c2_bm_bist.lef</lef-files>

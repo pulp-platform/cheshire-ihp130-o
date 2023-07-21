@@ -7,7 +7,20 @@
 /* Information extracted from the SRAM data sheet available openly at: */
 /* https://github.com/IHP-GmbH/IHP-Open-PDK/tree/main/ihp-sg13g2/libs.ref/sg13g2_sram/doc */
 
+/* other things taken from https://github.com/The-OpenROAD-Project/OpenROAD-flow-scripts/blob/master/flow/platforms/nangate45/lib/fakeram45_128x256.lib#L38 */
+
 library(RM_IHPSG13_1P_64x64_c2_bm_bist_dummy) {
+
+  slew_derate_from_library : 1.000;
+  slew_lower_threshold_pct_fall : 20.000;
+  slew_upper_threshold_pct_fall : 80.000;
+  slew_lower_threshold_pct_rise : 20.000;
+  slew_upper_threshold_pct_rise : 80.000;
+  input_threshold_pct_fall : 50.000;
+  input_threshold_pct_rise : 50.000;
+  output_threshold_pct_fall : 50.000;
+  output_threshold_pct_rise : 50.000;
+
 	type (DATA_BUS_63) {
 		base_type : array;
 		data_type : bit;
