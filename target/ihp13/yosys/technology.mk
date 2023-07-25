@@ -2,7 +2,8 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 #
-# Author:  Philippe Sauter <phsauter@student.ethz.ch>
+# Authors:
+# - Philippe Sauter <phsauter@ethz.ch>
 
 TECH_CELLS 	?= $(TECH_ROOT)/sg13g2_stdcell/lib/sg13g2_stdcell_typ_1p20V_25C.lib
 TECH_MACROS	?= $(addprefix $(IG_ROOT)/target/ihp13/pdk/future/sg13g2_sram/,RM_IHPSG13_1P_64x64_c2_bm_bist_dummy.lib \

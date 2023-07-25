@@ -66,13 +66,13 @@
    <special-routing-suffix-string/>
    <special-routing-datatype-string>0</special-routing-datatype-string>
    <via-cellname-prefix>VIA_</via-cellname-prefix>
-   <lef-files>../../technology/lef/sg13g2_tech.lef</lef-files>
-   <lef-files>../../technology/lef/sg13g2_stdcell_v5p7.lef</lef-files>
-   <lef-files>../../delay_line/generic_delay_D4_O1_3P000_CG0.lef</lef-files>
-   <lef-files>../../technology/lef/plankton_v5p8.lef</lef-files>
-   <lef-files>../../technology/lef/RM_IHPSG13_1P_64x64_c2_bm_bist.lef</lef-files>
-   <lef-files>../../technology/lef/RM_IHPSG13_1P_256x64_c2_bm_bist.lef</lef-files>
-   <lef-files>../../technology/lef/RM_IHPSG13_1P_1024x64_c2_bm_bist.lef</lef-files>
+   <lef-files>../pdk/ihp-sg13g2/ihp-sg13g2/libs.ref/sg13g2_stdcell/lef/sg13g2_tech.lef</lef-files>
+   <lef-files>../pdk/ihp-sg13g2/ihp-sg13g2/libs.ref/sg13g2_stdcell/lef/sg13g2_stdcell.lef</lef-files>
+   <lef-files>../macro_cells/mc_sg13g2_delay/delay_line_D4_O1_6P000.lef</lef-files>
+   <lef-files>../pdk/future/sg13g2_iocell/sg13g2_iocell.lef</lef-files>
+   <lef-files>../pdk/future/sg13g2_sram/RM_IHPSG13_1P_64x64_c2_bm_bist.lef</lef-files>
+   <lef-files>../pdk/future/sg13g2_sram/RM_IHPSG13_1P_256x64_c2_bm_bist.lef</lef-files>
+   <lef-files>../pdk/future/sg13g2_sram/RM_IHPSG13_1P_1024x64_c2_bm_bist.lef</lef-files>
    <read-lef-with-def>true</read-lef-with-def>
    <macro-resolution-mode>default</macro-resolution-mode>
    <separate-groups>false</separate-groups>

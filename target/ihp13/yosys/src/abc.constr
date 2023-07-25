@@ -1,3 +1,10 @@
+# Copyright (c) 2022 ETH Zurich and University of Bologna.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Authors:
+# - Philippe Sauter <phsauter@ethz.ch>
+
 create_clock -period 5 -name clk [get_ports clk*]
 set_driving_cell sg13g2_buf_1
 set_output_delay 1.5 -max -clock clk [all_outputs]

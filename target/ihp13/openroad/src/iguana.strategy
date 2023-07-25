@@ -1,5 +1,14 @@
+# Copyright 2023 ETH Zurich and University of Bologna.
+# Solderpad Hardware License, Version 0.51, see LICENSE for details.
+# SPDX-License-Identifier: SHL-0.51
+
+# Authors:
+# - Tobias Senti <tsenti@ethz.ch>
+
+# Pad location
+
 puts "Loading library IO cell meta-data"
-source src/library.ihp13_io.tcl
+source ../pdk/future/sg13g2_iocell/library.sg13g2_iocell.tcl
 
 puts "Loaded library IO cell data"
 Footprint definition {
@@ -12,8 +21,6 @@ Footprint definition {
   ground_nets "VSS VSSIO"
 
   offsets 0
-  # tracks platforms/sky130/tracks_hs.info
-  # pin_layer Metal3
 
   pad_inst_name "%s"
   pad_pin_name "%s"

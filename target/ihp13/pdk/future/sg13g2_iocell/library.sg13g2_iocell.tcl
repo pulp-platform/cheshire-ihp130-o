@@ -1,15 +1,22 @@
+# Copyright 2023 ETH Zurich and University of Bologna.
+# Solderpad Hardware License, Version 0.51, see LICENSE for details.
+# SPDX-License-Identifier: SHL-0.51
+
+# Authors:
+# - Thomas Benz <tbenz@iis.ee.ethz.ch>
+
 Footprint library {
   types {
-    sig_io sg13g2_pad_io
-    sig_io_pd sg13g2_pad_io_pd
-    sig_io_pu sg13g2_pad_io_pu
-    sig_i sg13g2_pad_in
+    sig_io ixc013_b16m
+    sig_io_pd ixc013_b16mpdn
+    sig_io_pu ixc013_b16mpup
+    sig_i ixc013_i16x
     vdd_core vddcore
-    vss_core gndcore
+    vss_core vsscore
     vdd_pad vddpad
-    vss_pad gndpad
-    corner sg13g2_pad_corner
-    fill {sg13g2_pad_fill_10 sg13g2_pad_fill_4 sg13g2_pad_fill_2 sg13g2_pad_fill_1}
+    vss_pad vsspad
+    corner corner
+    fill {filler1u filler2u filler4u filler10u}
   }
 
   connect_by_abutment {
@@ -19,76 +26,76 @@ Footprint library {
     VDDPAD
   }
 
-  pad_pin_name pad_io
+  pad_pin_name PAD
   pad_pin_layer TopMetal2
 
   cells {
     sg13g2_pad_io {
-      cell_name sg13g2_pad_io
+      cell_name ixc013_b16m
       orient {bottom R0 right R90 top R180 left R270}
       flip_pair 1
     }
     sg13g2_pad_io_pd {
-      cell_name sg13g2_pad_io_pd
+      cell_name ixc013_b16mpdn
       orient {bottom R0 right R90 top R180 left R270}
       flip_pair 1
     }
     sg13g2_pad_io_pu {
-      cell_name sg13g2_pad_io_pu
+      cell_name ixc013_b16mpup
       orient {bottom R0 right R90 top R180 left R270}
       flip_pair 1
     }
     sg13g2_pad_in {
-      cell_name sg13g2_pad_in
+      cell_name ixc013_i16x
       orient {bottom R0 right R90 top R180 left R270}
       flip_pair 1
     }
 
     vddcore {
-      cell_name sg13g2_pad_vddco
+      cell_name vddcore
       physical_only 1
       orient {bottom R0 right R90 top R180 left R270}
     }
     gndcore {
-      cell_name sg13g2_pad_gndco
+      cell_name vsscore
       physical_only 1
       orient {bottom R0 right R90 top R180 left R270}
     }
     vddpad {
-      cell_name sg13g2_pad_vddio
+      cell_name vddpad
       physical_only 1
       orient {bottom R0 right R90 top R180 left R270}
     }
     gndpad {
-      cell_name sg13g2_pad_gndio
+      cell_name vsspad
       physical_only 1
       orient {bottom R0 right R90 top R180 left R270}
     }
 
     corner {
-      cell_name sg13g2_pad_corner
+      cell_name corner
       physical_only 1
       offset {0 0}
       orient {ll R270 lr R0 ur R90 ul R180}
     }
 
-    sg13g2_pad_fill_10 {
-      cell_name sg13g2_pad_fill_10
+    filler10u {
+      cell_name filler10u
       physical_only 1
       orient {bottom R0 right R90 top R180 left R270}
     }
-    sg13g2_pad_fill_4 {
-      cell_name sg13g2_pad_fill_4
+    filler4u {
+      cell_name filler4u
       physical_only 1
       orient {bottom R0 right R90 top R180 left R270}
     }
-    sg13g2_pad_fill_2 {
-      cell_name sg13g2_pad_fill_2
+    filler2u {
+      cell_name filler2u
       physical_only 1
       orient {bottom R0 right R90 top R180 left R270}
     }
-    sg13g2_pad_fill_1 {
-      cell_name sg13g2_pad_fill_1
+    filler1u {
+      cell_name filler1u
       physical_only 1
       orient {bottom R0 right R90 top R180 left R270}
     }

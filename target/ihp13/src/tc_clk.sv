@@ -1,9 +1,10 @@
 // Copyright 2023 ETH Zurich and University of Bologna.
 // Solderpad Hardware License, Version 0.51, see LICENSE for details.
 // SPDX-License-Identifier: SHL-0.51
+// Authors:
 //
-// Thomas Benz <tbenz@iis.ee.ethz.ch>
-// Tobias Senti <tsenti@student.ethz.ch>
+// -Thomas Benz <tbenz@iis.ee.ethz.ch>
+// -Tobias Senti <tsenti@student.ethz.ch>
 
 module tc_clk_inverter (
     input  logic clk_i,

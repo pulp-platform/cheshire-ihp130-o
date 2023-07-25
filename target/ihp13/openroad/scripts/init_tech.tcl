@@ -1,4 +1,15 @@
+# Copyright 2023 ETH Zurich and University of Bologna.
+# Solderpad Hardware License, Version 0.51, see LICENSE for details.
+# SPDX-License-Identifier: SHL-0.51
+
+# Authors:
+# - Tobias Senti <tsenti@ethz.ch>
+# - Jannis Schönleber <janniss@iis.ee.ethz.ch>
+
+# Initialize the PDK
+
 puts "Init tech"
+
 # LIB
 define_corners tt ff
 
@@ -33,10 +44,7 @@ read_lef ../pdk/future/sg13g2_sram/RM_IHPSG13_1P_256x64_c2_bm_bist.lef
 read_lef ../pdk/future/sg13g2_sram/RM_IHPSG13_1P_1024x64_c2_bm_bist.lef
 read_lef ../macro_cells/mc_sg13g2_delay/delay_line_D4_O1_6P000.lef
 
-set OPEN_CELLS 1
 set ctsBuf [ list sg13g2_buf_16 sg13g2_buf_8 sg13g2_buf_4 ]
 
-set dont_use_cells {sg13g2_pad_in sg13g2_pad_io sg13g2_pad_io_pu sg13g2_dfrbp_2}
-
-#set_wire_rc -signal -layer Metal4
-#set_wire_rc -clock -layer TopMetal1
+# TODO: eventually re-enable sg13g2_dfrbp_2
+set dont_use_cells {ixc013_i16x ixc013_b16m ixc013_b16mpup ixc013_b16mpdn sg13g2_dfrbp_2}

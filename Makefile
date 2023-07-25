@@ -2,7 +2,8 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 #
-# Jannis Schönleber <jannissc@iis.ee.ethz.ch>
+# Authors:
+# - Jannis Schönleber <janniss@iis.ee.ethz.ch>
 
 IG_ROOT ?= $(shell pwd)
 

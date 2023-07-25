@@ -2,9 +2,10 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 #
-# Jannis Schönleber <janniss@iis.ee.ethz.ch>
-# Philippe Sauter <phsauter@student.ethz.ch>
-# Paul Scheffler <paulsc@iis.ee.ethz.ch>
+# Authors:
+# - Jannis Schönleber <janniss@iis.ee.ethz.ch>
+# - Philippe Sauter <phsauter@ethz.ch>
+# - Paul Scheffler <paulsc@iis.ee.ethz.ch>
 
 BENDER   ?= bender  # https://github.com/pulp-platform/bender
 

@@ -2,8 +2,8 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 #
-# Author:  Philippe Sauter <phsauter@student.ethz.ch>
-
+# Authors:
+# - Philippe Sauter <phsauter@ethz.ch>
 
 # modules Yosys will treat as blackboxes
 # export YOSYS_BLACKBOX_MODULES := generic_delay_D4_O1_3P750_CG0

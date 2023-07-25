@@ -2,9 +2,10 @@
 // Solderpad Hardware License, Version 0.51, see LICENSE for details.
 // SPDX-License-Identifier: SHL-0.51
 //
-// Thomas Benz <tbenz@iis.ee.ethz.ch>
-// Tobias Senti <tsenti@student.ethz.ch>
-// Paul Scheffler <paulsc@iis.ee.ethz.ch>
+// Authors:
+// - Thomas Benz <tbenz@iis.ee.ethz.ch>
+// - Tobias Senti <tsenti@student.ethz.ch>
+// - Paul Scheffler <paulsc@iis.ee.ethz.ch>
 
 `define IHP13_TC_SRAM_TIEOFF \
   .A_BIST_CLK   ( '0 ), \

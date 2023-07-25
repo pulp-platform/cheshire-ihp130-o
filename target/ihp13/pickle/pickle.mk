@@ -1,10 +1,11 @@
 # Copyright (c) 2022 ETH Zurich and University of Bologna.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-#
-# Author:  Philippe Sauter <phsauter@student.ethz.ch>
-# Author:  Paul Scheffler  <paulsc@student.ethz.ch>
-#
+
+# Authors:
+# -Philippe Sauter <phsauter@ethz.ch>
+# -Paul Scheffler  <paulsc@iis.ee.ethz.ch>
+
 # First step of preprocessing, put all used RTL into one large file
 
 MORTY ?= morty  # https://github.com/pulp-platform/morty
