@@ -1,3 +1,12 @@
+# Copyright 2023 ETH Zurich and University of Bologna.
+# Solderpad Hardware License, Version 0.51, see LICENSE for details.
+# SPDX-License-Identifier: SHL-0.51
+
+# Authors:
+# - Jannis Schönleber <janniss@iis.ee.ethz.ch>
+
+# Helper functions for generating reports
+
 proc reopenStdout {file} {
     close stdout
     open $file w;

@@ -1,3 +1,13 @@
+# Copyright 2023 ETH Zurich and University of Bologna.
+# Solderpad Hardware License, Version 0.51, see LICENSE for details.
+# SPDX-License-Identifier: SHL-0.51
+
+# Authors:
+# - Tobias Senti <tsenti@ethz.ch>
+# - Jannis Schönleber <janniss@iis.ee.ethz.ch>
+
+# The main OpenRoad chip flow
+
 set DESIGN_NAME iguana_yosys
 set time [elapsed_run_time]
 
@@ -303,8 +313,6 @@ if { $step_by_step_debug } {
     gui::pause
 }
 
-exit
-
 puts "Filler placement"
 filler_placement "FEED1JI FEED2JI FEED3JI FEED5JI FEED10JI FEED25JI"
 puts "Check placement"
@@ -318,7 +326,7 @@ puts "Time: $time sec deltaT: $deltaT"
 
 ### Def to GDS
 puts "Def to GDS"
-exec klayout -zz -rm scripts/def2stream.py
+exec cd ../klayout/; klayout -zz -rm scripts/def2stream.py
 set deltaT [expr [elapsed_run_time] - $time]
 set time [elapsed_run_time]
 puts "Time: $time sec deltaT: $deltaT"

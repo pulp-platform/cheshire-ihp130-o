@@ -2,12 +2,12 @@
 /* Solderpad Hardware License, Version 0.51, see LICENSE for details. */
 /* SPDX-License-Identifier: SHL-0.51 */
 
-/* Dummy LIB for the sg13g2_pad_typ_1p2V_3p3V_25C library */
+/* Dummy LIB for the sg13g2_iocell_typ_1p2V_3p3V_25C library */
 
 /* Derived and adapted from the Sky130 IO Lib file found at: */
 /* https://github.com/The-OpenROAD-Project/OpenROAD-flow-scripts/blob/master/flow/platforms/sky130io/lib/sky130_dummy_io.lib */
 
-library (sg13g2_pad_typ_1p2V_3p3V_25C) {
+library (sg13g2_iocell_typ_1p2V_3p3V_25C) {
   comment : "";
   delay_model : table_lookup;
   capacitive_load_unit (1,ff);
@@ -54,28 +54,28 @@ library (sg13g2_pad_typ_1p2V_3p3V_25C) {
     index_1 ("10, 200");
     index_2 ("500, 30000");
   }
-  cell (sg13g2_pad_io) {
+  cell (ixc013_b16m) {
     area : 18600;
     dont_touch : true;
     dont_use : true;
     timing_model_type : abstracted;
     pad_cell : true;
-    pin (oe_i) {
+    pin (OEN) {
       direction : input;
       max_transition : 200;
       capacitance : 10;
     }
-    pin (pad_io) {
+    pin (PAD) {
       direction : inout;
-      function : "(d_i)";
-      three_state : "oe_i";
+      function : "DIN";
+      three_state : "OEN";
       is_pad : true;
       drive_current : 20;
       max_capacitance : 30000;
       max_transition : 2000;
       capacitance : 2000;
       timing () {
-        related_pin : "d_i";
+        related_pin : "DIN";
         timing_sense : positive_unate;
         timing_type : combinational;
         cell_rise (delay_template_2x2) {
@@ -112,7 +112,7 @@ library (sg13g2_pad_typ_1p2V_3p3V_25C) {
         }
       }
       timing () {
-        related_pin : "oe_i";
+        related_pin : "OEN";
         timing_sense : positive_unate;
         timing_type : combinational;
         cell_rise (delay_template_2x2) {
@@ -149,7 +149,7 @@ library (sg13g2_pad_typ_1p2V_3p3V_25C) {
         }
       }
       timing () {
-        related_pin : "oe_i";
+        related_pin : "OEN";
         timing_sense : positive_unate;
         timing_type : three_state_disable;
         cell_rise (delay_template_2x2) {
@@ -186,13 +186,13 @@ library (sg13g2_pad_typ_1p2V_3p3V_25C) {
         }
       }
     }
-    pin (d_o) {
+    pin (DOUT) {
       direction : output;
-      function : "(pad_io)";
+      function : "PAD";
       max_capacitance : 500;
       max_transition : 200;
       timing () {
-        related_pin : "pad_io";
+        related_pin : "PAD";
         timing_type : combinational;
         cell_rise (delay_template_2x2) {
           index_1 ("10, 200");
@@ -228,7 +228,7 @@ library (sg13g2_pad_typ_1p2V_3p3V_25C) {
         }
       }
     }
-    pin (d_i) {
+    pin (DIN) {
       direction : input;
       max_transition : 200;
       capacitance : 12;
@@ -238,28 +238,28 @@ library (sg13g2_pad_typ_1p2V_3p3V_25C) {
       fall_capacitance_range (11.5, 12.5);
     }
   }
-  cell (sg13g2_pad_io_pu) {
+  cell (ixc013_b16mpup) {
     area : 18600;
     dont_touch : true;
     dont_use : true;
     timing_model_type : abstracted;
     pad_cell : true;
-    pin (oe_i) {
+    pin (OEN) {
       direction : input;
       max_transition : 200;
       capacitance : 10;
     }
-    pin (pad_io) {
+    pin (PAD) {
       direction : inout;
-      function : "(d_i)";
-      three_state : "oe_i";
+      function : "DIN";
+      three_state : "OEN";
       is_pad : true;
       drive_current : 20;
       max_capacitance : 30000;
       max_transition : 2000;
       capacitance : 2000;
       timing () {
-        related_pin : "d_i";
+        related_pin : "DIN";
         timing_sense : positive_unate;
         timing_type : combinational;
         cell_rise (delay_template_2x2) {
@@ -296,7 +296,7 @@ library (sg13g2_pad_typ_1p2V_3p3V_25C) {
         }
       }
       timing () {
-        related_pin : "oe_i";
+        related_pin : "OEN";
         timing_sense : positive_unate;
         timing_type : combinational;
         cell_rise (delay_template_2x2) {
@@ -333,7 +333,7 @@ library (sg13g2_pad_typ_1p2V_3p3V_25C) {
         }
       }
       timing () {
-        related_pin : "oe_i";
+        related_pin : "OEN";
         timing_sense : positive_unate;
         timing_type : three_state_disable;
         cell_rise (delay_template_2x2) {
@@ -370,13 +370,13 @@ library (sg13g2_pad_typ_1p2V_3p3V_25C) {
         }
       }
     }
-    pin (d_o) {
+    pin (DOUT) {
       direction : output;
-      function : "(pad_io)";
+      function : "(PAD)";
       max_capacitance : 500;
       max_transition : 200;
       timing () {
-        related_pin : "pad_io";
+        related_pin : "PAD";
         timing_type : combinational;
         cell_rise (delay_template_2x2) {
           index_1 ("10, 200");
@@ -412,7 +412,7 @@ library (sg13g2_pad_typ_1p2V_3p3V_25C) {
         }
       }
     }
-    pin (d_i) {
+    pin (DIN) {
       direction : input;
       max_transition : 200;
       capacitance : 12;
@@ -422,28 +422,28 @@ library (sg13g2_pad_typ_1p2V_3p3V_25C) {
       fall_capacitance_range (11.5, 12.5);
     }
   }
-  cell (sg13g2_pad_io_pd) {
+  cell (ixc013_b16mpdn) {
     area : 18600;
     dont_touch : true;
     dont_use : true;
     timing_model_type : abstracted;
     pad_cell : true;
-    pin (oe_i) {
+    pin (OEN) {
       direction : input;
       max_transition : 200;
       capacitance : 10;
     }
-    pin (pad_io) {
+    pin (PAD) {
       direction : inout;
-      function : "(d_i)";
-      three_state : "oe_i";
+      function : "DIN";
+      three_state : "OEN";
       is_pad : true;
       drive_current : 20;
       max_capacitance : 30000;
       max_transition : 2000;
       capacitance : 2000;
       timing () {
-        related_pin : "d_i";
+        related_pin : "DIN";
         timing_sense : positive_unate;
         timing_type : combinational;
         cell_rise (delay_template_2x2) {
@@ -480,7 +480,7 @@ library (sg13g2_pad_typ_1p2V_3p3V_25C) {
         }
       }
       timing () {
-        related_pin : "oe_i";
+        related_pin : "OEN";
         timing_sense : positive_unate;
         timing_type : combinational;
         cell_rise (delay_template_2x2) {
@@ -517,7 +517,7 @@ library (sg13g2_pad_typ_1p2V_3p3V_25C) {
         }
       }
       timing () {
-        related_pin : "oe_i";
+        related_pin : "OEN";
         timing_sense : positive_unate;
         timing_type : three_state_disable;
         cell_rise (delay_template_2x2) {
@@ -554,13 +554,13 @@ library (sg13g2_pad_typ_1p2V_3p3V_25C) {
         }
       }
     }
-    pin (d_o) {
+    pin (DOUT) {
       direction : output;
-      function : "(pad_io)";
+      function : "(PAD)";
       max_capacitance : 500;
       max_transition : 200;
       timing () {
-        related_pin : "pad_io";
+        related_pin : "PAD";
         timing_type : combinational;
         cell_rise (delay_template_2x2) {
           index_1 ("10, 200");
@@ -596,7 +596,7 @@ library (sg13g2_pad_typ_1p2V_3p3V_25C) {
         }
       }
     }
-    pin (d_i) {
+    pin (DIN) {
       direction : input;
       max_transition : 200;
       capacitance : 12;
@@ -606,13 +606,13 @@ library (sg13g2_pad_typ_1p2V_3p3V_25C) {
       fall_capacitance_range (11.5, 12.5);
     }
   }
-  cell (sg13g2_pad_in) {
+  cell (ixc013_i16x) {
     area : 18600;
     dont_touch : true;
     dont_use : true;
     timing_model_type : abstracted;
     pad_cell : true;
-    pin (pad_io) {
+    pin (PAD) {
       direction : inout;
       is_pad : true;
       drive_current : 20;
@@ -620,13 +620,13 @@ library (sg13g2_pad_typ_1p2V_3p3V_25C) {
       max_transition : 2000;
       capacitance : 2000;
     }
-    pin (d_o) {
+    pin (DOUT) {
       direction : output;
-      function : "(pad_io)";
+      function : "PAD";
       max_capacitance : 500;
       max_transition : 200;
       timing () {
-        related_pin : "pad_io";
+        related_pin : "PAD";
         timing_type : combinational;
         cell_rise (delay_template_2x2) {
           index_1 ("10, 200");
@@ -663,49 +663,55 @@ library (sg13g2_pad_typ_1p2V_3p3V_25C) {
       }
     }
   }
-  cell (sg13g2_pad_corner) {
+  cell (corner) {
     area : 96100;
     dont_touch : true;
     dont_use : true;
     pad_cell : true;
   }
-  cell (sg13g2_pad_fill_1) {
+  cell (filler1u) {
     area : 310;
     dont_touch : true;
     dont_use : true;
     pad_cell : true;
   }
-  cell (sg13g2_pad_fill_10) {
+  cell (filler2u) {
+    area : 610;
+    dont_touch : true;
+    dont_use : true;
+    pad_cell : true;
+  }
+  cell (filler4u) {
+    area : 1220;
+    dont_touch : true;
+    dont_use : true;
+    pad_cell : true;
+  }
+  cell (filler10u) {
     area : 3100;
     dont_touch : true;
     dont_use : true;
     pad_cell : true;
   }
-  cell (sg13g2_pad_fill_80) {
-    area : 24800;
-    dont_touch : true;
-    dont_use : true;
-    pad_cell : true;
-  }
-  cell (sg13g2_pad_gndco) {
+  cell (vsscore) {
     area : 18600;
     dont_touch : true;
     dont_use : true;
     pad_cell : true;
   }
-  cell (sg13g2_pad_vddco) {
+  cell (vddcore) {
     area : 18600;
     dont_touch : true;
     dont_use : true;
     pad_cell : true;
   }
-  cell (sg13g2_pad_gndio) {
+  cell (vsspad) {
     area : 18600;
     dont_touch : true;
     dont_use : true;
     pad_cell : true;
   }
-  cell (sg13g2_pad_vddio) {
+  cell (vddpad) {
     area : 18600;
     dont_touch : true;
     dont_use : true;

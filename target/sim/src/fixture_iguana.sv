@@ -1,3 +1,11 @@
+// Copyright 2023 ETH Zurich and University of Bologna.
+// Solderpad Hardware License, Version 0.51, see LICENSE for details.
+// SPDX-License-Identifier: SHL-0.51
+//
+// Authors:
+// - Jannis Schönleber <janniss@iis.ee.ethz.ch>
+
+/// Testbench bixture of Iguana: derived from the Cheshire fixture
 module fixture_iguana;
 
   `include "cheshire/typedef.svh"

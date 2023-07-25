@@ -2,10 +2,11 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 #
-# Nicole Narr <narrn@student.ethz.ch>
-# Christopher Reinwardt <creinwar@student.ethz.ch>
-# Alessandro Ottaviano <aottaviano@iis.ee.ethz.ch>
-# Paul Scheffler <paulsc@iis.ee.ethz.ch>
+# Authors:
+# - Nicole Narr <narrn@student.ethz.ch>
+# - Christopher Reinwardt <creinwar@student.ethz.ch>
+# - Alessandro Ottaviano <aottaviano@iis.ee.ethz.ch>
+# - Paul Scheffler <paulsc@iis.ee.ethz.ch>
 
 set TESTBENCH tb_iguana
 

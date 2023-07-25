@@ -2,7 +2,8 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 #
-# Author:  Philippe Sauter <phsauter@student.ethz.ch>
+# Authors:
+# - Philippe Sauter <phsauter@ethz.ch>
 
 # Common setup used for all yosys scripts
 array set env_vars {

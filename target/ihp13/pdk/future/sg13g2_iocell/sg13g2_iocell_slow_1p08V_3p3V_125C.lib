@@ -2,12 +2,12 @@
 /* Solderpad Hardware License, Version 0.51, see LICENSE for details. */
 /* SPDX-License-Identifier: SHL-0.51 */
 
-/* Dummy LIB for the sg13g2_pad_fast_1p32V_3p3V_m40C library */
+/* Dummy LIB for the sg13g2_iocell_slow_1p08V_3p3V_125C library */
 
 /* Derived and adapted from the Sky130 IO Lib file found at: */
 /* https://github.com/The-OpenROAD-Project/OpenROAD-flow-scripts/blob/master/flow/platforms/sky130io/lib/sky130_dummy_io.lib */
 
-library (sg13g2_pad_fast_1p32V_3p3V_m40C) {
+library (sg13g2_iocell_slow_1p08V_3p3V_125C) {
   comment : "";
   delay_model : table_lookup;
   capacitive_load_unit (1,ff);
@@ -26,7 +26,7 @@ library (sg13g2_pad_fast_1p32V_3p3V_m40C) {
   input_threshold_pct_fall : 50;
   input_threshold_pct_rise : 50;
   nom_process : 1;
-  nom_temperature : -40;
+  nom_temperature : 125;
   output_threshold_pct_fall : 50;
   output_threshold_pct_rise : 50;
   slew_derate_from_library : 1;
@@ -34,678 +34,684 @@ library (sg13g2_pad_fast_1p32V_3p3V_m40C) {
   slew_lower_threshold_pct_rise : 20;
   slew_upper_threshold_pct_fall : 80;
   slew_upper_threshold_pct_rise : 80;
-  operating_conditions ("fast") {
+  operating_conditions ("slow") {
     process : 1;
-    temperature : -40;
+    temperature : 125;
     tree_type: "balanced_tree";
   }
   wire_load (DEFAULT) {
     area : 1;
     capacitance : 0;
     resistance : 0;
-    slope : 0.03;
+    slope : 0.08;
     fanout_length (1, 0.100);
     fanout_length (8, 1.000);
   }
-  default_operating_conditions : "fast";
+  default_operating_conditions : "slow";
   lu_table_template (delay_template_2x2) {
     variable_1 : input_net_transition;
     variable_2 : total_output_net_capacitance;
     index_1 ("10, 200");
     index_2 ("500, 30000");
   }
-  cell (sg13g2_pad_io) {
+  cell (ixc013_b16m) {
     area : 18600;
     dont_touch : true;
     dont_use : true;
     timing_model_type : abstracted;
     pad_cell : true;
-    pin (oe_i) {
+    pin (OEN) {
       direction : input;
-      max_transition : 150;
-      capacitance : 8;
+      max_transition : 250;
+      capacitance : 12;
     }
-    pin (pad_io) {
+    pin (PAD) {
       direction : inout;
-      function : "(d_i)";
-      three_state : "oe_i";
+      function : "DIN";
+      three_state : "OEN";
       is_pad : true;
       drive_current : 20;
-      max_capacitance : 20000;
-      max_transition : 1500;
-      capacitance : 1500;
+      max_capacitance : 40000;
+      max_transition : 2500;
+      capacitance : 2500;
       timing () {
-        related_pin : "d_i";
+        related_pin : "DIN";
         timing_sense : positive_unate;
         timing_type : combinational;
         cell_rise (delay_template_2x2) {
           index_1 ("10, 200");
           index_2 ("2000, 30000");
           values ( \
-            "750, 750", \
-            "750, 750" \
+            "1250, 1250", \
+            "1250, 1250" \
           );
         }
         rise_transition (delay_template_2x2) {
           index_1 ("10, 200");
           index_2 ("2000, 30000");
           values ( \
-            "150, 150", \
-            "150, 150" \
+            "250, 250", \
+            "250, 250" \
           );
         }
         cell_fall (delay_template_2x2) {
           index_1 ("10, 200");
           index_2 ("2000, 30000");
           values ( \
-            "750, 750", \
-            "750, 750" \
+            "1250, 1250", \
+            "1250, 1250" \
           );
         }
         fall_transition (delay_template_2x2) {
           index_1 ("10, 200");
           index_2 ("2000, 30000");
           values ( \
-            "150, 150", \
-            "150, 150" \
+            "250, 250", \
+            "250, 250" \
           );
         }
       }
       timing () {
-        related_pin : "oe_i";
+        related_pin : "OEN";
         timing_sense : positive_unate;
         timing_type : combinational;
         cell_rise (delay_template_2x2) {
           index_1 ("10, 200");
           index_2 ("2000, 30000");
           values ( \
-            "650, 650", \
-            "650, 650" \
+            "850, 850", \
+            "850, 850" \
           );
         }
         rise_transition (delay_template_2x2) {
           index_1 ("10, 200");
           index_2 ("2000, 30000");
           values ( \
-            "100, 100", \
-            "100, 100" \
+            "200, 200", \
+            "200, 200" \
           );
         }
         cell_fall (delay_template_2x2) {
           index_1 ("10, 200");
           index_2 ("2000, 30000");
           values ( \
-            "650, 650", \
-            "650, 650" \
+            "850, 850", \
+            "850, 850" \
           );
         }
         fall_transition (delay_template_2x2) {
           index_1 ("10, 200");
           index_2 ("2000, 30000");
           values ( \
-            "100, 100", \
-            "100, 100" \
+            "200, 200", \
+            "200, 200" \
           );
         }
       }
       timing () {
-        related_pin : "oe_i";
+        related_pin : "OEN";
         timing_sense : positive_unate;
         timing_type : three_state_disable;
         cell_rise (delay_template_2x2) {
           index_1 ("10, 200");
           index_2 ("2000, 30000");
           values ( \
-            "650, 650", \
-            "650, 650" \
+            "850, 850", \
+            "850, 850" \
           );
         }
         rise_transition (delay_template_2x2) {
           index_1 ("10, 200");
           index_2 ("2000, 30000");
           values ( \
-            "100, 100", \
-            "100, 100" \
+            "200, 200", \
+            "200, 200" \
           );
         }
         cell_fall (delay_template_2x2) {
           index_1 ("10, 200");
           index_2 ("2000, 30000");
           values ( \
-            "650, 650", \
-            "650, 650" \
+            "850, 850", \
+            "850, 850" \
           );
         }
         fall_transition (delay_template_2x2) {
           index_1 ("10, 200");
           index_2 ("2000, 30000");
           values ( \
-            "100, 100", \
-            "100, 100" \
+            "200, 200", \
+            "200, 200" \
           );
         }
       }
     }
-    pin (d_o) {
+    pin (DOUT) {
       direction : output;
-      function : "(pad_io)";
-      max_capacitance : 350;
-      max_transition : 150;
+      function : "(PAD)";
+      max_capacitance : 650;
+      max_transition : 250;
       timing () {
-        related_pin : "pad_io";
+        related_pin : "PAD";
         timing_type : combinational;
         cell_rise (delay_template_2x2) {
           index_1 ("10, 200");
           index_2 ("2000, 30000");
           values ( \
-            "750, 750", \
-            "750, 750" \
+            "1250, 1250", \
+            "1250, 1250" \
           );
         }
         rise_transition (delay_template_2x2) {
           index_1 ("10, 200");
           index_2 ("2000, 30000");
           values ( \
-            "150, 150", \
-            "150, 150" \
+            "250, 250", \
+            "250, 250" \
           );
         }
         cell_fall (delay_template_2x2) {
           index_1 ("10, 200");
           index_2 ("2000, 30000");
           values ( \
-            "750, 750", \
-            "750, 750" \
+            "1250, 1250", \
+            "1250, 1250" \
           );
         }
         fall_transition (delay_template_2x2) {
           index_1 ("10, 200");
           index_2 ("2000, 30000");
           values ( \
-            "150, 150", \
-            "150, 150" \
+            "250, 250", \
+            "250, 250" \
           );
         }
       }
     }
-    pin (d_i) {
+    pin (DIN) {
       direction : input;
-      max_transition : 150;
-      capacitance : 8;
-      rise_capacitance : 8;
-      rise_capacitance_range (7.5, 8.5);
-      fall_capacitance : 8;
-      fall_capacitance_range (7.5, 8.5);
+      max_transition : 250;
+      capacitance : 16;
+      rise_capacitance : 16;
+      rise_capacitance_range (15.5, 16.5);
+      fall_capacitance : 16;
+      fall_capacitance_range (15.5, 16.5);
     }
   }
-  cell (sg13g2_pad_io_pu) {
+  cell (ixc013_b16mpup) {
     area : 18600;
     dont_touch : true;
     dont_use : true;
     timing_model_type : abstracted;
     pad_cell : true;
-    pin (oe_i) {
+    pin (OEN) {
       direction : input;
-      max_transition : 150;
-      capacitance : 8;
+      max_transition : 250;
+      capacitance : 12;
     }
-    pin (pad_io) {
+    pin (PAD) {
       direction : inout;
-      function : "(d_i)";
-      three_state : "oe_i";
+      function : "DIN";
+      three_state : "OEN";
       is_pad : true;
       drive_current : 20;
-      max_capacitance : 20000;
-      max_transition : 1500;
-      capacitance : 1500;
+      max_capacitance : 40000;
+      max_transition : 2500;
+      capacitance : 2500;
       timing () {
-        related_pin : "d_i";
+        related_pin : "DIN";
         timing_sense : positive_unate;
         timing_type : combinational;
         cell_rise (delay_template_2x2) {
           index_1 ("10, 200");
           index_2 ("2000, 30000");
           values ( \
-            "750, 750", \
-            "750, 750" \
+            "1250, 1250", \
+            "1250, 1250" \
           );
         }
         rise_transition (delay_template_2x2) {
           index_1 ("10, 200");
           index_2 ("2000, 30000");
           values ( \
-            "150, 150", \
-            "150, 150" \
+            "250, 250", \
+            "250, 250" \
           );
         }
         cell_fall (delay_template_2x2) {
           index_1 ("10, 200");
           index_2 ("2000, 30000");
           values ( \
-            "750, 750", \
-            "750, 750" \
+            "1250, 1250", \
+            "1250, 1250" \
           );
         }
         fall_transition (delay_template_2x2) {
           index_1 ("10, 200");
           index_2 ("2000, 30000");
           values ( \
-            "150, 150", \
-            "150, 150" \
+            "250, 250", \
+            "250, 250" \
           );
         }
       }
       timing () {
-        related_pin : "oe_i";
+        related_pin : "OEN";
         timing_sense : positive_unate;
         timing_type : combinational;
         cell_rise (delay_template_2x2) {
           index_1 ("10, 200");
           index_2 ("2000, 30000");
           values ( \
-            "650, 650", \
-            "650, 650" \
+            "850, 850", \
+            "850, 850" \
           );
         }
         rise_transition (delay_template_2x2) {
           index_1 ("10, 200");
           index_2 ("2000, 30000");
           values ( \
-            "100, 100", \
-            "100, 100" \
+            "200, 200", \
+            "200, 200" \
           );
         }
         cell_fall (delay_template_2x2) {
           index_1 ("10, 200");
           index_2 ("2000, 30000");
           values ( \
-            "650, 650", \
-            "650, 650" \
+            "850, 850", \
+            "850, 850" \
           );
         }
         fall_transition (delay_template_2x2) {
           index_1 ("10, 200");
           index_2 ("2000, 30000");
           values ( \
-            "100, 100", \
-            "100, 100" \
+            "200, 200", \
+            "200, 200" \
           );
         }
       }
       timing () {
-        related_pin : "oe_i";
+        related_pin : "OEN";
         timing_sense : positive_unate;
         timing_type : three_state_disable;
         cell_rise (delay_template_2x2) {
           index_1 ("10, 200");
           index_2 ("2000, 30000");
           values ( \
-            "650, 650", \
-            "650, 650" \
+            "850, 850", \
+            "850, 850" \
           );
         }
         rise_transition (delay_template_2x2) {
           index_1 ("10, 200");
           index_2 ("2000, 30000");
           values ( \
-            "100, 100", \
-            "100, 100" \
+            "200, 200", \
+            "200, 200" \
           );
         }
         cell_fall (delay_template_2x2) {
           index_1 ("10, 200");
           index_2 ("2000, 30000");
           values ( \
-            "650, 650", \
-            "650, 650" \
+            "850, 850", \
+            "850, 850" \
           );
         }
         fall_transition (delay_template_2x2) {
           index_1 ("10, 200");
           index_2 ("2000, 30000");
           values ( \
-            "100, 100", \
-            "100, 100" \
+            "200, 200", \
+            "200, 200" \
           );
         }
       }
     }
-    pin (d_o) {
+    pin (DOUT) {
       direction : output;
-      function : "(pad_io)";
-      max_capacitance : 350;
-      max_transition : 150;
+      function : "(PAD)";
+      max_capacitance : 650;
+      max_transition : 250;
       timing () {
-        related_pin : "pad_io";
+        related_pin : "PAD";
         timing_type : combinational;
         cell_rise (delay_template_2x2) {
           index_1 ("10, 200");
           index_2 ("2000, 30000");
           values ( \
-            "750, 750", \
-            "750, 750" \
+            "1250, 1250", \
+            "1250, 1250" \
           );
         }
         rise_transition (delay_template_2x2) {
           index_1 ("10, 200");
           index_2 ("2000, 30000");
           values ( \
-            "150, 150", \
-            "150, 150" \
+            "100, 100", \
+            "100, 100" \
           );
         }
         cell_fall (delay_template_2x2) {
           index_1 ("10, 200");
           index_2 ("2000, 30000");
           values ( \
-            "750, 750", \
-            "750, 750" \
+            "1250, 1250", \
+            "1250, 1250" \
           );
         }
         fall_transition (delay_template_2x2) {
           index_1 ("10, 200");
           index_2 ("2000, 30000");
           values ( \
-            "150, 150", \
-            "150, 150" \
+            "250, 250", \
+            "250, 250" \
           );
         }
       }
     }
-    pin (d_i) {
+    pin (DIN) {
       direction : input;
-      max_transition : 150;
-      capacitance : 8;
-      rise_capacitance : 8;
-      rise_capacitance_range (7.5, 8.5);
-      fall_capacitance : 8;
-      fall_capacitance_range (7.5, 8.5);
+      max_transition : 1250;
+      capacitance : 16;
+      rise_capacitance : 16;
+      rise_capacitance_range (15.5, 16.5);
+      fall_capacitance : 16;
+      fall_capacitance_range (15.5, 16.5);
     }
   }
-  cell (sg13g2_pad_io_pd) {
+  cell (ixc013_b16mpdn) {
     area : 18600;
     dont_touch : true;
     dont_use : true;
     timing_model_type : abstracted;
     pad_cell : true;
-    pin (oe_i) {
+    pin (OEN) {
       direction : input;
-      max_transition : 150;
-      capacitance : 8;
+      max_transition : 250;
+      capacitance : 12;
     }
-    pin (pad_io) {
+    pin (PAD) {
       direction : inout;
-      function : "(d_i)";
-      three_state : "oe_i";
+      function : "DIN";
+      three_state : "OEN";
       is_pad : true;
       drive_current : 20;
-      max_capacitance : 20000;
-      max_transition : 1500;
-      capacitance : 1500;
+      max_capacitance : 40000;
+      max_transition : 2500;
+      capacitance : 2500;
       timing () {
-        related_pin : "d_i";
+        related_pin : "DIN";
         timing_sense : positive_unate;
         timing_type : combinational;
         cell_rise (delay_template_2x2) {
           index_1 ("10, 200");
           index_2 ("2000, 30000");
           values ( \
-            "750, 750", \
-            "750, 750" \
+            "1250, 1250", \
+            "1250, 1250" \
           );
         }
         rise_transition (delay_template_2x2) {
           index_1 ("10, 200");
           index_2 ("2000, 30000");
           values ( \
-            "150, 150", \
-            "150, 150" \
+            "250, 250", \
+            "250, 250" \
           );
         }
         cell_fall (delay_template_2x2) {
           index_1 ("10, 200");
           index_2 ("2000, 30000");
           values ( \
-            "750, 750", \
-            "750, 750" \
+            "1250, 1250", \
+            "1250, 1250" \
           );
         }
         fall_transition (delay_template_2x2) {
           index_1 ("10, 200");
           index_2 ("2000, 30000");
           values ( \
-            "150, 150", \
-            "150, 150" \
+            "250, 250", \
+            "250, 250" \
           );
         }
       }
       timing () {
-        related_pin : "oe_i";
+        related_pin : "OEN";
         timing_sense : positive_unate;
         timing_type : combinational;
         cell_rise (delay_template_2x2) {
           index_1 ("10, 200");
           index_2 ("2000, 30000");
           values ( \
-            "650, 650", \
-            "650, 650" \
+            "850, 850", \
+            "850, 850" \
           );
         }
         rise_transition (delay_template_2x2) {
           index_1 ("10, 200");
           index_2 ("2000, 30000");
           values ( \
-            "100, 100", \
-            "100, 100" \
+            "200, 200", \
+            "200, 200" \
           );
         }
         cell_fall (delay_template_2x2) {
           index_1 ("10, 200");
           index_2 ("2000, 30000");
           values ( \
-            "650, 650", \
-            "650, 650" \
+            "850, 850", \
+            "850, 850" \
           );
         }
         fall_transition (delay_template_2x2) {
           index_1 ("10, 200");
           index_2 ("2000, 30000");
           values ( \
-            "100, 100", \
-            "100, 100" \
+            "200, 200", \
+            "200, 200" \
           );
         }
       }
       timing () {
-        related_pin : "oe_i";
+        related_pin : "OEN";
         timing_sense : positive_unate;
         timing_type : three_state_disable;
         cell_rise (delay_template_2x2) {
           index_1 ("10, 200");
           index_2 ("2000, 30000");
           values ( \
-            "650, 650", \
-            "650, 650" \
+            "850, 850", \
+            "850, 850" \
           );
         }
         rise_transition (delay_template_2x2) {
           index_1 ("10, 200");
           index_2 ("2000, 30000");
           values ( \
-            "100, 100", \
-            "100, 100" \
+            "200, 200", \
+            "200, 200" \
           );
         }
         cell_fall (delay_template_2x2) {
           index_1 ("10, 200");
           index_2 ("2000, 30000");
           values ( \
-            "650, 650", \
-            "650, 650" \
+            "850, 850", \
+            "850, 850" \
           );
         }
         fall_transition (delay_template_2x2) {
           index_1 ("10, 200");
           index_2 ("2000, 30000");
           values ( \
-            "100, 100", \
-            "100, 100" \
+            "200, 200", \
+            "200, 200" \
           );
         }
       }
     }
-    pin (d_o) {
+    pin (DOUT) {
       direction : output;
-      function : "(pad_io)";
-      max_capacitance : 350;
-      max_transition : 150;
+      function : "(PAD)";
+      max_capacitance : 650;
+      max_transition : 250;
       timing () {
-        related_pin : "pad_io";
+        related_pin : "PAD";
         timing_type : combinational;
         cell_rise (delay_template_2x2) {
           index_1 ("10, 200");
           index_2 ("2000, 30000");
           values ( \
-            "750, 750", \
-            "750, 750" \
+            "1250, 1250", \
+            "1250, 1250" \
           );
         }
         rise_transition (delay_template_2x2) {
           index_1 ("10, 200");
           index_2 ("2000, 30000");
           values ( \
-            "150, 150", \
-            "150, 150" \
+            "250, 250", \
+            "250, 250" \
           );
         }
         cell_fall (delay_template_2x2) {
           index_1 ("10, 200");
           index_2 ("2000, 30000");
           values ( \
-            "750, 750", \
-            "750, 750" \
+            "1250, 1250", \
+            "1250, 1250" \
           );
         }
         fall_transition (delay_template_2x2) {
           index_1 ("10, 200");
           index_2 ("2000, 30000");
           values ( \
-            "150, 150", \
-            "150, 150" \
+            "250, 250", \
+            "250, 250" \
           );
         }
       }
     }
-    pin (d_i) {
+    pin (DIN) {
       direction : input;
-      max_transition : 150;
-      capacitance : 8;
-      rise_capacitance : 8;
-      rise_capacitance_range (7.5, 8.5);
-      fall_capacitance : 8;
-      fall_capacitance_range (7.5, 8.5);
+      max_transition : 250;
+      capacitance : 16;
+      rise_capacitance : 16;
+      rise_capacitance_range (15.5, 16.5);
+      fall_capacitance : 16;
+      fall_capacitance_range (15.5, 16.5);
     }
   }
-  cell (sg13g2_pad_in) {
+  cell (ixc013_i16x) {
     area : 18600;
     dont_touch : true;
     dont_use : true;
     timing_model_type : abstracted;
     pad_cell : true;
-    pin (pad_io) {
+    pin (PAD) {
       direction : inout;
       is_pad : true;
       drive_current : 20;
-      max_capacitance : 20000;
-      max_transition : 1500;
-      capacitance : 1500;
+      max_capacitance : 40000;
+      max_transition : 2500;
+      capacitance : 2500;
     }
-    pin (d_o) {
+    pin (DOUT) {
       direction : output;
-      function : "(pad_io)";
+      function : "PAD";
       max_capacitance : 500;
-      max_transition : 150;
+      max_transition : 250;
       timing () {
-        related_pin : "pad_io";
+        related_pin : "PAD";
         timing_type : combinational;
         cell_rise (delay_template_2x2) {
           index_1 ("10, 200");
           index_2 ("2000, 30000");
           values ( \
-            "750, 750", \
-            "750, 750" \
+            "1250, 1250", \
+            "1250, 1250" \
           );
         }
         rise_transition (delay_template_2x2) {
           index_1 ("10, 200");
           index_2 ("2000, 30000");
           values ( \
-            "150, 150", \
-            "150, 150" \
+            "250, 250", \
+            "250, 250" \
           );
         }
         cell_fall (delay_template_2x2) {
           index_1 ("10, 200");
           index_2 ("2000, 30000");
           values ( \
-            "750, 750", \
-            "750, 750" \
+            "1250, 1250", \
+            "1250, 1250" \
           );
         }
         fall_transition (delay_template_2x2) {
           index_1 ("10, 200");
           index_2 ("2000, 30000");
           values ( \
-            "150, 150", \
-            "150, 150" \
+            "250, 250", \
+            "250, 250" \
           );
         }
       }
     }
   }
-  cell (sg13g2_pad_corner) {
+  cell (corner) {
     area : 96100;
     dont_touch : true;
     dont_use : true;
     pad_cell : true;
   }
-  cell (sg13g2_pad_fill_1) {
+  cell (filler1u) {
     area : 310;
     dont_touch : true;
     dont_use : true;
     pad_cell : true;
   }
-  cell (sg13g2_pad_fill_10) {
+  cell (filler2u) {
+    area : 610;
+    dont_touch : true;
+    dont_use : true;
+    pad_cell : true;
+  }
+  cell (filler4u) {
+    area : 1220;
+    dont_touch : true;
+    dont_use : true;
+    pad_cell : true;
+  }
+  cell (filler10u) {
     area : 3100;
     dont_touch : true;
     dont_use : true;
     pad_cell : true;
   }
-  cell (sg13g2_pad_fill_80) {
-    area : 24800;
-    dont_touch : true;
-    dont_use : true;
-    pad_cell : true;
-  }
-  cell (sg13g2_pad_gndco) {
+  cell (vsscore) {
     area : 18600;
     dont_touch : true;
     dont_use : true;
     pad_cell : true;
   }
-  cell (sg13g2_pad_vddco) {
+  cell (vddcore) {
     area : 18600;
     dont_touch : true;
     dont_use : true;
     pad_cell : true;
   }
-  cell (sg13g2_pad_gndio) {
+  cell (vsspad) {
     area : 18600;
     dont_touch : true;
     dont_use : true;
     pad_cell : true;
   }
-  cell (sg13g2_pad_vddio) {
+  cell (vddpad) {
     area : 18600;
     dont_touch : true;
     dont_use : true;

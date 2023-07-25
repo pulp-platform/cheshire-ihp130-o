@@ -1,5 +1,35 @@
-# Python script for kLayout to merge DEF and LEF into final GDS
-# Copied from https://github.com/The-OpenROAD-Project/OpenROAD-flow-scripts/blob/master/flow/util/def2stream.py
+# Copyright (c) 2018-2023, The Regents of the University of California
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#
+# * Redistributions of source code must retain the above copyright notice, this
+#   list of conditions and the following disclaimer.
+#
+# * Redistributions in binary form must reproduce the above copyright notice,
+#   this list of conditions and the following disclaimer in the documentation
+#   and/or other materials provided with the distribution.
+#
+# * Neither the name of the copyright holder nor the names of its
+#   contributors may be used to endorse or promote products derived from
+#   this software without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+# DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+# FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+# DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+# SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+# CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+# OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+# Copied and adapted July 2023 from:
+# https://github.com/The-OpenROAD-Project/OpenROAD-flow-scripts/blob/master/flow/util/def2stream.py
+
+# Python script for KLayout to merge DEF and LEF into final GDS
 
 import pya
 import re
@@ -10,11 +40,11 @@ import os
 
 errors = 0
 design_name = "iguana_chip"
-in_def = "./save/iguana.routed.def"
-out_file = "./out/iguana.routed.gds"
+in_def = "../openroad/out/iguana.final.def"
+out_file = "./out/iguana.gds"
 
-tech_file = "./src/klayout_ihp130.lyt"
-in_files  = "../technology/gds/plankton.gds ../technology/gds/sg13g2_stdcell.gds ../delay_line/generic_delay_D4_O1_3P000_CG0.gds ../technology/gds/RM_IHPSG13_1P_64x64_c2_bm_bist.gds ../technology/gds/RM_IHPSG13_1P_256x64_c2_bm_bist.gds ../technology/gds/RM_IHPSG13_1P_1024x64_c2_bm_bist.gds"
+tech_file = "./src/ihp130.lyt"
+in_files  = "../pdk/ihp-sg13g2/ihp-sg13g2/libs.ref/sg13g2_stdcell/gds/sg13g2_stdcell.gds ../pdk/ihp-sg13g2/ihp-sg13g2/libs.ref/sg13g2_iocell/gds/sg13g2_iocell.gds ../macro_cells/mc_sg13g2_delay/delay_line_D4_O1_6P000.gds ../pdk/ihp-sg13g2/ihp-sg13g2/libs.ref/sg13g2_sram/gds/RM_IHPSG13_1P_64x64_c2_bm_bist.gds ../pdk/ihp-sg13g2/ihp-sg13g2/libs.ref/sg13g2_sram/gds/RM_IHPSG13_1P_256x64_c2_bm_bist.gds ../pdk/ihp-sg13g2/ihp-sg13g2/libs.ref/sg13g2_sram/gds/RM_IHPSG13_1P_1024x64_c2_bm_bist.gds"
 config_file = ""
 seal_file = ""
 layer_map = ""

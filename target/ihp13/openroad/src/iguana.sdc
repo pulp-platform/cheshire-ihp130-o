@@ -1,3 +1,13 @@
+# Copyright 2023 ETH Zurich and University of Bologna.
+# Solderpad Hardware License, Version 0.51, see LICENSE for details.
+# SPDX-License-Identifier: SHL-0.51
+
+# Authors:
+# - Paul Scheffler <paulsc@iis.ee.ethz.ch>
+# - Jannis Schönleber <janniss@iis.ee.ethz.ch>
+
+# Backend constraints
+
 ############
 ## Global ##
 ############
@@ -28,6 +38,7 @@ set I2C_REFPIN  [get_pins \i_iguana_soc.i_cheshire_soc.gen_i2c.i_i2c.i2c_core.u_
 set UART_REFPIN [get_pins \i_iguana_soc.i_cheshire_soc.gen_uart.i_uart.i_apb_uart.UART_TX.CState_\$_DFF_PN0__Q/CLK]
 set GPIO_REFPIN [get_pins \i_iguana_soc.i_cheshire_soc.gen_gpio.i_gpio.data_in_q_\$_DFF_P__Q/CLK]
 
+
 #############################
 ## Driving Cells and Loads ##
 #############################
@@ -46,6 +57,7 @@ set_load -min 9 ${PINS_SL_FAST}
 set PINS_HYP_FAST [get_ports hyper_*]
 set_load -max 3 ${PINS_HYP_FAST}
 set_load -min 9 ${PINS_HYP_FAST}
+
 
 ##################
 ## Input Clocks ##
@@ -76,6 +88,7 @@ set HYP_ASM_RTT [expr fmod(0.9 + $HYP_TGT_DLY + 3.2 + 5.75 + 1.04, $TCK_SYS)]
 set HYP_RWDSI_FORM [list [expr $HYP_ASM_RTT] [expr $HYP_ASM_RTT + $TCK_SYS / 2]]
 create_clock -name clk_hyp_rwdsi -period $TCK_SYS -waveform $HYP_RWDSI_FORM [get_pins \pad_hyper_rwds.i_pad/pad_io]
 
+
 ######################
 ## Generated Clocks ##
 ######################
@@ -100,6 +113,7 @@ set_assigned_delay -corner tt -from [get_pins $HYP_RX_DLINE/clk_i] -to [get_pins
 set_false_path -from [get_ports hyper_rwds_io] -through [get_pins \pad_hyper_rwds.i_pad/pad_io]
 set_false_path -from [get_clocks clk_hyp_rwdsi] -to [get_ports hyper_rwds_io]
 
+
 ##################################
 ## Clock Groups & Uncertainties ##
 ##################################
@@ -114,6 +128,7 @@ set_clock_groups -asynchronous -name clk_groups_async \
 # We set reasonable uncertainties and transitions for all nonvirtual clocks
 set_clock_uncertainty 0.1 [all_clocks]
 set_clock_transition  0.2 [all_clocks]
+
 
 ####################
 ## Cdcs and Syncs ##
@@ -150,6 +165,7 @@ set_max_delay  [expr $TCK_SYS * 0.35] -through $ASYNC_PINS_SLIN -through $ASYNC_
 set_false_path -hold                  -to $ASYNC_PINS_CLINT
 set_max_delay  [expr $TCK_SYS * 0.35] -to $ASYNC_PINS_CLINT -ignore_clock_latency
 
+
 #############
 ## SoC Ins ##
 #############
@@ -167,6 +183,7 @@ set_input_delay -max -add_delay -clock clk_sys -network_latency_included [ expr 
 set_false_path -hold                    -from [get_ports test_mode_i]
 set_max_delay  [ expr $TCK_SYS * 0.75 ] -from [get_ports test_mode_i]
 
+
 ##########
 ## JTAG ##
 ##########
@@ -178,6 +195,7 @@ set_output_delay -max -add_delay -clock clk_jtg -network_latency_included [ expr
 
 set_max_delay $TCK_JTG  -from [get_ports jtag_trst_ni]
 set_false_path -hold    -from [get_ports jtag_trst_ni]
+
 
 #########
 ## VGA ##
@@ -195,6 +213,7 @@ set_multicycle_path -hold  [ expr $VGA_IO_CYC - 1 ] -through [get_ports vga_*]
 set_output_delay -min -add_delay -clock clk_sys -reference_pin $VGA_REFPIN [expr $TCK_SYS * $VGA_IO_CYC * 0.10] [get_ports vga_*]
 set_output_delay -max -add_delay -clock clk_sys -reference_pin $VGA_REFPIN [expr $TCK_SYS * $VGA_IO_CYC * 0.35] [get_ports vga_*]
 
+
 ##############
 ## SPI Host ##
 ##############
@@ -211,6 +230,7 @@ set_input_delay  -max -add_delay -clock clk_sys -reference_pin $SPIH_REFPIN [ ex
 set_output_delay -min -add_delay -clock clk_sys -reference_pin $SPIH_REFPIN [ expr $TCK_SYS * $SPIH_IO_CYC * 0.10 ] [get_ports {spih_sck_o spih_sd* spih_csb*}]
 set_output_delay -max -add_delay -clock clk_sys -reference_pin $SPIH_REFPIN [ expr $TCK_SYS * $SPIH_IO_CYC * 0.35 ] [get_ports {spih_sck_o spih_sd* spih_csb*}]
 
+
 #########
 ## I2C ##
 #########
@@ -219,6 +239,7 @@ set_input_delay  -min -add_delay -clock clk_sys -reference_pin $I2C_REFPIN [ exp
 set_input_delay  -max -add_delay -clock clk_sys -reference_pin $I2C_REFPIN [ expr $TCK_SYS * 0.35 ] [get_ports i2c_*_io]
 set_output_delay -min -add_delay -clock clk_sys -reference_pin $I2C_REFPIN [ expr $TCK_SYS * 0.10 ] [get_ports i2c_*_io]
 set_output_delay -max -add_delay -clock clk_sys -reference_pin $I2C_REFPIN [ expr $TCK_SYS * 0.35 ] [get_ports i2c_*_io]
+
 
 ##########
 ## UART ##
@@ -229,6 +250,7 @@ set_input_delay  -max -add_delay -clock clk_sys -reference_pin $UART_REFPIN [ ex
 set_output_delay -min -add_delay -clock clk_sys -reference_pin $UART_REFPIN [ expr $TCK_SYS * 0.10 ] [get_ports uart_tx_o]
 set_output_delay -max -add_delay -clock clk_sys -reference_pin $UART_REFPIN [ expr $TCK_SYS * 0.35 ] [get_ports uart_tx_o]
 
+
 ##########
 ## GPIO ##
 ##########
@@ -237,6 +259,7 @@ set_input_delay  -min -add_delay -clock clk_sys -reference_pin $GPIO_REFPIN [ ex
 set_input_delay  -max -add_delay -clock clk_sys -reference_pin $GPIO_REFPIN [ expr $TCK_SYS * 0.35 ] [get_ports gpio_*_io]
 set_output_delay -min -add_delay -clock clk_sys -reference_pin $GPIO_REFPIN [ expr $TCK_SYS * 0.10 ] [get_ports gpio_*_io]
 set_output_delay -max -add_delay -clock clk_sys -reference_pin $GPIO_REFPIN [ expr $TCK_SYS * 0.35 ] [get_ports gpio_*_io]
+
 
 #################
 ## Serial Link ##
@@ -303,6 +326,7 @@ foreach pin [get_fanout -from [get_pins $SLINK_TX.data_out_q_\$_DFF_PN0__Q_3/Q] 
     set_false_path -hold -rise_from clk_gen_slo_drv -to $pin
   }
 }
+
 
 ##############
 ## Hyperbus ##

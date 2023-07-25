@@ -1,3 +1,13 @@
+# Copyright 2023 ETH Zurich and University of Bologna.
+# Solderpad Hardware License, Version 0.51, see LICENSE for details.
+# SPDX-License-Identifier: SHL-0.51
+
+# Authors:
+# - Tobias Senti <tsenti@ethz.ch>
+# - Jannis Schönleber <janniss@iis.ee.ethz.ch>
+
+# Floorplanning stage of the chip
+
 puts "Floorplan"
 
 ##########################################################################
@@ -14,13 +24,8 @@ foreach inst $insts {
 # Floorplan: Die Size and Padring 
 ##########################################################################
 
-if {[info exists OPEN_CELLS]} {
-  puts "Rotated Floorplan"
-  ICeWall::load_footprint src/iguana.rotated.package.strategy
-} else {
-  puts "Normal Floorplan"
-  ICeWall::load_footprint src/iguana.package.strategy
-}
+puts "Rotated Floorplan"
+ICeWall::load_footprint src/iguana.strategy
 
 initialize_floorplan \
   -die_area  [ICeWall::get_die_area] \
@@ -29,51 +34,37 @@ initialize_floorplan \
 
 ICeWall::init_footprint src/iguana.sigmap
 
+
 ##########################################################################
 # Tracks 
 ##########################################################################
 
-if {[info exists OPEN_CELLS]} {
-  make_tracks Metal1    -x_offset 0 -x_pitch 0.48 -y_offset 0 -y_pitch 0.42
-  make_tracks Metal2    -x_offset 0 -x_pitch 0.48 -y_offset 0 -y_pitch 0.42
-  make_tracks Metal3    -x_offset 0 -x_pitch 0.48 -y_offset 0 -y_pitch 0.42
-  make_tracks Metal4    -x_offset 0 -x_pitch 0.48 -y_offset 0 -y_pitch 0.42
-  make_tracks Metal5    -x_offset 0 -x_pitch 0.48 -y_offset 0 -y_pitch 0.42
-  make_tracks TopMetal1 -x_offset 1.64 -x_pitch 3.28 -y_offset 1.64 -y_pitch 3.28
-  make_tracks TopMetal2 -x_offset 2.00 -x_pitch 4.00 -y_offset 2.00 -y_pitch 4.00
-} else {
-  make_tracks Metal1    -x_offset 0.21 -x_pitch 0.42 -y_offset 0.21 -y_pitch 0.42
-  make_tracks Metal2    -x_offset 0.21 -x_pitch 0.42 -y_offset 0.21 -y_pitch 0.42
-  make_tracks Metal3    -x_offset 0.21 -x_pitch 0.42 -y_offset 0.21 -y_pitch 0.42
-  make_tracks Metal4    -x_offset 0.21 -x_pitch 0.42 -y_offset 0.21 -y_pitch 0.42
-  make_tracks Metal5    -x_offset 0.21 -x_pitch 0.42 -y_offset 0.21 -y_pitch 0.42
-  make_tracks TopMetal1 -x_offset 1.64 -x_pitch 2.28 -y_offset 1.64 -y_pitch 2.28
-  make_tracks TopMetal2 -x_offset 2.00 -x_pitch 4.00 -y_offset 2.00 -y_pitch 4.00
-}
+make_tracks Metal1    -x_offset 0 -x_pitch 0.48 -y_offset 0 -y_pitch 0.42
+make_tracks Metal2    -x_offset 0 -x_pitch 0.48 -y_offset 0 -y_pitch 0.42
+make_tracks Metal3    -x_offset 0 -x_pitch 0.48 -y_offset 0 -y_pitch 0.42
+make_tracks Metal4    -x_offset 0 -x_pitch 0.48 -y_offset 0 -y_pitch 0.42
+make_tracks Metal5    -x_offset 0 -x_pitch 0.48 -y_offset 0 -y_pitch 0.42
+make_tracks TopMetal1 -x_offset 1.64 -x_pitch 3.28 -y_offset 1.64 -y_pitch 3.28
+make_tracks TopMetal2 -x_offset 2.00 -x_pitch 4.00 -y_offset 2.00 -y_pitch 4.00
+
 
 ##########################################################################
 # Placing macros
 ##########################################################################
 
 proc placeInstance { name x y orient } {
-  global OPEN_CELLS
   set block [ord::get_db_block]
   set inst [odb::dbBlock_findInst $block $name]
   odb::dbInst_setPlacementStatus $inst "none"
-  if {[info exists OPEN_CELLS]} {
-    if {$orient == "R90"} {
-      set orient MX
-    }
-    if {$orient == "MXR90"} {
-      set orient R0
-    }
-
-    odb::dbInst_setOrient $inst $orient
-    odb::dbInst_setLocation $inst [ord::microns_to_dbu $y] [ord::microns_to_dbu $x]
-  } else {
-    odb::dbInst_setOrient $inst $orient
-    odb::dbInst_setLocation $inst [ord::microns_to_dbu $x] [ord::microns_to_dbu $y]
+  if {$orient == "R90"} {
+    set orient MX
   }
+  if {$orient == "MXR90"} {
+    set orient R0
+  }
+
+  odb::dbInst_setOrient $inst $orient
+  odb::dbInst_setLocation $inst [ord::microns_to_dbu $y] [ord::microns_to_dbu $x]
   odb::dbInst_setPlacementStatus $inst "firm"
 }
 
@@ -91,16 +82,8 @@ proc addHaloToBlock {halo name} {
   set miny [expr $miny - [ord::microns_to_dbu $halo]]
   set maxx [expr $maxx + [ord::microns_to_dbu $halo]]
   set maxy [expr $maxy + [ord::microns_to_dbu $halo]]
-
-  #odb::dbBlockage_create [ord::get_db_block] $minx $miny $maxx $maxy
-  #set tech [ord::get_db_tech]
-  #set layer [odb::dbTech_findRoutingLayer $tech 5]
-  #odb::dbObstruction_create [ord::get_db_block] $layer $minx $miny $maxx $maxy
-  #set layer [odb::dbTech_findRoutingLayer $tech 6]
-  #odb::dbObstruction_create [ord::get_db_block] $layer $minx $miny $maxx $maxy
-  #set layer [odb::dbTech_findRoutingLayer $tech 7]
-  #odb::dbObstruction_create [ord::get_db_block] $layer $minx $miny $maxx $maxy
 }
+
 
 ##########################################################################
 # RAM size
@@ -121,16 +104,11 @@ set RamSize256_H [ord::dbu_to_microns [odb::dbMaster_getHeight $RamSize256]]
 # set haloBlock width 
 set haloBlock     10.0
 
-
 # offset to not start just ad the edge of the floor (maybe need to consider the pad ring)
 set die_area               [ord::get_die_area]
-if {[info exists OPEN_CELLS]} {
-  set floorW                 [lindex $die_area 3]
-  set floorH                 [lindex $die_area 2]
-} else {
-  set floorW                 [lindex $die_area 2]
-  set floorH                 [lindex $die_area 3]
-}
+set floorW                 [lindex $die_area 3]
+set floorH                 [lindex $die_area 2]
+
 set pad_length             310.0
 set floorMargin            120.0
 set macroMargin            50.0
@@ -206,12 +184,6 @@ addHaloToBlock $haloBlock $axi_data_3_high
 ##########################################################################
 # Place axi_llc_hit_miss_unit tag macro
 ##########################################################################
-
-#set channel 100.0
-#set channel_no_cell 200
-#set channel_hori  30.0
-#set channel_vert  30.0
-
 
 # axi_hitmiss_tag_3
 set X [ expr $X - $RamSize256_H - 2*$haloBlock - $channel_hori ]
@@ -437,9 +409,5 @@ cut_rows
 # Place delay line
 ##########################################################################
 
-if {[info exists OPEN_CELLS]} {
-  placeInstance $delay_line_rx 4218.48 1601.28 R0
-  placeInstance $delay_line_tx 4339.44 1656.96 R0
-} else {
-  #placeInstance $delay_line 3130.68 1504.44 R0
-}
+placeInstance $delay_line_rx 4218.48 1601.28 R0
+placeInstance $delay_line_tx 4339.44 1656.96 R0

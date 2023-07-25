@@ -2,8 +2,10 @@
 // Solderpad Hardware License, Version 0.51, see LICENSE for details.
 // SPDX-License-Identifier: SHL-0.51
 //
-// Jannis Schönleber <janniss@student.ethz.ch>
+// Authors:
+// - Jannis Schönleber <janniss@iis.ee.ethz.ch>
 
+/// Testbench module of Iguana
 module tb_iguana;
 
   parameter time          HypPowerupTime = 600us;

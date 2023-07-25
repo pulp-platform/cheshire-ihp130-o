@@ -2,7 +2,9 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 #
-# Author:  Philippe Sauter <phsauter@student.ethz.ch>
+# Authors:
+# - Philippe Sauter <phsauter@ethz.ch>
+
 # Description:
 # Make sure all used tools are accessible by loading them
 # into the PATH used inside the Makefiles

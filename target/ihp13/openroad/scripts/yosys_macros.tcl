@@ -1,3 +1,14 @@
+# Copyright 2023 ETH Zurich and University of Bologna.
+# Solderpad Hardware License, Version 0.51, see LICENSE for details.
+# SPDX-License-Identifier: SHL-0.51
+
+# Authors:
+# - Tobias Senti <tsenti@ethz.ch>
+# - Jannis Schönleber <janniss@iis.ee.ethz.ch>
+
+# Macro names as produced by the yosys synthesis
+
+
 # cva6_icache
 # tag sram
 set cva6_icache_tag_0   i_iguana/i_cheshire_soc/i_core_cva6/genblk3.i_cache_subsystem/i_cva6_icache/gen_sram___0_tag_sram/i_tc_sram/genblk4_genblk1_genblk1_genblk1_genblk1_genblk1_genblk1_gen_256x45xBx1_i_RM_IHPSG13_1P_256x64_c2_bm_bist

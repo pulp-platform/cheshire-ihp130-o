@@ -2,7 +2,8 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 #
-# Author:  Philippe Sauter <phsauter@student.ethz.ch>
+# Authors:
+# - Philippe Sauter <phsauter@ethz.ch>
 
 # get environment variables
 set vlog_netlist  $::env(VLOG_NETLIST)

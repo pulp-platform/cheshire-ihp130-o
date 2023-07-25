@@ -1,4 +1,15 @@
+# Copyright 2023 ETH Zurich and University of Bologna.
+# Solderpad Hardware License, Version 0.51, see LICENSE for details.
+# SPDX-License-Identifier: SHL-0.51
+
+# Authors:
+# - Tobias Senti <tsenti@ethz.ch>
+# - Jannis Schönleber <janniss@iis.ee.ethz.ch>
+
+# Power planning
+
 puts "Power Grid"
+
 
 ##########################################################################
 # Reset
@@ -26,6 +37,7 @@ setLayerDirection Metal1 HORIZONTAL
 setLayerDirection Metal2 VERTICAL
 setLayerDirection Metal3 HORIZONTAL
 
+
 ##########################################################################
 # Global Connections
 ##########################################################################
@@ -49,12 +61,14 @@ global_connect
 # voltage domains
 set_voltage_domain -name {CORE} -power {VDD} -ground {VSS}
 
+
 ##########################################################################
 #  Settings
 ##########################################################################
 
 # Verify connections
 set verify 0
+
 
 ##########################################################################
 ##  Core Power
@@ -86,6 +100,7 @@ proc sram_power { name macro } {
 sram_power "sram0" "RM_IHPSG13_1P_64x64_c2_bm_bist"
 sram_power "sram1" "RM_IHPSG13_1P_256x64_c2_bm_bist"
 sram_power "sram2" "RM_IHPSG13_1P_1024x64_c2_bm_bist"
+
 
 ##########################################################################
 ##  Core Power
@@ -161,6 +176,7 @@ if {[info exists OPEN_CELLS]} {
     add_pdn_connect -grid {grid} -layers {Metal3 TopMetal1}
 }
 
+
 ##########################################################################
 ##  Generate
 ##########################################################################
@@ -170,6 +186,7 @@ pdngen
 setLayerDirection Metal1 VERTICAL
 setLayerDirection Metal2 HORIZONTAL
 setLayerDirection Metal3 VERTICAL
+
 
 ##########################################################################
 ##  Verification

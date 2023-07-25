@@ -2,14 +2,18 @@
 // Solderpad Hardware License, Version 0.51, see LICENSE for details.
 // SPDX-License-Identifier: SHL-0.51
 //
-// Paul Scheffler <paulsc@iis.ee.ethz.ch>
+// Authors:
+// - Paul Scheffler <paulsc@iis.ee.ethz.ch>
 
 module mc_pad_in (
   inout  logic pad_io,
   output logic d_o
 );
 
-  sg13g2_pad_in i_pad (.*);
+  ixc013_i16x i_pad (
+    .PAD ( pad_io ),
+    .OUT ( d_o )
+  );
 
 endmodule
 
@@ -20,7 +24,12 @@ module mc_pad_io (
   input  logic oe_i
 );
 
-  sg13g2_pad_io i_pad (.*);
+  ixc013_b16m i_pad (
+    .PAD ( pad_io ),
+    .IN  ( d_i ),
+    .OUT ( d_o ),
+    .OEN ( ~oe_i )
+  );
 
 endmodule
 
@@ -31,7 +40,12 @@ module mc_pad_io_pu (
   input  logic oe_i
 );
 
-  sg13g2_pad_io_pu i_pad (.*);
+  ixc013_b16m i_pad (
+    .PAD ( pad_io ),
+    .IN  ( d_i ),
+    .OUT ( d_o ),
+    .OEN ( ~oe_i )
+  );
 
 endmodule
 
@@ -42,30 +56,35 @@ module mc_pad_io_pd (
   input  logic oe_i
 );
 
-  sg13g2_pad_io_pd i_pad (.*);
+  ixc013_b16m i_pad (
+    .PAD ( pad_io ),
+    .IN  ( d_i ),
+    .OUT ( d_o ),
+    .OEN ( ~oe_i )
+  );
 
 endmodule
 
 module mc_pad_vddco;
 
-  sg13g2_pad_vddco i_pad ();
+  vddcore i_pad ();
 
 endmodule
 
 module mc_pad_gndco;
 
-  sg13g2_pad_gndco i_pad ();
+  gndcore i_pad ();
 
 endmodule
 
 module mc_pad_vddio;
 
-  sg13g2_pad_vddio i_pad ();
+  vddpad i_pad ();
 
 endmodule
 
 module mc_pad_gndio;
 
-  sg13g2_pad_gndio i_pad ();
+  gndpad i_pad ();
 
 endmodule
