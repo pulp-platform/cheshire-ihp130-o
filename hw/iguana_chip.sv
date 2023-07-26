@@ -216,7 +216,7 @@ module iguana_chip import iguana_pkg::*; import cheshire_pkg::*; (
 
   mc_pad_io     pad_hyper_reset_n ( .pad_io ( hyper_reset_no ), .d_i ( soc_hyper_reset_no[0] ), .oe_i ( 1'b1 ), .d_o ( ) );
   mc_pad_io     pad_hyper_cs_0_n  ( .pad_io ( hyper_cs_0_no  ), .d_i ( soc_hyper_cs_no[0][0] ), .oe_i ( 1'b1 ), .d_o ( ) );
-  mc_pad_io     pad_hyper_cs_1_n  ( .pad_io ( hyper_cs_1_no  ), .d_i ( soc_hyper_cs_no[0][0] ), .oe_i ( 1'b1 ), .d_o ( ) );
+  mc_pad_io     pad_hyper_cs_1_n  ( .pad_io ( hyper_cs_1_no  ), .d_i ( soc_hyper_cs_no[0][1] ), .oe_i ( 1'b1 ), .d_o ( ) );
   mc_pad_io     pad_hyper_ck      ( .pad_io ( hyper_ck_o     ), .d_i ( soc_hyper_ck_o[0]     ), .oe_i ( 1'b1 ), .d_o ( ) );
   mc_pad_io     pad_hyper_ck_n    ( .pad_io ( hyper_ck_no    ), .d_i ( soc_hyper_ck_no[0]    ), .oe_i ( 1'b1 ), .d_o ( ) );
   mc_pad_io     pad_hyper_rwds    ( .pad_io ( hyper_rwds_io  ), .d_i ( soc_hyper_rwds_o[0]   ), .d_o ( soc_hyper_rwds_i[0]  ), .oe_i ( soc_hyper_rwds_oe_o[0] ) );

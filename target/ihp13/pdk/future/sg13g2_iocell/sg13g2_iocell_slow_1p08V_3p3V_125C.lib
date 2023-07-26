@@ -693,7 +693,7 @@ library (sg13g2_iocell_slow_1p08V_3p3V_125C) {
     dont_use : true;
     pad_cell : true;
   }
-  cell (vsscore) {
+  cell (gndcore) {
     area : 18600;
     dont_touch : true;
     dont_use : true;
@@ -705,7 +705,7 @@ library (sg13g2_iocell_slow_1p08V_3p3V_125C) {
     dont_use : true;
     pad_cell : true;
   }
-  cell (vsspad) {
+  cell (gndpad) {
     area : 18600;
     dont_touch : true;
     dont_use : true;
