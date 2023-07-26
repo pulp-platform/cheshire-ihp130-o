@@ -9,7 +9,6 @@
 
 module generic_delay_D4_O1_3P750_CG0 (
   input  logic       clk_i,
-  input  logic       enable_i,
   input  logic [4-1:0] delay_i,
   output logic [1-1:0] clk_o
 );

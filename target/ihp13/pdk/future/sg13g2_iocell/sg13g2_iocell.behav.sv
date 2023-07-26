@@ -6,47 +6,47 @@
 
 module ixc013_i16x (
   inout  logic PAD,
-  output logic OUT
+  output logic DOUT
 );
 
-  buf (strong1, strong0) (OUT, PAD);
+  buf (strong1, strong0) (DOUT, PAD);
 
 endmodule
 
 module ixc013_b16m (
   inout  logic PAD,
-  input  logic IN,
-  output logic OUT,
+  input  logic DIN,
+  output logic DOUT,
   input  logic OEN
 );
 
-  buf (strong1, strong0) (OUT, PAD);
-  bufif0 (strong1, strong0) (PAD, IN, OEN);
+  buf (strong1, strong0) (DOUT, PAD);
+  bufif0 (strong1, strong0) (PAD, DIN, OEN);
 
 endmodule
 
 module ixc013_b16mpup (
   inout  logic PAD,
-  input  logic IN,
-  output logic OUT,
+  input  logic DIN,
+  output logic DOUT,
   input  logic OEN
 );
 
-  buf (strong1, strong0) (OUT, PAD);
-  bufif0 (strong1, strong0) (PAD, IN, OEN);
+  buf (strong1, strong0) (DOUT, PAD);
+  bufif0 (strong1, strong0) (PAD, DIN, OEN);
   pullup (PAD);
 
 endmodule
 
 module ixc013_b16mpdn (
   inout  logic PAD,
-  input  logic IN,
-  output logic OUT,
+  input  logic DIN,
+  output logic DOUT,
   input  logic OEN
 );
 
-  buf (strong1, strong0) (OUT, PAD);
-  bufif0 (strong1, strong0) (PAD, IN, OEN);
+  buf (strong1, strong0) (DOUT, PAD);
+  bufif0 (strong1, strong0) (PAD, DIN, OEN);
   pulldown (PAD);
 
 endmodule

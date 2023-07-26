@@ -1,6 +1,3 @@
 [submodule "target/ihp13/pdk"]
 	path = target/ihp13/pdk/ihp-sg13g2
 	url = https://github.com/IHP-GmbH/IHP-Open-PDK.git
-[submodule "target/ihp13/macro_cells"]
-	path = target/ihp13/macro_cells
-	url = git@iis-git.ee.ethz.ch:bslk/iguana/mc_cells.git

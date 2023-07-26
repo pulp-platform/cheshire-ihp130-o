@@ -160,12 +160,17 @@ module fixture_iguana;
   axi_llc_req_t axi_llc_mst_req;
   axi_llc_rsp_t axi_llc_mst_rsp;
 
-  assign axi_llc_mst_req = '0;
+  axi_mst_req_t axi_slink_mst_req;
+  axi_mst_rsp_t axi_slink_mst_rsp;
+
+  assign axi_slink_mst_req = '0;
 
   vip_cheshire_soc #(
     .DutCfg             ( CheshireCfg ),
     .axi_ext_llc_req_t  ( axi_llc_req_t ),
     .axi_ext_llc_rsp_t  ( axi_llc_rsp_t ),
+    .axi_ext_mst_req_t ( axi_mst_req_t ),
+    .axi_ext_mst_rsp_t ( axi_mst_rsp_t ),
     .ClkPeriodSys       ( 10ns ),
     .ClkPeriodJtag      ( 40ns ),
     .RstCycles          ( 20 )

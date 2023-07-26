@@ -12,8 +12,8 @@ package:
     - "Philippe Sauter <phsauter@ethz.ch>"
 
 dependencies:
-  axi:                { git: https://github.com/pulp-platform/axi,                version: 0.39.0 }
-  cheshire:           { git: https://github.com/pulp-platform/cheshire,           rev:     8e09eed  } # TODO: master commit + axi_lite "latch fix"; request release
+  axi:                { git: https://github.com/pulp-platform/axi,                version: 0.39.0   }
+  cheshire:           { git: https://github.com/pulp-platform/cheshire,           rev:     1a1561a  } # TODO: master commit; request release
   hyperbus:           { git: https://github.com/pulp-platform/hyperbus,           rev:     e11b1ae  } # TODO: master commit; request release
   register_interface: { git: https://github.com/pulp-platform/register_interface, version: 0.4.1    }
 
@@ -40,11 +40,11 @@ sources:
       - target/ihp13/src/tc_sram.sv
       - target/ihp13/src/tc_clk.sv
       - target/ihp13/src/mc_pad.sv
-      - target/ihp13/src/delay_line_wrapper.sv
+      - target/ihp13/src/mc_delay.sv
 
   - target: all(ihp13, simulation)
     files:
-      - target/ihp13/macro_cells/sg13g2_delay/delay_line_D4_O1_6P000.behav.sv
+      - target/ihp13/src/mc_delay/delay_line_D4_O1_6P000.behav.sv
       - target/ihp13/pdk/ihp-sg13g2/ihp-sg13g2/libs.ref/sg13g2_stdcell/verilog/sg13g2_stdcell.v
       - target/ihp13/pdk/future/sg13g2_sram/RM_IHPSG13_1P_bm_bist.behav.sv
       - target/ihp13/pdk/future/sg13g2_iocell/sg13g2_iocell.behav.sv

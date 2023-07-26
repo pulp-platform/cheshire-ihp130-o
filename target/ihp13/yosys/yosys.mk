@@ -32,7 +32,7 @@ include $(IG_ROOT)/target/ihp13/yosys/project-synth.mk
 TOP_DESIGN	?= iguana_chip
 SV2V_FILE	  := $(IG_ROOT)/target/ihp13/pickle/out/$(TOP_DESIGN).sv2v.v
 VLOG_FILES  := $(SV2V_FILE)
-UNIQUE_TOP	:= $(shell sed -n 's|module \($(TOP_DESIGN)__[[:alnum:]_]*\)\s.*$$|\1|p' $(SV2V_FILE) | tail -1)
+UNIQUE_TOP	:= $(shell sed -n 's|module \($(TOP_DESIGN)__[[:alnum:]_]*\)\s.*$$|\1|p' $(SV2V_FILE) 2> /dev/null | tail -1)
 SYNTH_TOP	  := $(UNIQUE_TOP)
 NETLIST		  := $(BUILD)/$(TOP_DESIGN)_yosys.v
 

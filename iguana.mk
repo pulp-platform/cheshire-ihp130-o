@@ -41,6 +41,10 @@ ig-clean-deps:
 # Include Cheshire targets
 include $(CHS_ROOT)/cheshire.mk
 
+##############
+# Simulation #
+##############
+
 # Forward relevant Hyperbus targets
 $(HYP_ROOT)/models/s27ks0641/s27ks0641.v:
 	@echo "[PULP] Fetch Hyperbus model"
@@ -52,20 +56,14 @@ $(IG_ROOT)/target/sim/models/s27ks0641.sdf: $(HYP_ROOT)/models/s27ks0641/s27ks06
 	sed -i "s|(INSTANCE dut)|(INSTANCE i_hyper)|g" $@
 	sed -i "s|(INSTANCE dut/|(INSTANCE |g" $@
 
-hyp-sim-all: $(HYP_ROOT)/models/s27ks0641/s27ks0641.v $(IG_ROOT)/target/sim/models/s27ks0641.sdf
-
-##############
-# Simulation #
-##############
-
-# We get all needed simulation models from dependencies (Cheshire and Hyperbus)
 $(IG_ROOT)/target/sim/vsim/compile.ihp13.%.tcl: Bender.yml
 	$(BENDER) script vsim -t $* -t asic -t ihp13 -t test -t hyper_test -t cva6 -t cv64a6_imafdcsclic_sv39 --vlog-arg="$(VLOG_ARGS)" > $@
 	echo 'vlog "$(CHS_ROOT)/target/sim/src/elfloader.cpp" -ccflags "-std=c++11"' >> $@
 
-ig-sim-all: chs-sim-all hyp-sim-all
-ig-sim-all: $(IG_ROOT)/target/sim/vsim/compile.ihp13.rtl.tcl
-ig-sim-all: $(IG_ROOT)/target/sim/vsim/compile.ihp13.gate.tcl
+IG_SIM_ALL += $(HYP_ROOT)/models/s27ks0641/s27ks0641.v
+IG_SIM_ALL += $(IG_ROOT)/target/sim/models/s27ks0641.sdf
+IG_SIM_ALL += $(IG_ROOT)/target/sim/vsim/compile.ihp13.rtl.tcl
+IG_SIM_ALL += $(IG_ROOT)/target/sim/vsim/compile.ihp13.gate.tcl
 
 ########################
 # IHP13 Implementation #
@@ -74,3 +72,17 @@ ig-sim-all: $(IG_ROOT)/target/sim/vsim/compile.ihp13.gate.tcl
 include $(IG_ROOT)/target/ihp13/pickle/pickle.mk
 include $(IG_ROOT)/target/ihp13/yosys/yosys.mk
 include $(IG_ROOT)/target/ihp13/openroad/openroad.mk
+
+#################################
+# Phonies (KEEP AT END OF FILE) #
+#################################
+
+.PHONY: ig-all ig-clean-deps ig-sw-all ig-hw-all ig-bootrom-all ig-sim-all
+
+IG_ALL += $(CHS_ALL) $(IG_SIM_ALL)
+
+ig-all:         $(CHS_ALL)
+ig-sw-all:      $(CHS_SW_ALL)
+ig-hw-all:      $(CHS_HW_ALL)
+ig-bootrom-all: $(CHS_BOOTROM_ALL)
+ig-sim-all:     $(CHS_SIM_ALL) $(IG_SIM_ALL)

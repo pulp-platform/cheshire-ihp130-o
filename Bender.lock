@@ -53,7 +53,7 @@ packages:
     - common_cells
     - register_interface
   cheshire:
-    revision: 8e09eed888f0bcf6e1ceacbf5c48cf020948273c
+    revision: 1a1561a9f1fa7efc3b6b62e2675618f99f29f8ef
     version: null
     source:
       Git: https://github.com/pulp-platform/cheshire

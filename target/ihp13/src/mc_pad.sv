@@ -11,8 +11,8 @@ module mc_pad_in (
 );
 
   ixc013_i16x i_pad (
-    .PAD ( pad_io ),
-    .OUT ( d_o )
+    .PAD  ( pad_io ),
+    .DOUT ( d_o )
   );
 
 endmodule
@@ -25,10 +25,10 @@ module mc_pad_io (
 );
 
   ixc013_b16m i_pad (
-    .PAD ( pad_io ),
-    .IN  ( d_i ),
-    .OUT ( d_o ),
-    .OEN ( ~oe_i )
+    .PAD  ( pad_io ),
+    .DIN  ( d_i ),
+    .DOUT ( d_o ),
+    .OEN  ( ~oe_i )
   );
 
 endmodule
@@ -40,11 +40,11 @@ module mc_pad_io_pu (
   input  logic oe_i
 );
 
-  ixc013_b16m i_pad (
-    .PAD ( pad_io ),
-    .IN  ( d_i ),
-    .OUT ( d_o ),
-    .OEN ( ~oe_i )
+  ixc013_b16mpup i_pad (
+    .PAD  ( pad_io ),
+    .DIN  ( d_i ),
+    .DOUT ( d_o ),
+    .OEN  ( ~oe_i )
   );
 
 endmodule
@@ -56,11 +56,11 @@ module mc_pad_io_pd (
   input  logic oe_i
 );
 
-  ixc013_b16m i_pad (
-    .PAD ( pad_io ),
-    .IN  ( d_i ),
-    .OUT ( d_o ),
-    .OEN ( ~oe_i )
+  ixc013_b16mpdn i_pad (
+    .PAD  ( pad_io ),
+    .DIN  ( d_i ),
+    .DOUT ( d_o ),
+    .OEN  ( ~oe_i )
   );
 
 endmodule
