@@ -9,36 +9,26 @@
 # Something like: readlib read-design, elaborate, synthesize, techmap
 
 # get environment variables
-set vlog_files  $::env(VLOG_FILES)
-set top_design  $::env(TOP_DESIGN)
-set tech_cells  $::env(TECH_CELLS)
-set tech_macros $::env(TECH_MACROS)
-set build_dir   $::env(BUILD)
-set work_dir	$::env(WORK)
-set hier_depth	$::env(HIER_DEPTH)
-
-set lib_list "-liberty ${tech_cells} "
-foreach file $tech_macros {
-	append lib_list "-liberty ${file} "
-}
+source [file join [file dirname [info script]] yosys_common.tcl]
 
 # read library files
-yosys read_liberty -lib "${tech_cells}"
-foreach file $tech_macros {
-	yosys read_liberty -lib "${file}"
+foreach file $lib_list {
+	yosys read_liberty -lib "$file"
 }
 
 # read design
 foreach file $vlog_files {
-	yosys read_verilog -sv "${file}"
+	yosys read_verilog -sv "$file"
 }
+
 # link files/modules together
 yosys hierarchy -check -top $top_design
 
-yosys write_verilog $build_dir/${top_design}_yosys_generic_initial.v
+yosys tee -q -o "${report_dir}/${top_design}_rtl_initial.rpt" stat
+yosys write_verilog "${work_dir}/${top_design}_yosys_rtl_initial.v"
 
-set hier_file [file join $work_dir ${top_design}_full_hierarchy.log]
-set module_file [open [file join $work_dir ${top_design}_hier_d${hier_depth}_modules.log] "w"]
+set hier_file ${work_dir}/${top_design}_full_hierarchy.log
+set module_file [open ${report_dir}/${top_design}_hier_d${hier_depth}_modules.log "w"]
 
 yosys tee -q -o $hier_file hierarchy -top $top_design
 
@@ -47,20 +37,25 @@ set ls_list [split $ls_out "\n"]
 set modules [lrange $ls_list 5 end]
 set modules_final [list]
 
-# Writeout internal representation
+# indentation gives hierarchy level/depth
 set spaces [expr $hier_depth*4 +1]
 puts "spaces: $spaces"
 
+# create a *.tmp.v file per module on this level
 foreach module $modules {
-	puts "module: $module"
-	set count [regsub "Used module:\\s{$spaces}\\\\(\[a-zA-Z0-9_\]+)" $module {\1} name]
+	puts "line: $module"
+	if {$hier_depth <= 0} {
+		set count [regsub "Used module:\\s+\\\\(\[a-zA-Z0-9_\]+)" $module {\1} name]
+	} else {
+		set count [regsub "Used module:\\s{$spaces}\\\\(\[a-zA-Z0-9_\]+)" $module {\1} name]
+	}
 	if {$count > 0 && [lsearch $modules_final $name] == -1} {
 		puts "name: $name"
 		lappend modules_final $module
 		puts $module_file $name
 
-		set file [open [file join $work_dir ${name}.tmp.v] "w"]
-		close $file
+		yosys select -module $name
+		yosys write_verilog -selected -noattr -noexpr -nohex -nodec ${work_dir}/${name}.rtl.v
 	}
 }
 

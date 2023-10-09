@@ -1,4 +1,8 @@
+# Bender dependency managers directory
 .bender
+
+# abc log file
+*.history
 
 # target/sim
 target/sim/models
@@ -8,6 +12,7 @@ target/sim/vsim/modelsim.ini
 target/sim/vsim/transcript
 target/sim/vsim/vsim.wlf
 target/sim/vsim/work/
+target/nonfree
 
 # target/ihp13
 target/ihp13/pickle/out

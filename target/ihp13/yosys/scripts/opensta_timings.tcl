@@ -8,8 +8,8 @@
 # get environment variables
 set vlog_netlist  $::env(VLOG_NETLIST)
 set top_design    $::env(TOP_DESIGN)
-set tech_cells    $::env(TECH_CELLS)
-set tech_macros   $::env(TECH_MACROS)
+set tech_cells    $::env(YOSYS_TECH_CELLS)
+set tech_macros   $::env(YOSYS_TECH_MACROS)
 set report_dir	  $::env(REPORTS)
 
 # read library files
