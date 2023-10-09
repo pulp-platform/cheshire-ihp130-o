@@ -9,45 +9,62 @@
 # Something like: readlib read-design, elaborate, synthesize, techmap
 
 # get environment variables
-set vlog_files  $::env(VLOG_FILES)
-set top_design  $::env(TOP_DESIGN)
-set tech_cells  $::env(TECH_CELLS)
-set tech_macros $::env(TECH_MACROS)
-set build_dir   $::env(BUILD)
-set work_dir	  $::env(WORK)
-set report_dir	$::env(REPORTS)
-set tiehi		    $::env(TIE_HIGH)
-set tielo		    $::env(TIE_LOW)
-
-set lib_list "-liberty ${tech_cells} "
-foreach file $tech_macros {
-	append lib_list "-liberty ${file} "
-}
+source [file join [file dirname [info script]] yosys_common.tcl]
 
 # read library files
-yosys read_liberty -lib "${tech_cells}"
-foreach file $tech_macros {
-	yosys read_liberty -lib "${file}"
+foreach file $lib_list {
+	yosys read_liberty -lib "$file"
 }
 
 # read design
 foreach file $vlog_files {
-	yosys read_verilog -sv "${file}"
+	yosys read_verilog -sv "$file"
+}
+
+yosys tee -q -o "${work_dir}/${top_design}_rtl.rpt" stat
+
+# blackbox requested modules
+if { [info exists ::env(YOSYS_BLACKBOX_MODULES)] } {
+    foreach module $::env(YOSYS_BLACKBOX_MODULES) {
+        puts "Blackboxing the module ${module}"
+        yosys setattr -mod -set keep_hierarchy 1 $module
+	    yosys blackbox $module
+    }
+}
+
+# keep some hierarchies (only relevant if YOSYS_FLATTEN_HIER exists)
+if { [info exists ::env(YOSYS_KEEP_HIER_INST)] } {
+    foreach sel $::env(YOSYS_KEEP_HIER_INST) {
+        puts "Keeping hierarchy of selection: $sel"
+        yosys setattr -set keep_hierarchy 1 $sel
+    }
 }
 
 yosys hierarchy -top $top_design
 
-yosys proc
-yosys synth -top $top_design
-yosys flatten
-yosys opt_clean -purge
+# synth - coarse:
+yosys synth -run coarse:fine -noalumacc
 
-yosys lsoracle
+# synth - fine:
+yosys memory_collect
+yosys opt -fast
+yosys memory_map
+yosys opt -full
+
+yosys opt_dff -sat
+yosys opt -fast
+yosys clean
+
+# remove iff https://github.com/YosysHQ/yosys/issues/3833 is fixed
+yosys techmap -extern t:*shiftx*
+yosys techmap -extern t:*shift*
 yosys techmap
-yosys opt -purge
+yosys share
+yosys opt -full
+yosys clean -purge
 
 yosys dfflibmap -liberty "${tech_cells}"
-yosys abc -liberty "${tech_cells}" -constr $work_dir/../src/abc.constr -D 4000
+yosys abc -liberty "${tech_cells}" -constr abc.constr -D 4000
 
 # clean partial netlist
 yosys setundef -zero
@@ -57,4 +74,4 @@ yosys opt_clean -purge
 yosys hilomap -hicell {*}[split ${tiehi} " "] -locell {*}[split ${tielo} " "]
 
 yosys write_verilog -simple-lhs -noattr -noexpr -nohex -nodec $work_dir/${top_design}.mapped.v
-yosys tee -q -a "${report_dir}/area_clean.rpt" stat -top ${top_design} {*}$lib_list
+yosys tee -q -a "${report_dir}/part_{top_design}_area.rpt" stat -top ${top_design} {*}$lib_list

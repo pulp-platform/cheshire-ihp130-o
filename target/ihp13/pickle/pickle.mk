@@ -14,6 +14,9 @@ SV2V  ?= sv2v   # https://https://github.com/zachjs/sv2v
 
 PICKLE_DIR ?= $(IG_ROOT)/target/ihp13/pickle
 
+# add tools to PATH as necessary like this:
+export PATH := $(PATH):/usr/scratch/pisoc11/sem23f30/tools/bin/
+
 ###########
 # Patches #
 ###########
@@ -45,7 +48,7 @@ $(PICKLE_DIR)/out/iguana_chip.sources.json: $(CHS_HW_ALL) $(IG_ROOT)/Bender.yml
 # Pickle all synthesizable RTL into a single file
 $(PICKLE_DIR)/out/iguana_chip.morty.sv: $(PICKLE_DIR)/out/iguana_chip.sources.json $(wildcard $(PICKLE_DIR)/patches/morty/*)
 	$(call rtl-patches,)
-	$(MORTY) -q -f $< -o $@ -D VERILATOR=1 -D SYNTHESIS=1 -D MORTY=1 --keep_defines --top iguana_chip
+	$(MORTY) -q -f $< -o $@ -D VERILATOR=1 -D SYNTHESIS=1 -D MORTY=1 -D TARGET_ASIC=1 --keep_defines --top iguana_chip
 	$(call apply-patches,morty)
 
 ig-ihp13-morty-all: $(PICKLE_DIR)/out/iguana_chip.morty.sv

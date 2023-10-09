@@ -1,0 +1,45 @@
+strash
+ifraig
+dch
+scorr
+lcorr
+scleanup
+dretime
+retime -M 3 {D}
+strash
+
+&get -n
+&st
+&dch
+&nf
+&put
+
+&get -n
+&st
+&syn2
+&if -g -K 6
+&synch2
+&nf
+&put
+
+&get -n
+&st
+&syn2
+&if -g -K 6
+&synch2
+&nf
+&put
+
+&get -n
+&st
+&syn2
+&if -g -K 6
+&synch2
+&nf
+&put
+
+buffer
+topo
+stime -p
+upsize {D}
+dnsize {D}
