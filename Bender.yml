@@ -22,6 +22,8 @@ sources:
   # - asic + rtl:                        RTL only (no tech wrappers or sim models)
   # - asic + ihp13 + rtl:                RTL with IHP13 tech wrappers (for IHP13 synthesis)
   # - asic + ihp13 + rtl + simulation:   RTL with IHP13 tech wrappers and sim models (for IHP13 sim)
+  # - asic + ihp13 + sv2v + simulation:  Post-sv2v RTL with IHP13 tech wrappers and sim models (for IHP13 sim)
+  # - asic + ihp13 + synth + simulation: IHP13 synthesis netlist with IHP13 sim models (for post-synthesis sim)
   # - asic + ihp13 + gate + simulation:  IHP13 PL netlist with IHP13 sim models (for PL sim)
 
   - target: rtl
@@ -32,6 +34,7 @@ sources:
 
   - target: any(test, simulation)
     files:
+      - hw/iguana_pkg.sv
       - target/sim/src/fixture_iguana.sv
       - target/sim/src/tb_iguana.sv
 
@@ -49,6 +52,14 @@ sources:
       - target/ihp13/pdk/future/sg13g2_sram/RM_IHPSG13_1P_bm_bist.behav.sv
       - target/ihp13/pdk/future/sg13g2_iocell/sg13g2_iocell.behav.sv
 
+  - target: all(sv2v, ihp13)
+    files:
+      - target/ihp13/pickle/out/basilisk.sv2v.v
+
+  - target: all(synth, ihp13)
+    files:
+      - target/ihp13/yosys/out/basilisk.yosys.v
+
   - target: all(gate, ihp13)
     files:
-      - target/ihp13/openroad/out/iguana_chip.v
+      - target/ihp13/openroad/out/basilisk.v

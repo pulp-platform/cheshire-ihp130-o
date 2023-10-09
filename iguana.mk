@@ -84,26 +84,58 @@ BENDER_SYNTH_TARGETS := rtl $(BENDER_PROJ_TARGETS)
 ##############
 # Simulation #
 ##############
+IG_SIM_DIR := $(IG_ROOT)/target/sim
+SIM_PRE_COMPILE := set BOOTMODE 0; set PRELMODE 0; set BINARY "$(CHS_ROOT)/sw/tests/helloworld.spm.elf";
+#SIM_PRE_COMPILE := set BOOTMODE 0; set PRELMODE 1; set BINARY "$(CHS_ROOT)/sw/tests/helloworld.spm.elf";
+#SIM_PRE_COMPILE := set BOOTMODE 3; set PRELMODE 0; set BINARY "$(CHS_ROOT)/sw/tests/helloworld.gpt.memh";
+#SIM_PRE_COMPILE := set BOOTMODE 0; set PRELMODE 1; set BINARY "$(CHS_ROOT)/sw/tests/helloworld.dram.elf";
+BENDER_SIM_TARGETS := asic ihp13 simulation test hyper_test cva6 $(IG_CVA6_CONFIG)
 
 # Forward relevant Hyperbus targets
 $(HYP_ROOT)/models/s27ks0641/s27ks0641.v:
 	@echo "[PULP] Fetch Hyperbus model"
 	@$(MAKE) -C $(HYP_ROOT) models/s27ks0641 > /dev/null
 
-$(IG_ROOT)/target/sim/models/s27ks0641.sdf: $(HYP_ROOT)/models/s27ks0641/s27ks0641.v
+$(IG_SIM_DIR)/models/s27ks0641.sdf: $(HYP_ROOT)/models/s27ks0641/s27ks0641.v
 	mkdir -p $(dir $@)
 	cp $(HYP_ROOT)/models/s27ks0641/s27ks0641.sdf $@
 	sed -i "s|(INSTANCE dut)|(INSTANCE i_hyper)|g" $@
 	sed -i "s|(INSTANCE dut/|(INSTANCE |g" $@
 
-$(IG_ROOT)/target/sim/vsim/compile.ihp13.%.tcl: Bender.yml
-	$(BENDER) script vsim -t $* -t asic -t ihp13 -t test -t hyper_test -t cva6 -t cv64a6_imafdcsclic_sv39 --vlog-arg="$(VLOG_ARGS)" > $@
+# TODO: find more flexible system wrt file-paths (changing PROJ_NAME)
+# add simulatables into variable in each .mk then setup sims here?
+$(IG_SIM_DIR)/vsim/compile.ihp13.%.tcl: Bender.yml
+	$(BENDER) script vsim -t $* $(foreach t,$(BENDER_SIM_TARGETS),-t $(t)) --vlog-arg="$(VLOG_ARGS)" > $@
 	echo 'vlog "$(CHS_ROOT)/target/sim/src/elfloader.cpp" -ccflags "-std=c++11"' >> $@
 
-IG_SIM_ALL += $(HYP_ROOT)/models/s27ks0641/s27ks0641.v
-IG_SIM_ALL += $(IG_ROOT)/target/sim/models/s27ks0641.sdf
-IG_SIM_ALL += $(IG_ROOT)/target/sim/vsim/compile.ihp13.rtl.tcl
-IG_SIM_ALL += $(IG_ROOT)/target/sim/vsim/compile.ihp13.gate.tcl
+ig-sim-rtl: $(IG_SIM_DIR)/vsim/compile.ihp13.rtl.tcl
+	cd target/sim/vsim; questa-2022.3 vsim -c -do '$(SIM_PRE_COMPILE); source $<; source start.iguana.tcl; run -all'
+
+ig-sim-rtl-gui: $(IG_SIM_DIR)/vsim/compile.ihp13.rtl.tcl
+	cd target/sim/vsim; questa-2022.3 vsim -do '$(SIM_PRE_COMPILE); source $<; source start.iguana.tcl;'
+
+
+ig-sim-sv2v: $(IG_SIM_DIR)/vsim/compile.ihp13.sv2v.tcl
+	cd target/sim/vsim; questa-2022.3 vsim -c -do '$(SIM_PRE_COMPILE); source $<; source start.iguana.tcl; run -all'
+
+ig-sim-sv2v-gui: $(IG_SIM_DIR)/vsim/compile.ihp13.sv2v.tcl
+	cd target/sim/vsim; questa-2022.3 vsim -do '$(SIM_PRE_COMPILE); source $<; source start.iguana.tcl;'
+
+
+ig-sim-synth: $(IG_SIM_DIR)/vsim/compile.ihp13.synth.tcl
+	cd target/sim/vsim; questa-2022.3 vsim -c -do '$(SIM_PRE_COMPILE); source $<; source start.iguana.tcl; run -all'
+
+ig-sim-synth-gui: $(IG_SIM_DIR)/vsim/compile.ihp13.synth.tcl
+	cd target/sim/vsim; questa-2022.3 vsim -c '$(SIM_PRE_COMPILE); source $<; source start.iguana.tcl;'
+
+
+IG_SIM_ALL += $(IG_SIM_DIR)/models/s27ks0641.sdf
+IG_SIM_ALL += $(IG_SIM_DIR)/vsim/compile.ihp13.rtl.tcl
+IG_SIM_ALL += $(IG_SIM_DIR)/vsim/compile.ihp13.sv2v.tcl
+IG_SIM_ALL += $(IG_SIM_DIR)/vsim/compile.ihp13.synth.tcl
+IG_SIM_ALL += $(IG_SIM_DIR)/vsim/compile.ihp13.gate.tcl
+
+.PHONY: ig-sim-rtl ig-sim-sv2v ig-sim-svase ig-sim-synth
 
 ########################
 # IHP13 Implementation #
@@ -112,6 +144,19 @@ IG_SIM_ALL += $(IG_ROOT)/target/sim/vsim/compile.ihp13.gate.tcl
 include $(IG_ROOT)/target/ihp13/pickle/pickle.mk
 include $(IG_ROOT)/target/ihp13/yosys/yosys.mk
 include $(IG_ROOT)/target/ihp13/openroad/openroad.mk
+
+######################
+# Nonfree Components #
+######################
+
+IG_NONFREE_REMOTE ?= git@iis-git.ee.ethz.ch:pulp-restricted/basilisk-nonfree.git
+IG_NONFREE_COMMIT ?= main
+
+ig-nonfree:
+	git clone $(IG_NONFREE_REMOTE) $(IG_ROOT)/target/nonfree
+	cd $(IG_ROOT)/target/nonfree && git checkout $(IG_NONFREE_COMMIT)
+
+include $(IG_ROOT)/target/nonfree/nonfree.mk
 
 #################################
 # Phonies (KEEP AT END OF FILE) #
@@ -126,3 +171,9 @@ ig-sw-all:      $(CHS_SW_ALL)
 ig-hw-all:      $(CHS_HW_ALL) ig-hw-cva6
 ig-bootrom-all: $(CHS_BOOTROM_ALL)
 ig-sim-all:     $(CHS_SIM_ALL) $(IG_SIM_ALL)
+
+ig-sim-clean:
+	rm -rf $(IG_SIM_ALL)
+	rm -rf $(IG_SIM_DIR)/vsim/work
+	rm -f $(IG_SIM_DIR)/vsim/trace_hart*
+	rm -f $(IG_SIM_DIR)/vsim/transcript
