@@ -6,6 +6,7 @@
 // - Jannis Schönleber <janniss@iis.ee.ethz.ch>
 
 /// Testbench module of Iguana
+`timescale 1ns/1ps
 module tb_iguana;
 
   parameter time          HypPowerupTime = 600us;
@@ -69,5 +70,21 @@ module tb_iguana;
 
     $finish;
   end
+
+  initial begin
+      #10ms;
+      $display("10ms passed, sims should be finished\n");
+      $fatal(1, "Simulation timeout!");
+  end
+
+  initial begin
+    while (1) begin
+      #1ms;
+      // display progress
+      $timeformat(-3, 3, "ms");
+      $display("Time: %t\n", $realtime);
+    end
+  end
+
 
 endmodule
