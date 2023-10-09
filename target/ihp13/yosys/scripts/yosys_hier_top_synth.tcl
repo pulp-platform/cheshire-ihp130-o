@@ -9,31 +9,16 @@
 # Something like: readlib read-design, elaborate, synthesize, techmap
 
 # get environment variables
-set vlog_files  $::env(VLOG_FILES)
-set top_design  $::env(TOP_DESIGN)
-set tech_cells  $::env(TECH_CELLS)
-set tech_macros $::env(TECH_MACROS)
-set build_dir   $::env(BUILD)
-set work_dir	  $::env(WORK)
-set report_dir	$::env(REPORTS)
-set hier_depth  $::env(HIER_DEPTH)
-set tiehi		    $::env(TIE_HIGH)
-set tielo		    $::env(TIE_LOW)
-
-set lib_list "-liberty ${tech_cells} "
-foreach file $tech_macros {
-	append lib_list "-liberty ${file} "
-}
+source [file join [file dirname [info script]] yosys_common.tcl]
 
 # read library files
-yosys read_liberty -lib "${tech_cells}"
-foreach file $tech_macros {
-	yosys read_liberty -lib "${file}"
+foreach file $lib_list {
+	yosys read_liberty -lib "$file"
 }
 
 # read design
 foreach file $vlog_files {
-	yosys read_verilog -sv "${file}"
+	yosys read_verilog -sv "$file"
 }
 
 set module_file  [open [file join $work_dir ${top_design}_hier_d${hier_depth}_modules.log] "r"]
@@ -50,32 +35,86 @@ foreach module $module_list {
     yosys blackbox $module
 }
 
-yosys hierarchy -top $top_design
+# Synthesize the rest
+# -----------------------------------------------------------------------------
+# this section heavily borrows from the yosys synth command:
+# synth - check
+yosys hierarchy -check -top $top_design
+yosys tee -q -o "${report_dir}/${top_design}_rtl_initial.rpt" stat
+yosys write_verilog "$work_dir/${top_design}_yosys_rtl_initial.v"
 
-yosys proc
-yosys synth -top $top_design
+# synth - coarse:
+yosys synth -run coarse:fine -noalumacc
+
+# synth - fine:
+yosys memory_collect
+yosys opt -fast
+yosys memory_map
+yosys opt -full
+
+yosys opt_dff -sat
+yosys opt -fast
+yosys clean
+
+# remove iff https://github.com/YosysHQ/yosys/issues/3833 is fixed
 yosys techmap
-yosys opt -purge
+yosys share
+yosys opt -full
+yosys clean -purge
 
-yosys dfflibmap -liberty "${tech_cells}"
-yosys abc -liberty "${tech_cells}" -constr $work_dir/../src/abc.constr -D 5000
+# -----------------------------------------------------------------------------
 
-# clean partial netlist
+yosys tee -q -o "${report_dir}/${top_design}_generic.rpt" stat -tech cmos
+yosys tee -q -o "${report_dir}/${top_design}_generic.json" stat -json -tech cmos
+
+if {[envVarValid "YOSYS_FLATTEN_HIER"]} {
+	yosys flatten
+}
+
+# rename all cells using the initial RTL names
+yosys autoname t:*
+# rename DFFs using the signal connected to the D-pin
+# yosys rename -src t:$*DFF*
+yosys clean -purge
+
+# -----------------------------------------------------------------------------
+# mapping to technology
+set abc_seq_script [processAbcScript scripts/abc-sequential.script]
+yosys abc -dff -liberty "$tech_cells" -D $period_ps -script $abc_seq_script
+
+yosys dfflibmap -liberty "$tech_cells"
+
+# set abc_comb_script [processAbcScript scripts/abc-speed-opt.script]
+# yosys abc -liberty "$tech_cells" -D $period_ps -script $abc_comb_script
+
+yosys clean -purge
+
+# -----------------------------------------------------------------------------
+# prep for openROAD
+
 yosys setundef -zero
-yosys splitnets -driver
-yosys opt_clean -purge
+yosys splitnets -ports -format LRT
+# only use 'yosys splitnets' with hybrid flow
+yosys clean -purge
+yosys autoname t:*
 
-yosys hilomap -singleton -hicell {*}[split ${tiehi} " "] -locell {*}[split ${tielo} " "]
+yosys hilomap -singleton -hicell {*}[split ${tech_tiehi} " "] -locell {*}[split ${tech_tielo} " "]
 
 # Write the netlist of the top-most module to a verilog file
 yosys write_verilog -noattr -noexpr -nohex -nodec $work_dir/${top_design}.mapped.v
 
-# read design
+# read design over blackboxes
 foreach module $module_list {
 	yosys read_verilog -overwrite $work_dir/${module}.mapped.v
 }
-yosys hierarchy -top $top_design
-yosys tee -q -o "${report_dir}/synth.rpt" check
-yosys tee -q -o "${report_dir}/area_clean.rpt" stat -top ${top_design} {*}$lib_list
 
-yosys write_verilog -simple-lhs -noattr -noexpr -nohex -nodec $build_dir/${top_design}_yosys-hier_tech.v
+# re-establish hierarchy (checks merge)
+yosys hierarchy -top $top_design
+
+# final reports
+yosys tee -q -o "${report_dir}/${top_design}_synth.rpt" check
+yosys tee -q -o "${report_dir}/${top_design}_area.rpt" stat -top $top_design {*}$liberty_args
+
+# final netlist
+yosys write_verilog -norename ${work_dir}/${top_design}_netlist_debug.v
+yosys write_verilog -noattr -noexpr -nohex -nodec $netlist
