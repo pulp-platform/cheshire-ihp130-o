@@ -15,8 +15,8 @@ packages:
     - apb
     - register_interface
   axi:
-    revision: bfee21757bf090ec8e358456314b0b0fd3c90809
-    version: 0.39.0
+    revision: fccffb5953ec8564218ba05e20adbedec845e014
+    version: 0.39.1
     source:
       Git: https://github.com/pulp-platform/axi
     dependencies:
@@ -35,14 +35,23 @@ packages:
     - register_interface
     - tech_cells_generic
   axi_riscv_atomics:
-    revision: 97dcb14ef057cbe5bd70dda2060b5bb9e7e04c6d
-    version: 0.7.0
+    revision: 0ac3a78fe342c5a5b9b10bff49d58897f773059e
+    version: 0.8.2
     source:
       Git: https://github.com/pulp-platform/axi_riscv_atomics.git
     dependencies:
     - axi
     - common_cells
     - common_verification
+  axi_rt:
+    revision: 2be9d4028cd3fd6617a0302a53212495a4c4e3fa
+    version: 0.0.0-alpha.4
+    source:
+      Git: https://github.com/pulp-platform/axi_rt.git
+    dependencies:
+    - axi
+    - common_cells
+    - register_interface
   axi_vga:
     revision: 07be187d1e954d8090031b32d236ad76dc62ce45
     version: 0.1.1
@@ -53,7 +62,7 @@ packages:
     - common_cells
     - register_interface
   cheshire:
-    revision: 1a1561a9f1fa7efc3b6b62e2675618f99f29f8ef
+    revision: d4b73a84c27d88216ab7823af1c658e5448d8ac2
     version: null
     source:
       Git: https://github.com/pulp-platform/cheshire
@@ -62,6 +71,7 @@ packages:
     - axi
     - axi_llc
     - axi_riscv_atomics
+    - axi_rt
     - axi_vga
     - clic
     - clint
@@ -74,6 +84,7 @@ packages:
     - register_interface
     - riscv-dbg
     - serial_link
+    - unbent
   clic:
     revision: 8ed76ffc779a435d0ed034f3068e4c3334fe2ecf
     version: 2.0.0
@@ -83,16 +94,16 @@ packages:
     - common_cells
     - register_interface
   clint:
-    revision: e1357c1d0edddde458aec58363473605f51e539e
-    version: 0.1.0
+    revision: d5390a805c20f9226758a152ba1645f61da73349
+    version: 0.2.0
     source:
       Git: https://github.com/pulp-platform/clint.git
     dependencies:
     - common_cells
     - register_interface
   common_cells:
-    revision: 0989ff73d0315922791bf42137c0ce0cbb4a76ca
-    version: 1.30.0
+    revision: 2bd027cb87eaa9bf7d17196ec5f69864b35b630f
+    version: 1.32.0
     source:
       Git: https://github.com/pulp-platform/common_cells.git
     dependencies:
@@ -105,7 +116,7 @@ packages:
       Git: https://github.com/pulp-platform/common_verification.git
     dependencies: []
   cva6:
-    revision: bf806ffa1385876ab70b28df488fafe7ea573a7f
+    revision: a34c7aa3fa0e02f0fc3578558df71b2992ad0bb1
     version: null
     source:
       Git: https://github.com/pulp-platform/cva6.git
@@ -140,8 +151,8 @@ packages:
     - register_interface
     - tech_cells_generic
   idma:
-    revision: 437ffa9dac5dea0daccfd3e8ae604d4f6ae2cdf1
-    version: null
+    revision: ca1b28816a3706be0bf9ce01378246d5346384f0
+    version: 0.5.1
     source:
       Git: https://github.com/pulp-platform/iDMA.git
     dependencies:
@@ -151,7 +162,7 @@ packages:
     - register_interface
   irq_router:
     revision: d1d31350b24f3965b3a51e1bc96c71eb34e94db3
-    version: null
+    version: 0.0.1-beta.1
     source:
       Git: https://github.com/pulp-platform/irq_router.git
     dependencies:
@@ -168,8 +179,8 @@ packages:
     - register_interface
     - tech_cells_generic
   register_interface:
-    revision: 3b2bf592100b769977c76e51812c55cd742882f6
-    version: 0.4.1
+    revision: d7693be4aef1fc7e7eb2b00b41c42e87d959866c
+    version: 0.4.2
     source:
       Git: https://github.com/pulp-platform/register_interface
     dependencies:
@@ -195,9 +206,18 @@ packages:
     - common_cells
     - register_interface
   tech_cells_generic:
-    revision: a9cae21902e75b1434328ecf36f85327ba5717de
-    version: 0.2.11
+    revision: 7968dd6e6180df2c644636bc6d2908a49f2190cf
+    version: 0.2.13
     source:
       Git: https://github.com/pulp-platform/tech_cells_generic.git
     dependencies:
     - common_verification
+  unbent:
+    revision: e9c9d5cfb635f2d4668c816ce9235798cfecb297
+    version: 0.1.6
+    source:
+      Git: https://github.com/pulp-platform/unbent.git
+    dependencies:
+    - axi
+    - common_cells
+    - register_interface

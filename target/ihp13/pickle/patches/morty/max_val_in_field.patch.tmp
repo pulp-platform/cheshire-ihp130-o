@@ -1,0 +1,28 @@
+--- iguana_chip.morty.old.sv	2023-10-21 14:58:28.031881324 +0200
++++ iguana_chip.morty.sv	2023-10-21 15:00:46.682288474 +0200
+@@ -182848,6 +182848,7 @@
+   typedef bit [63:0] doub_bt;
+   typedef bit [ 9:0] dw_bt;   // data widths
+   typedef bit [ 5:0] aw_bt;   // address, ID widths or small buffers
++  localparam integer unsigned AddressWidthMax = 2**$bits(aw_bt) - 1;
+ 
+   // Externally controllable parameters
+   typedef struct packed {
+@@ -183113,7 +183114,7 @@
+     aw_bt ext_base;
+     aw_bt num_out;
+     aw_bt num_rules;
+-    arul_t [aw_bt'(-1):0] map;
++    arul_t [AddressWidthMax:0] map;
+   } axi_out_t;
+ 
+   function automatic axi_out_t gen_axi_out(cheshire_cfg_t cfg);
+@@ -183177,7 +183178,7 @@
+     aw_bt ext_base;
+     aw_bt num_out;
+     aw_bt num_rules;
+-    arul_t [aw_bt'(-1):0] map;
++    arul_t [AddressWidthMax:0] map;
+   } reg_out_t;
+ 
+   function automatic reg_out_t gen_reg_out(cheshire_cfg_t cfg);

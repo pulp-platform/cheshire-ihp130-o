@@ -7,6 +7,18 @@
 // - Tobias Senti <tsenti@student.ethz.ch>
 // - Paul Scheffler <paulsc@iis.ee.ethz.ch>
 
+module tc_sram_blackbox #(
+  parameter int unsigned NumWords     = 32'd0,
+  parameter int unsigned DataWidth    = 32'd0,
+  parameter int unsigned ByteWidth    = 32'd0,
+  parameter int unsigned NumPorts     = 32'd0,
+  parameter int unsigned Latency      = 32'd0,
+  parameter              SimInit      = "none",
+  parameter bit          PrintSimCfg  = 1'b0,
+  parameter              ImplKey      = "none"
+) ();
+endmodule
+
 `define IHP13_TC_SRAM_TIEOFF \
   .A_BIST_CLK   ( '0 ), \
   .A_BIST_ADDR  ( '0 ), \
@@ -44,7 +56,7 @@ module tc_sram #(
   output data_t [NumPorts-1:0] rdata_o
 );
 
-  localparam P1l1 = (NumPorts == 1 & Latency == 1);
+  localparam P1L1 = (NumPorts == 1 & Latency == 1);
 
   // Assemble bit mask
   data_t [NumPorts-1:0] bm;
@@ -56,8 +68,8 @@ module tc_sram #(
   end
 
   // Generate desired cuts
-  if (NumWords == 256 && DataWidth == 36 && P1l1) begin: gen_256x36xBx1
-
+  if (NumWords == 256 && DataWidth == 36 && P1L1) begin: gen_256x36xBx1
+    // L2 tag cache, alligned to 64bit
     logic [63:0] wdata64, rdata64, bm64;
 
     assign rdata_o = rdata64;
@@ -76,8 +88,28 @@ module tc_sram #(
      `IHP13_TC_SRAM_TIEOFF
     );
 
-  end else if (NumWords == 256 & DataWidth == 64 & P1l1) begin : gen_256x64xBx1
+  end else if (NumWords == 256 && DataWidth == 45 && P1L1) begin: gen_256x45xBx1
+    // L1I and L1D tag caches, alligned to 64bit
+    logic [63:0] wdata64, rdata64, bm64;
 
+    assign rdata_o = rdata64;
+    assign wdata64 = wdata_i;
+    assign bm64    = bm;
+
+    RM_IHPSG13_1P_256x64_c2_bm_bist i_cut (
+     .A_CLK   ( clk_i   ),
+     .A_ADDR  ( addr_i [0][7:0] ),
+     .A_BM    ( bm64    ),
+     .A_MEN   ( req_i   ),
+     .A_WEN   ( we_i    ),
+     .A_REN   ( ~we_i   ),
+     .A_DIN   ( wdata64 ),
+     .A_DOUT  ( rdata64 ),
+     `IHP13_TC_SRAM_TIEOFF
+    );
+
+  end else if (NumWords == 256 & DataWidth == 64 & P1L1) begin : gen_256x64xBx1
+    // should not be used but easy to implement
     RM_IHPSG13_1P_256x64_c2_bm_bist i_cut (
      .A_CLK   ( clk_i   ),
      .A_ADDR  ( addr_i [0][7:0] ),
@@ -90,8 +122,62 @@ module tc_sram #(
      `IHP13_TC_SRAM_TIEOFF
     );
 
-  end else if (NumWords == 2048 & DataWidth == 64 & P1l1) begin : gen_2048x64xBx1
+  end else if (NumWords == 256 && DataWidth == 128 && P1L1) begin : gen_256x128xBx1
+    // L1I data caches, two physical caches in parallel
+    logic [1:0][63:0] wdata64, rdata64, bm64;
 
+    assign rdata_o = rdata64;
+    assign wdata64 = wdata_i;
+    assign bm64    = bm;
+
+    RM_IHPSG13_1P_256x64_c2_bm_bist i_cut_high (
+     .A_CLK   ( clk_i           ),
+     .A_ADDR  ( addr_i [0][7:0] ),
+     .A_BM    ( bm64[1]         ),
+     .A_MEN   ( req_i           ),
+     .A_WEN   ( we_i            ),
+     .A_REN   ( ~we_i           ),
+     .A_DIN   ( wdata64[1]      ),
+     .A_DOUT  ( rdata64[1]      ),
+     `IHP13_TC_SRAM_TIEOFF
+    );
+    RM_IHPSG13_1P_256x64_c2_bm_bist i_cut_low (
+     .A_CLK   ( clk_i           ),
+     .A_ADDR  ( addr_i [0][7:0] ),
+     .A_BM    ( bm64[0]         ),
+     .A_MEN   ( req_i           ),
+     .A_WEN   ( we_i            ),
+     .A_REN   ( ~we_i           ),
+     .A_DIN   ( wdata64[0]      ),
+     .A_DOUT  ( rdata64[0]      ),
+     `IHP13_TC_SRAM_TIEOFF
+    );
+
+  end else if (NumWords == 256 && DataWidth == 256 && P1L1) begin : gen_256x256xBx1
+    // L1D data caches, four physical caches in parallel
+    // one bank has a width of number-of-ways times XLEN (4*64=256)
+    logic [3:0][63:0] wdata64, rdata64, bm64;
+
+    assign rdata_o = rdata64;
+    assign wdata64 = wdata_i;
+    assign bm64    = bm;
+
+    for (genvar c = 0; c < 4; ++c) begin : gen_cuts
+      RM_IHPSG13_1P_256x64_c2_bm_bist i_cut (
+        .A_CLK   ( clk_i           ),
+        .A_ADDR  ( addr_i [0][7:0] ),
+        .A_BM    ( bm64[c]         ),
+        .A_MEN   ( req_i           ),
+        .A_WEN   ( we_i            ),
+        .A_REN   ( ~we_i           ),
+        .A_DIN   ( wdata64[c]      ),
+        .A_DOUT  ( rdata64[c]      ),
+        `IHP13_TC_SRAM_TIEOFF
+      );
+    end
+
+  end else if (NumWords == 2048 & DataWidth == 64 & P1L1) begin : gen_2048x64xBx1
+    // L2 data caches, 2048 lines in two physical caches
     data_t [1:0] rdata;
     logic cut_sel_d, cut_sel_q;
 
@@ -120,13 +206,13 @@ module tc_sram #(
 
   end else begin : gen_blackbox
 
-    `ifndef SYNTHESIS
+  `ifdef SIMULATION
     initial $fatal("No tc_sram for %m: NumWords %0d, DataWidth %0d NumPorts %0d, Latency %0d",
         NumWords, DataWidth, NumPorts);
-    `endif
+  `endif
 
-    // Instantiate a non-linkable blackbox with parameters for debugging
-    `ifndef MORTY
+  // Instantiate a non-linkable blackbox with parameters for debugging
+  `ifdef SYNTHESIS
     tc_sram_blackbox #(
       .NumWords     ( NumWords    ),
       .DataWidth    ( DataWidth   ),
@@ -136,9 +222,9 @@ module tc_sram #(
       .SimInit      ( SimInit     ),
       .PrintSimCfg  ( PrintSimCfg ),
       .ImplKey      ( ImplKey     )
-    ) ();
-    `endif
+    ) i_sram_blackbox ();
+  `endif
 
-  end
+end
 
 endmodule
