@@ -1,0 +1,20 @@
+--- iguana_chip.morty.old.sv	2023-10-21 16:16:20.512564000 +0200
++++ iguana_chip.morty.sv	2023-10-21 16:32:40.699785285 +0200
+@@ -185163,7 +185163,7 @@
+ 
+       // Connect interrupts to CLIC
+       assign clic_intr = '{
+-        intr: intr_routed[IntrRtdCoreBase+i][NumClicSysIntrs-1:0],
++        intr: intr_routed[IntrRtdCoreBase+i].intn,
+         core: '{
+           meip: xeip[i].m,
+           seip: xeip[i].s,
+@@ -185572,7 +185572,7 @@
+     .rst_ni,
+     .reg_req_i  ( reg_out_req[RegOut.plic] ),
+     .reg_rsp_o  ( reg_out_rsp[RegOut.plic] ),
+-    .intr_src_i ( intr_routed[IntrRtdPlic][rv_plic_reg_pkg::NumSrc-1:0] ),
++    .intr_src_i ( intr_routed[IntrRtdPlic].intn[rv_plic_reg_pkg::NumSrc-1:0] ),
+     .irq_o      ( xeip ),
+     .irq_id_o   ( ),
+     .msip_o     ( )

@@ -1,0 +1,11 @@
+--- iguana_chip.morty.sv	2023-10-21 16:06:00.691578920 +0200
++++ iguana_chip.morty.old.sv	2023-10-21 16:00:38.836711000 +0200
+@@ -185191,7 +185191,7 @@
+         .irq_id_o       ( clic_irq_id    ),
+         .irq_level_o    ( clic_irq_level ),
+         .irq_shv_o      ( clic_irq_shv   ),
+-        .irq_priv_o     ( clic_irq_priv  ),
++        .irq_priv_o     ( {clic_irq_priv}  ),
+         .irq_kill_req_o ( clic_irq_kill_req ),
+         .irq_kill_ack_i ( clic_irq_kill_ack )
+       );
