@@ -41,6 +41,46 @@ ig-clean-deps:
 # Include Cheshire targets
 include $(CHS_ROOT)/cheshire.mk
 
+###############
+# Generate HW #
+###############
+IG_CVA6_CONFIG := cv64a6_imafdcsclic_sv39
+IG_CVA6_PKG_FILE := $(shell $(BENDER) path cva6)/core/include/$(IG_CVA6_CONFIG)_config_pkg.sv
+# deactivate hypervisor extension (large and not needed) and cut D-cache in half
+IG_CVA6_PKG_PARAMS := \
+	CVA6ConfigHExtEn=0 \
+	CVA6ConfigDcacheByteSize=16384 \
+	CVA6ConfigDcacheSetAssoc=4 \
+	CVA6ConfigDcacheType=WT \
+	CVA6ConfigDataUserWidth=64 \
+	CVA6ConfigIcacheByteSize=16384 \
+	CVA6ConfigIcacheSetAssoc=4
+# 	CVA6ConfigDcacheByteSize=8192 \
+# 	CVA6ConfigDcacheSetAssoc=2 \
+# 	CVA6ConfigDcacheType=WT \
+# 	CVA6ConfigDataUserWidth=64 \
+# 	CVA6ConfigIcacheByteSize=8192 \
+# 	CVA6ConfigIcacheSetAssoc=2
+
+ig-hw-cva6:
+	@cp -n $(IG_CVA6_PKG_FILE) $(IG_CVA6_PKG_FILE).orig
+	@cp $(IG_CVA6_PKG_FILE).orig $(IG_CVA6_PKG_FILE)
+	@echo "cva6: configure $(notdir $(IG_CVA6_PKG_FILE))"
+	for param_val in $(IG_CVA6_PKG_PARAMS); do \
+        param=$$(echo "$$param_val" | cut -d '=' -f 1); \
+        value=$$(echo "$$param_val" | cut -d '=' -f 2); \
+		echo "param: $$param ; value: $$value"\
+		echo "cva6: setting $$param = $$value"; \
+        sed "s|\(\s*localparam\s*\)$$param\(\s*=\s*\)[a-zA-Z0-9_]*\(.*\)|\1$$param\2$$value\3|g" \
+            $(IG_CVA6_PKG_FILE) > $(IG_CVA6_PKG_FILE).tmp; \
+		mv $(IG_CVA6_PKG_FILE).tmp $(IG_CVA6_PKG_FILE);  \
+    done
+
+
+BENDER_PROJ_TARGETS := asic ihp13 cva6 $(IG_CVA6_CONFIG)
+
+BENDER_SYNTH_TARGETS := rtl $(BENDER_PROJ_TARGETS)
+
 ##############
 # Simulation #
 ##############
@@ -77,12 +117,12 @@ include $(IG_ROOT)/target/ihp13/openroad/openroad.mk
 # Phonies (KEEP AT END OF FILE) #
 #################################
 
-.PHONY: ig-all ig-clean-deps ig-sw-all ig-hw-all ig-bootrom-all ig-sim-all
+.PHONY: ig-all ig-clean-deps ig-sw-all ig-hw-all ig-bootrom-all ig-sim-all ig-hw-cva6 ig-nonfree ig-sim-clean
 
 IG_ALL += $(CHS_ALL) $(IG_SIM_ALL)
 
 ig-all:         $(CHS_ALL)
 ig-sw-all:      $(CHS_SW_ALL)
-ig-hw-all:      $(CHS_HW_ALL)
+ig-hw-all:      $(CHS_HW_ALL) ig-hw-cva6
 ig-bootrom-all: $(CHS_BOOTROM_ALL)
 ig-sim-all:     $(CHS_SIM_ALL) $(IG_SIM_ALL)

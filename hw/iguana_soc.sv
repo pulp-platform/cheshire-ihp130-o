@@ -70,8 +70,8 @@ module iguana_soc import iguana_pkg::*; import cheshire_pkg::*; (
   axi_llc_req_t axi_llc_mst_req;
   axi_llc_rsp_t axi_llc_mst_rsp;
 
-  reg_req_t reg_ext_slv_req;
-  reg_rsp_t reg_ext_slv_rsp;
+  reg_req_t [CheshireCfg.RegExtNumSlv-1:0] reg_ext_slv_req;
+  reg_rsp_t [CheshireCfg.RegExtNumSlv-1:0] reg_ext_slv_rsp;
 
   // GPIO width conversion (implicit)
   logic [31:0] gpio32_i;

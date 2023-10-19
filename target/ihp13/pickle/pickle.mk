@@ -13,6 +13,9 @@ SVASE ?= svase  # https://github.com/pulp-platform/svase
 SV2V  ?= sv2v   # https://https://github.com/zachjs/sv2v
 
 PICKLE_DIR ?= $(IG_ROOT)/target/ihp13/pickle
+PICKLE_OUT ?= $(PICKLE_DIR)/out
+
+TOP_DESIGN ?= iguana_chip
 
 # add tools to PATH as necessary like this:
 export PATH := $(PATH):/usr/scratch/pisoc11/sem23f30/tools/bin/
@@ -41,36 +44,39 @@ endef
 #########
 
 # Generate sources manifest for use by Morty
-$(PICKLE_DIR)/out/iguana_chip.sources.json: $(CHS_HW_ALL) $(IG_ROOT)/Bender.yml
+$(PICKLE_OUT)/$(TOP_DESIGN).sources.json: $(CHS_HW_ALL) $(IG_ROOT)/Bender.yml $(IG_ROOT)/hw/*
 	mkdir -p $(dir $@)
-	$(BENDER) sources -f -t rtl -t asic -t ihp13 -t cva6 -t cv64a6_imafdcsclic_sv39  > $@
+	$(BENDER) sources -f $(foreach t,$(BENDER_SYNTH_TARGETS),-t $(t))  > $@
 
 # Pickle all synthesizable RTL into a single file
-$(PICKLE_DIR)/out/iguana_chip.morty.sv: $(PICKLE_DIR)/out/iguana_chip.sources.json $(wildcard $(PICKLE_DIR)/patches/morty/*)
+$(PICKLE_OUT)/$(TOP_DESIGN).morty.sv: $(PICKLE_OUT)/$(TOP_DESIGN).sources.json $(wildcard $(PICKLE_DIR)/patches/morty/*) $(IG_CVA6_PKG_FILE)
 	$(call rtl-patches,)
-	$(MORTY) -q -f $< -o $@ -D VERILATOR=1 -D SYNTHESIS=1 -D MORTY=1 -D TARGET_ASIC=1 --keep_defines --top iguana_chip
+	$(MORTY) -q -f $< -o $@ -D VERILATOR=1 -D SYNTHESIS=1 -D MORTY=1 -D TARGET_ASIC=1 --keep_defines --top $(TOP_DESIGN)
 	$(call apply-patches,morty)
 
-ig-ihp13-morty-all: $(PICKLE_DIR)/out/iguana_chip.morty.sv
+ig-ihp13-morty-all: $(PICKLE_OUT)/$(TOP_DESIGN).morty.sv
 
 #########
 # SVase #
 #########
 
 # Pre-elaborate SystemVerilog pickle
-$(PICKLE_DIR)/out/iguana_chip.svase.sv: $(PICKLE_DIR)/out/iguana_chip.morty.sv $(wildcard $(PICKLE_DIR)/patches/svase/*)
-	$(SVASE) iguana_chip $@ $<
+$(PICKLE_OUT)/$(TOP_DESIGN).svase.sv: $(PICKLE_OUT)/$(TOP_DESIGN).morty.sv $(wildcard $(PICKLE_DIR)/patches/svase/*)
+	$(SVASE) $(TOP_DESIGN) $@ $<
+	sed -i 's/module $(TOP_DESIGN)[[:digit:]_]\+/module $(TOP_DESIGN)/' $(PICKLE_OUT)/$(TOP_DESIGN).svase.sv
 	$(call apply-patches,svase)
 
-ig-ihp13-svase-all: $(PICKLE_DIR)/out/iguana_chip.svase.sv
+ig-ihp13-svase-all: $(PICKLE_OUT)/$(TOP_DESIGN).svase.sv
 
 ########
 # SV2V #
 ########
 
 # Convert pickle to Verilog
-$(PICKLE_DIR)/out/iguana_chip.sv2v.v: $(PICKLE_DIR)/out/iguana_chip.svase.sv $(wildcard $(PICKLE_DIR)/patches/sv2v/*)
+$(PICKLE_OUT)/$(TOP_DESIGN).sv2v.v: $(PICKLE_OUT)/$(TOP_DESIGN).svase.sv $(wildcard $(PICKLE_DIR)/patches/sv2v/*)
 	$(SV2V) --oversized-numbers --verbose --write $@ $<
 	$(call apply-patches,sv2v)
 
-ig-ihp13-pickle-all: $(PICKLE_DIR)/out/iguana_chip.sv2v.v
+ig-ihp13-pickle-all: $(PICKLE_OUT)/$(TOP_DESIGN).sv2v.v
+
+.PHONY: ig-ihp13-morty-all ig-ihp13-svase-all ig-ihp13-pickle-all
