@@ -8,13 +8,17 @@
 # Helper scripts writing reports
 
 proc save_reports { drvs report_name } {
-    puts "Generating $report_name reports..."
-    puts "$report_name Setup"
-    report_checks -path_delay max
-    puts "$report_name Hold"
-    report_checks -path_delay min
+    global report_dir
+    set report [open ${report_dir}/${report_name}.rpt "w"]
+
+    puts $report "Generating $report_name reports..."
+    puts $report "$report_name Setup"
+    puts $report [report_checks -path_delay max]
+    puts $report "$report_name Hold"
+    puts $report [report_checks -path_delay min]
     if { $drvs } {
-        puts "$report_name DRVs"
-        report_check_types -violators -max_slew -max_capacitance -max_fanout
+        puts $report "$report_name DRVs"
+        puts $report [report_check_types -violators -max_fanout]
     }
+    close $report
 }

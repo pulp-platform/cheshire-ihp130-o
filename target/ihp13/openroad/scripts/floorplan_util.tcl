@@ -35,6 +35,14 @@ proc placeInstance { name x y orient } {
   if {$inst == "NULL"} {
     error "Cannot find instance $name"
   }
+  
+  # ASK: adopted from iguna, why is this necessary?
+  if {$orient == "R90"} {
+    set orient MX
+  }
+  if {$orient == "MXR90"} {
+    set orient R0
+  }
 
   $inst setLocationOrient $orient
   $inst setLocation [ord::microns_to_dbu $x] [ord::microns_to_dbu $y]

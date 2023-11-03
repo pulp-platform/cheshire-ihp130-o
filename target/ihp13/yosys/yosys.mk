@@ -9,45 +9,38 @@
 # Synthesis flow from bender sources.json to finished netlist
 # Has three main targets:
 # - synth/run-yosys: fully open-source netlist with normal synthesis approach
+# - run-yosys-profiled: same as above but monitor CPU and RAM usage
 # - run-yosys-hier: fully open-source netlist, flattened N-levels below top
 
 # Tools
-# YOSYS := yosys-0.33 yosys
-YOSYS := /home/msc23h5/repos/yosys-phsauter/yosys
+YOSYS 	?= yosys
+STA 	?= sta
 
 # Directories
-# Todo: create a common 'project.mk' to set project config variables (or use iguana.mk?)
+# directory of the path to the last called Makefile (this one)
 YOSYS_DIR 		:= $(realpath $(dir $(realpath $(lastword $(MAKEFILE_LIST)))))
-IG_ROOT		    ?= $(realpath $(YOSYS_DIR)/../../..)
-TECH_ROOT		?= $(IG_ROOT)/target/ihp13/pdk/ihp-sg13g2/ihp-sg13g2/libs.ref
-BUILD			?= $(YOSYS_DIR)/build
+IG_DIR		    ?= $(realpath $(YOSYS_DIR)/../../..)
+TARGET_DIR		?= $(realpath $(YOSYS_DIR)/..)
+BUILD			?= $(YOSYS_DIR)/out
 WORK			?= $(YOSYS_DIR)/WORK
 REPORTS			?= $(YOSYS_DIR)/reports
-
-# sed -n "s|^\s*Chip area.*module '\\\([^']*\)': \([0-9.]*\)|\1, \2|p" area_clean.rpt > area.csv
-
-# Tools: TODO remove
-include $(YOSYS_DIR)/tools.mk
 
 # Project variables
 include $(YOSYS_DIR)/technology.mk
 include $(YOSYS_DIR)/project-synth.mk
 
 TOP_DESIGN		?= iguana_chip
-SV2V_FILE		:= $(IG_ROOT)/target/ihp13/pickle/out/$(TOP_DESIGN).sv2v.v
+PROJ_NAME		?= $(TOP_DESIGN)
+
+SV2V_FILE		:= $(TARGET_DIR)/pickle/out/$(PROJ_NAME).sv2v.v
 VLOG_FILES  	:= $(SV2V_FILE)
 SYNTH_TOP		?= $(TOP_DESIGN)
-PROJ_NAME		?= $(TOP_DESIGN)
 NETLIST			:= $(BUILD)/$(PROJ_NAME).yosys.v
 
-# as dependency: re-generate netlist only when sv2v is out-of-date
-$(NETLIST): $(SV2V_FILE)
-	@$(MAKE) run-yosys
-
-synth: tools.log run-yosys
+synth-all: run-yosys
 
 # synthesize using yosys
-run-yosys: $(VLOG_FILES)
+run-yosys:
 	@mkdir -p $(BUILD)
 	@mkdir -p $(WORK)
 	@mkdir -p $(REPORTS)
@@ -60,19 +53,24 @@ run-yosys: $(VLOG_FILES)
 	NETLIST="$(NETLIST)" \
 	$(YOSYS) -c $(YOSYS_DIR)/scripts/yosys_synthesis.tcl \
 		2>&1 | TZ=UTC gawk '{ print strftime("[%Y-%m-%d %H:%M %Z]"), $$0 }' \
-		| tee "$(YOSYS_DIR)/yosys_$(shell date +"%Y-%m-%d_%H_%M_%Z").log \
+		| tee "$(YOSYS_DIR)/yosys_$(shell date +"%Y-%m-%d_%H_%M_%Z").log" \
 		| grep -E "\[.*\] [0-9\.]+ Executing";
+
+# make netlist  working dependency
+$(NETLIST): $(SV2V_FILE)
+	@$(MAKE) run-yosys
+
 
 # analyze timing of netlist
 run-sta: $(NETLIST)
 	@mkdir -p $(REPORTS)
 	@rm -f opensta.log
-	VLOG_NETLIST="$(NETLIST)" \
+	NETLIST="$(NETLIST)" \
 	TOP_DESIGN="$(SYNTH_TOP)" \
 	REPORTS="$(REPORTS)" \
-	sta $(YOSYS_DIR)/scripts/opensta_timings.tcl
+	$(STA) $(YOSYS_DIR)/scripts/opensta_timings.tcl
 
-.PHONY: synth run-yosys run-sta 
+.PHONY: synth-all run-yosys run-sta 
 
 
 # Hierarchically split synthesis
@@ -81,10 +79,10 @@ run-sta: $(NETLIST)
 # A precursor to automatic flattening of small modules and parallel synthesis
 HIER_DEPTH        := -1
 HIER_BUILD        := $(BUILD)
-HIER_NETLIST	  := $(HIER_BUILD)/$(SYNTH_TOP)_yosys-hier_tech.v
+HIER_NETLIST	  := $(HIER_BUILD)/$(PROJ_NAME)_yosys-hier_tech.v
 HIER_WORK         := $(WORK)-hier
 HIER_REPORTS      := $(REPORTS)-hier
-HIER_LIST_SUCCESS := $(HIER_WORK)/.$(SYNTH_TOP)_hier_d$(HIER_DEPTH)_success
+HIER_LIST_SUCCESS := $(HIER_WORK)/.$(PROJ_NAME)_hier_d$(HIER_DEPTH)_success
 HIER_TEMP_FILES    = $(wildcard $(HIER_WORK)/*.rtl.v)
 HIER_PART_FILES    = ${HIER_TEMP_FILES:rtl.v=mapped.v} 
 
@@ -152,12 +150,10 @@ $(HIER_WORK)/%.mapped.v: $(HIER_WORK)/%.rtl.v
 run-sta-hier: $(HIER_NETLIST)
 	@mkdir -p $(REPORTS)
 	@rm -f opensta.log
-	VLOG_NETLIST="$(HIER_NETLIST)" \
+	NETLIST="$(HIER_NETLIST)" \
 	TOP_DESIGN="$(SYNTH_TOP)" \
-	TECH_CELLS="$(TECH_CELLS)" \
-	TECH_MACROS="$(TECH_MACROS)" \
 	REPORTS="$(REPORTS)" \
-	sta $(YOSYS_DIR)/scripts/opensta_timings.tcl
+	$(STA) $(YOSYS_DIR)/scripts/opensta_timings.tcl
 
 .PHONY: run-yosys-hier run-yosys-hier-synth run-sta-hier 
 

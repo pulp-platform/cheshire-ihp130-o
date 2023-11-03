@@ -7,7 +7,7 @@
 # - Philippe Sauter <phsauter@ethz.ch>
 # - Paul Scheffler <paulsc@iis.ee.ethz.ch>
 
-BENDER   ?= bender  # https://github.com/pulp-platform/bender
+include tools.mk
 
 IG_ROOT  ?= $(shell $(BENDER) path iguana)
 CHS_ROOT := $(shell $(BENDER) path cheshire)
@@ -41,12 +41,15 @@ ig-clean-deps:
 # Include Cheshire targets
 include $(CHS_ROOT)/cheshire.mk
 
-###############
-# Generate HW #
-###############
+####################
+# HW Configuration #
+####################
+PROJ_NAME	:= basilisk
+TOP_DESIGN 	:= iguana_chip
+
 IG_CVA6_CONFIG := cv64a6_imafdcsclic_sv39
 IG_CVA6_PKG_FILE := $(shell $(BENDER) path cva6)/core/include/$(IG_CVA6_CONFIG)_config_pkg.sv
-# deactivate hypervisor extension (large and not needed) and cut D-cache in half
+# deactivate hypervisor extension (large and not needed), cut D-cache in half, switch to WT cache
 IG_CVA6_PKG_PARAMS := \
 	CVA6ConfigHExtEn=0 \
 	CVA6ConfigDcacheByteSize=16384 \
@@ -55,13 +58,8 @@ IG_CVA6_PKG_PARAMS := \
 	CVA6ConfigDataUserWidth=64 \
 	CVA6ConfigIcacheByteSize=16384 \
 	CVA6ConfigIcacheSetAssoc=4
-# 	CVA6ConfigDcacheByteSize=8192 \
-# 	CVA6ConfigDcacheSetAssoc=2 \
-# 	CVA6ConfigDcacheType=WT \
-# 	CVA6ConfigDataUserWidth=64 \
-# 	CVA6ConfigIcacheByteSize=8192 \
-# 	CVA6ConfigIcacheSetAssoc=2
 
+# configure CVA6 for this project
 ig-hw-cva6:
 	@cp -n $(IG_CVA6_PKG_FILE) $(IG_CVA6_PKG_FILE).orig
 	@cp $(IG_CVA6_PKG_FILE).orig $(IG_CVA6_PKG_FILE)
@@ -78,8 +76,16 @@ ig-hw-cva6:
 
 
 BENDER_PROJ_TARGETS := asic ihp13 cva6 $(IG_CVA6_CONFIG)
-
 BENDER_SYNTH_TARGETS := rtl $(BENDER_PROJ_TARGETS)
+
+########################
+# IHP13 Implementation #
+########################
+
+include $(IG_ROOT)/target/ihp13/pickle/pickle.mk
+include $(IG_ROOT)/target/ihp13/yosys/yosys.mk
+include $(IG_ROOT)/target/ihp13/openroad/openroad.mk
+
 
 ##############
 # Simulation #
@@ -89,7 +95,7 @@ SIM_PRE_COMPILE := set BOOTMODE 0; set PRELMODE 0; set BINARY "$(CHS_ROOT)/sw/te
 #SIM_PRE_COMPILE := set BOOTMODE 0; set PRELMODE 1; set BINARY "$(CHS_ROOT)/sw/tests/helloworld.spm.elf";
 #SIM_PRE_COMPILE := set BOOTMODE 3; set PRELMODE 0; set BINARY "$(CHS_ROOT)/sw/tests/helloworld.gpt.memh";
 #SIM_PRE_COMPILE := set BOOTMODE 0; set PRELMODE 1; set BINARY "$(CHS_ROOT)/sw/tests/helloworld.dram.elf";
-BENDER_SIM_TARGETS := asic ihp13 simulation test hyper_test cva6 $(IG_CVA6_CONFIG)
+BENDER_SIM_TARGETS :=  simulation test hyper_test $(BENDER_PROJ_TARGETS)
 
 # Forward relevant Hyperbus targets
 $(HYP_ROOT)/models/s27ks0641/s27ks0641.v:
@@ -109,24 +115,30 @@ $(IG_SIM_DIR)/vsim/compile.ihp13.%.tcl: Bender.yml
 	echo 'vlog "$(CHS_ROOT)/target/sim/src/elfloader.cpp" -ccflags "-std=c++11"' >> $@
 
 ig-sim-rtl: $(IG_SIM_DIR)/vsim/compile.ihp13.rtl.tcl
+	rm -rf target/sim/vsim/work
 	cd target/sim/vsim; questa-2022.3 vsim -c -do '$(SIM_PRE_COMPILE); source $<; source start.iguana.tcl; run -all'
 
 ig-sim-rtl-gui: $(IG_SIM_DIR)/vsim/compile.ihp13.rtl.tcl
+	rm -rf target/sim/vsim/work
 	cd target/sim/vsim; questa-2022.3 vsim -do '$(SIM_PRE_COMPILE); source $<; source start.iguana.tcl;'
 
 
 ig-sim-sv2v: $(IG_SIM_DIR)/vsim/compile.ihp13.sv2v.tcl
+	rm -rf target/sim/vsim/work
 	cd target/sim/vsim; questa-2022.3 vsim -c -do '$(SIM_PRE_COMPILE); source $<; source start.iguana.tcl; run -all'
 
 ig-sim-sv2v-gui: $(IG_SIM_DIR)/vsim/compile.ihp13.sv2v.tcl
+	rm -rf target/sim/vsim/work
 	cd target/sim/vsim; questa-2022.3 vsim -do '$(SIM_PRE_COMPILE); source $<; source start.iguana.tcl;'
 
 
 ig-sim-synth: $(IG_SIM_DIR)/vsim/compile.ihp13.synth.tcl
+	rm -rf target/sim/vsim/work
 	cd target/sim/vsim; questa-2022.3 vsim -c -do '$(SIM_PRE_COMPILE); source $<; source start.iguana.tcl; run -all'
 
 ig-sim-synth-gui: $(IG_SIM_DIR)/vsim/compile.ihp13.synth.tcl
-	cd target/sim/vsim; questa-2022.3 vsim -c '$(SIM_PRE_COMPILE); source $<; source start.iguana.tcl;'
+	rm -rf target/sim/vsim/work
+	cd target/sim/vsim; questa-2022.3 vsim -do '$(SIM_PRE_COMPILE); source $<; source start.iguana.tcl;'
 
 
 IG_SIM_ALL += $(IG_SIM_DIR)/models/s27ks0641.sdf
@@ -137,13 +149,6 @@ IG_SIM_ALL += $(IG_SIM_DIR)/vsim/compile.ihp13.gate.tcl
 
 .PHONY: ig-sim-rtl ig-sim-sv2v ig-sim-svase ig-sim-synth
 
-########################
-# IHP13 Implementation #
-########################
-
-include $(IG_ROOT)/target/ihp13/pickle/pickle.mk
-include $(IG_ROOT)/target/ihp13/yosys/yosys.mk
-include $(IG_ROOT)/target/ihp13/openroad/openroad.mk
 
 ######################
 # Nonfree Components #
@@ -173,7 +178,7 @@ ig-bootrom-all: $(CHS_BOOTROM_ALL)
 ig-sim-all:     $(CHS_SIM_ALL) $(IG_SIM_ALL)
 
 ig-sim-clean:
-	rm -rf $(IG_SIM_ALL)
+	rm -rf $(IG_SIM_DIR)/vsim/compile.ihp13.*
 	rm -rf $(IG_SIM_DIR)/vsim/work
 	rm -f $(IG_SIM_DIR)/vsim/trace_hart*
 	rm -f $(IG_SIM_DIR)/vsim/transcript

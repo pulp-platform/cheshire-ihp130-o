@@ -2,21 +2,37 @@
 # Solderpad Hardware License, Version 0.51, see LICENSE for details.
 # SPDX-License-Identifier: SHL-0.51
 
+# Tools
+OPENROAD 		?= openroad
+
 # Directories
+# directory of the path to the last called Makefile (this one)
 OPENROAD_DIR    := $(realpath $(dir $(realpath $(lastword $(MAKEFILE_LIST)))))
 IG_ROOT		    ?= $(realpath $(OPENROAD_DIR)/../../..)
-TECH_ROOT		?= $(IG_ROOT)/target/ihp13/pdk/ihp-sg13g2/
+TARGET_DIR		?= $(realpath $(OPENROAD_DIR)/..)
 SAVE			:= $(OPENROAD_DIR)/save
 REPORTS			:= $(OPENROAD_DIR)/reports
 
-ig-setup-openroad:
-	mkdir -p $(IG_ROOT)/target/ihp13/openroad/reports
-	mkdir -p $(IG_ROOT)/target/ihp13/openroad/save
+# Project variables
+TOP_DESIGN 	?= iguana_chip
+PROJ_NAME	?= $(TOP_DESIGN)
 
-ig-openroad: ig-setup-openroad
-	TECH_ROOT="$(TECH_ROOT)" \
+NETLIST		?= $(TARGET_DIR)/yosys/out/$(PROJ_NAME).yosys.v
+
+
+backend-all: run-openroad
+
+run-openroad:
+	mkdir -p $(SAVE)
+	mkdir -p $(REPORTS)
 	cd $(OPENROAD_DIR) && \
+	NETLIST="$(NETLIST)" \
+	TOP_DESIGN="$(TOP_DESIGN)" \
+	PROJ_NAME="$(PROJ_NAME)" \
+	SAVE="$(SAVE)" \
+	REPORTS="$(REPORTS)" \
 	$(OPENROAD) scripts/chip.tcl -gui \
 		2>&1 | TZ=UTC gawk '{ print strftime("[%Y-%m-%d %H:%M %Z]"), $$0 }' \
 		| tee "$(OPENROAD_DIR)/openroad_$(shell date +"%Y-%m-%d_%H_%M_%Z").log";
-PHONY: ig-openroad
+
+PHONY: run-openroad backend-all

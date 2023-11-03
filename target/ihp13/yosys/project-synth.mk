@@ -44,7 +44,13 @@ export YOSYS_KEEP_HIER_INST :=  "*/gen_bootrom.i_bootrom" \
 								"t:*cdc_4phase_src__*" \
 								"t:*cdc_4phase_dst__*"
 
+# the paths (full names) of all instances matching these strings is reported
+# for floorplaning or writing constraints
+export YOSYS_REPORT_INSTS :=	"t:RM_IHPSG13_*" \
+								"t:delay_line_*"
 
+
+# use LSOracle (currently disabled in the script so this does nothing)
 export YOSYS_USE_LSORACLE := 0
 
 # use abc-sequential.script (includes sequential optimizations)

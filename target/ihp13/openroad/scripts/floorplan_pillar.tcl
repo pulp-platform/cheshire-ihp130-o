@@ -54,40 +54,8 @@ make_tracks TopMetal2 -x_offset 2.00 -x_pitch 4.00 -y_offset 2.00 -y_pitch 4.00
 ##########################################################################
 # Placing macros
 ##########################################################################
+source scripts/floorplan_util.tcl
 
-proc placeInstance { name x y orient } {
-  # place macro only allows R0, R180, MX, MY -> doesn't work for us
-  # place_macro -macro_name $name -location [list $x $y] -orientation $orient
-  set block [ord::get_db_block]
-  set inst [$block findInst $name]
-  if {$inst == "NULL"} {
-    error "Cannot find instance $name"
-  }
-
-  # setLocation always uses lower-left corner, no matter the roation
-  # setOrigin uses the lower-left corner of the R0 orientation, ie the cell origin
-  $inst setLocationOrient $orient
-  $inst setLocation [ord::microns_to_dbu $x] [ord::microns_to_dbu $y]
-  $inst setPlacementStatus FIRM
-}
-
-proc addHaloToBlock {halo name} {
-  set block [ord::get_db_block]
-  set inst [odb::dbBlock_findInst $block $name]
-
-  set bbox [odb::dbInst_getBBox $inst]
-  set minx [odb::dbBox_xMin $bbox]
-  set miny [odb::dbBox_yMin $bbox]
-  set maxx [odb::dbBox_xMax $bbox]
-  set maxy [odb::dbBox_yMax $bbox]
-
-  set minx [expr $minx - [ord::microns_to_dbu $halo]]
-  set miny [expr $miny - [ord::microns_to_dbu $halo]]
-  set maxx [expr $maxx + [ord::microns_to_dbu $halo]]
-  set maxy [expr $maxy + [ord::microns_to_dbu $halo]]
-
-  odb::dbBlockage_create $block $minx $miny $maxx $maxy
-}
 
 ##########################################################################
 # Macro paths
