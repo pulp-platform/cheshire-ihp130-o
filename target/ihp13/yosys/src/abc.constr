@@ -5,7 +5,5 @@
 # Authors:
 # - Philippe Sauter <phsauter@ethz.ch>
 
-create_clock -period 5 -name clk [get_ports clk*]
 set_driving_cell sg13g2_buf_1
-set_output_delay 1.5 -max -clock clk [all_outputs]
 set_load [expr 10 * [load_of sg13g2_xor2_1/A]] [all_outputs]

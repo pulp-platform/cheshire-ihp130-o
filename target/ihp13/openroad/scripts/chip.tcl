@@ -9,7 +9,11 @@
 
 # The main OpenRoad chip flow
 
-set DESIGN_NAME basilisk_yosys
+set proj_name $::env(PROJ_NAME)
+set netlist $::env(NETLIST)
+set top_design $::env(TOP_DESIGN)
+set report_dir $::env(REPORTS)
+set save_dir $::env(SAVE)
 set time [elapsed_run_time]
 
 set step_by_step_debug 0
@@ -24,27 +28,28 @@ source scripts/init_tech.tcl
 
 # read and check design
 puts "Read netlist"
-read_verilog ../yosys/build/basilisk.yosys.v
-link_design basilisk_chip
+read_verilog $netlist
+link_design $top_design
 
 puts "Read constraints"
-read_sdc -echo src/basilisk.sdc > reports/read_sdc.rpt
+read_sdc -echo src/basilisk.sdc > ${report_dir}/read_sdc.rpt
+set_propagated_clock [all_clocks]
 
 puts "Check constraints"
-check_setup -verbose > reports/check_setup.rpt
-report_checks -unconstrained -format end -no_line_splits > reports/report_checks_unconstrained.rpt
-report_checks -format end -no_line_splits > reports/report_checks.rpt
-report_check_types -max_slew -max_cap -max_fanout >> reports/report_checks.rpt
+check_setup -verbose > ${report_dir}/check_setup.rpt
+report_checks -unconstrained -format end -no_line_splits > ${report_dir}/checks_unconstrained.rpt
+report_checks -format end -no_line_splits > ${report_dir}/checks.rpt
+report_check_types -max_slew -max_cap -max_fanout >> ${report_dir}/checks.rpt
 
-save_reports 0 "$DESIGN_NAME.initial"
+save_reports 0 "${proj_name}.initial"
 set deltaT [expr [elapsed_run_time] - $time]
 set time [elapsed_run_time]
 puts "Time: $time sec deltaT: $deltaT"
 
 # floorplan -> Few seconds
 puts "Create Floorplan"
-source scripts/floorplan-ring.tcl
-save_checkpoint $DESIGN_NAME.floorplan
+source scripts/floorplan_ring.tcl
+save_checkpoint ${proj_name}.floorplan
 set deltaT [expr [elapsed_run_time] - $time]
 set time [elapsed_run_time]
 puts "Time: $time sec deltaT: $deltaT"
@@ -56,7 +61,7 @@ if { $step_by_step_debug } {
 ## power intent -> Few seconds
 puts "Create Power Grid"
 source scripts/power_grid_stripes.tcl
-save_checkpoint $DESIGN_NAME.power_grid
+save_checkpoint ${proj_name}.power_grid
 set deltaT [expr [elapsed_run_time] - $time]
 set time [elapsed_run_time]
 puts "Time: $time sec deltaT: $deltaT"
@@ -88,11 +93,11 @@ unset_dont_touch [get_cells * -filter "ref_name == ixc013_b16mpup"]
 set_dont_touch [get_nets *_io]
 
 #set_debug_level RSZ repair_net 3
-save_reports 0 "$DESIGN_NAME.removed_buffers"
+save_reports 0 "${proj_name}.removed_buffers"
 puts "Repair design"
 repair_design -max_utilization 100
 repair_timing
-save_reports 0 "$DESIGN_NAME.preplace_repaired"
+save_reports 0 "${proj_name}.preplace_repaired"
 
 puts "Post synth-opt area"
 report_design_area
@@ -147,8 +152,8 @@ optimize_mirroring
 
 puts "Estimate parasitics"
 estimate_parasitics -placement
-save_reports 0 "$DESIGN_NAME.placed"
-save_checkpoint $DESIGN_NAME.placed
+save_reports 0 "${proj_name}.placed"
+save_checkpoint ${proj_name}.placed
 set deltaT [expr [elapsed_run_time] - $time]
 set time [elapsed_run_time]
 puts "Time: $time sec deltaT: $deltaT"
@@ -183,7 +188,7 @@ puts "Estimate parasitics"
 estimate_parasitics -placement
 
 # repair all setup timing
-save_reports 0 "$DESIGN_NAME.post_cts_unrepaired"
+save_reports 0 "${proj_name}.post_cts_unrepaired"
 puts "Repair hold"
 repair_timing -hold -hold_margin 0.05 -repair_tns 70 -allow_setup_violations -max_utilization 100
 puts "Repair setup"
@@ -196,8 +201,8 @@ check_placement -verbose
 
 puts "Estimate parasitics"
 estimate_parasitics -placement
-save_reports 0 "$DESIGN_NAME.post_cts"
-save_checkpoint $DESIGN_NAME.post_cts
+save_reports 0 "${proj_name}.post_cts"
+save_checkpoint ${proj_name}.post_cts
 set deltaT [expr [elapsed_run_time] - $time]
 set time [elapsed_run_time]
 puts "Time: $time sec deltaT: $deltaT"
@@ -216,8 +221,8 @@ set_global_routing_layer_adjustment Metal1-TopMetal2 0.10
 set_routing_layers -signal Metal2-TopMetal2 -clock Metal2-TopMetal1
 
 puts "Global route"
-global_route -guide_file reports/route.guide \
-    -congestion_report_file reports/congestion.rpt \
+global_route -guide_file ${report_dir}/route.guide \
+    -congestion_report_file ${report_dir}/congestion.rpt \
     -congestion_iterations 30 \
     -allow_congestion
 # default params but -allow_congestion
@@ -228,8 +233,8 @@ check_placement -verbose
 
 puts "Estimate parasitics"
 estimate_parasitics -global_routing
-save_reports 0 "$DESIGN_NAME.global_route"
-save_checkpoint $DESIGN_NAME.global_route
+save_reports 0 "${proj_name}.global_route"
+save_checkpoint ${proj_name}.global_route
 set deltaT [expr [elapsed_run_time] - $time]
 set time [elapsed_run_time]
 puts "Time: $time sec deltaT: $deltaT"
@@ -246,14 +251,14 @@ if { $routing_repairs } {
     puts "Repair setup"
     repair_timing -setup -repair_tns 80 -max_utilization 100
     estimate_parasitics -global_routing
-    save_reports 0 "$DESIGN_NAME.global_route_setup_repaired"
-    save_checkpoint $DESIGN_NAME.global_route
+    save_reports 0 "${proj_name}.global_route_setup_repaired"
+    save_checkpoint ${proj_name}.global_route
 
     puts "Repair hold"
     repair_timing -hold -hold_margin 0.05 -repair_tns 80 -allow_setup_violations -max_utilization 100 -verbose
     puts "Repair hold done"
     estimate_parasitics -global_routing
-    #save_reports 0 "$DESIGN_NAME.global_route_hold_repaired"
+    #save_reports 0 "${proj_name}.global_route_hold_repaired"
 
     puts "Repair design"
     repair_design -max_utilization 100
@@ -266,15 +271,15 @@ if { $routing_repairs } {
 
     # Final global routing
     puts "Global route"
-    global_route -guide_file reports/route_repair.guide \
-                -congestion_report_file reports/congestion_repair.rpt \
+    global_route -guide_file ${report_dir}/route_repair.guide \
+                -congestion_report_file ${report_dir}/congestion_repair.rpt \
                 -congestion_iterations 30 \
                 -allow_congestion
     
     puts "Estimate parasitics"
     estimate_parasitics -global_routing
-    save_reports 1 "$DESIGN_NAME.global_route_repaired"
-    save_checkpoint $DESIGN_NAME.routing_repairs
+    save_reports 1 "${proj_name}.global_route_repaired"
+    save_checkpoint ${proj_name}.routing_repairs
     set deltaT [expr [elapsed_run_time] - $time]
     set time [elapsed_run_time]
     puts "Time: $time sec deltaT: $deltaT"
@@ -287,29 +292,29 @@ if { $routing_repairs } {
 # "No diode with LEF class CORE ANTENNACELL found"
 # repair_antennas -iterations 5
 # check_placement -verbose
-# check_antennas -report_file reports/antenna.log
+# check_antennas -report_file ${report_dir}/antenna.log
 
 
 puts "Detailed route"
-detailed_route -output_drc reports/route_drc.rpt \
-               -output_maze reports/maze.log \
-               -bottom_routing_layer Metal1 \
-               -top_routing_layer TopMetal2 \
-               -droute_end_iter 15 \
-               -verbose 1
-# save_checkpoint $DESIGN_NAME.drt_iter15
-# save_reports 1 "$DESIGN_NAME.drt_iter15"
+# detailed_route -output_drc ${report_dir}/route_drc.rpt \
+#                -output_maze ${report_dir}/maze.log \
+#                -bottom_routing_layer Metal1 \
+#                -top_routing_layer TopMetal2 \
+#                -droute_end_iter 15 \
+#                -verbose 1
+# save_checkpoint ${proj_name}.drt_iter15
+# save_reports 1 "${proj_name}.drt_iter15"
 
-detailed_route -output_drc reports/route_drc2.rpt \
-               -output_maze reports/maze2.log \
+detailed_route -output_drc ${report_dir}/route_drc.rpt \
+               -output_maze ${report_dir}/maze.log \
                -bottom_routing_layer Metal1 \
                -top_routing_layer TopMetal2 \
                -droute_end_iter 30 \
                -save_guide_updates \
                -verbose 1
 
-save_reports 1 "$DESIGN_NAME.routed"
-save_checkpoint $DESIGN_NAME.routed
+save_reports 1 "${proj_name}.routed"
+save_checkpoint ${proj_name}.routed
 report_design_area
 set deltaT [expr [elapsed_run_time] - $time]
 set time [elapsed_run_time]
@@ -324,9 +329,9 @@ puts "Filler placement"
 filler_placement sg13g2_fill*
 puts "Check placement"
 check_placement
-save_checkpoint $DESIGN_NAME.final
+save_checkpoint ${proj_name}.final
 puts "Write DEF"
-write_def out/$DESIGN_NAME.final.def
+write_def out/${proj_name}.final.def
 set deltaT [expr [elapsed_run_time] - $time]
 set time [elapsed_run_time]
 puts "Time: $time sec deltaT: $deltaT"

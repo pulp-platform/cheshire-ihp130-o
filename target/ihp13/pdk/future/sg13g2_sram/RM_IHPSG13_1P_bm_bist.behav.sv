@@ -42,22 +42,24 @@ module RM_IHPSG13_1P_bm_bist_internal #(
   data_t din;
   data_t bm;
 
-  always_comb if (A_BIST_EN) begin
-    clk   = A_BIST_CLK;
-    addr  = A_BIST_ADDR;
-    din   = A_BIST_DIN;
-    bm    = A_BIST_BM;
-    men   = A_BIST_MEN;
-    wen   = A_BIST_WEN;
-    ren   = A_BIST_REN;
-  end else begin
-    clk   = A_CLK;
-    addr  = A_ADDR;
-    din   = A_DIN;
-    bm    = A_BM;
-    men   = A_MEN;
-    wen   = A_WEN;
-    ren   = A_REN;
+  always_comb begin
+    if ('0) begin
+      clk   = A_BIST_CLK;
+      addr  = A_BIST_ADDR;
+      din   = A_BIST_DIN;
+      bm    = A_BIST_BM;
+      men   = A_BIST_MEN;
+      wen   = A_BIST_WEN;
+      ren   = A_BIST_REN;
+    end else begin
+      clk   = A_CLK;
+      addr  = A_ADDR;
+      din   = A_DIN;
+      bm    = A_BM;
+      men   = A_MEN;
+      wen   = A_WEN;
+      ren   = A_REN;
+    end
   end
 
   always_ff @(posedge clk) begin

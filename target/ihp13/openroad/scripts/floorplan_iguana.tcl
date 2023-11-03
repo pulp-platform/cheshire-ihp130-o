@@ -51,38 +51,7 @@ make_tracks TopMetal2 -x_offset 2.00 -x_pitch 4.00 -y_offset 2.00 -y_pitch 4.00
 ##########################################################################
 # Placing macros
 ##########################################################################
-
-proc placeInstance { name x y orient } {
-  set block [ord::get_db_block]
-  set inst [odb::dbBlock_findInst $block $name]
-  odb::dbInst_setPlacementStatus $inst "none"
-  if {$orient == "R90"} {
-    set orient MX
-  }
-  if {$orient == "MXR90"} {
-    set orient R0
-  }
-
-  odb::dbInst_setOrient $inst $orient
-  odb::dbInst_setLocation $inst [ord::microns_to_dbu $y] [ord::microns_to_dbu $x]
-  odb::dbInst_setPlacementStatus $inst "firm"
-}
-
-proc addHaloToBlock {halo name} {
-  set block [ord::get_db_block]
-  set inst [odb::dbBlock_findInst $block $name]
-
-  set bbox [odb::dbInst_getBBox $inst]
-  set minx [odb::dbBox_xMin $bbox]
-  set miny [odb::dbBox_yMin $bbox]
-  set maxx [odb::dbBox_xMax $bbox]
-  set maxy [odb::dbBox_yMax $bbox]
-
-  set minx [expr $minx - [ord::microns_to_dbu $halo]]
-  set miny [expr $miny - [ord::microns_to_dbu $halo]]
-  set maxx [expr $maxx + [ord::microns_to_dbu $halo]]
-  set maxy [expr $maxy + [ord::microns_to_dbu $halo]]
-}
+source scripts/floorplan_util.tcl
 
 
 ##########################################################################
