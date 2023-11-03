@@ -1,0 +1,11 @@
+--- iguana_chip.svase.sv	2023-11-30 15:08:15.329297738 +0100
++++ iguana_chip.svasenew.sv	2023-11-30 15:06:35.999133222 +0100
+@@ -176584,7 +176584,7 @@
+   localparam int unsigned SpihNumCs       = spi_host_reg_pkg::NumCS - 1;  // Last CS is dummy
+   localparam int unsigned SlinkNumChan    = serial_link_single_channel_reg_pkg::NumChannels;
+   localparam int unsigned SlinkNumLanes   = serial_link_single_channel_reg_pkg::NumBits/2;
+-  localparam int unsigned SlinkMaxClkDiv  = 1 << serial_link_single_channel_reg_pkg::Log2MaxClkDiv;
++  //// localparam int unsigned SlinkMaxClkDiv  = 1 << serial_link_single_channel_reg_pkg::Log2MaxClkDiv;
+   localparam int unsigned ClintNumCores   = clint_reg_pkg::NumCores;
+   // Default JTAG ID code type
+   typedef struct packed {

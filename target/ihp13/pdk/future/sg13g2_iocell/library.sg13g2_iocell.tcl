@@ -12,9 +12,9 @@ Footprint library {
     sig_io_pu ixc013_b16mpup
     sig_i ixc013_i16x
     vdd_core vddcore
-    vss_core vsscore
+    vss_core gndcore
     vdd_pad vddpad
-    vss_pad vsspad
+    vss_pad gndpad
     corner corner
     fill {filler1u filler2u filler4u filler10u}
   }
@@ -30,22 +30,22 @@ Footprint library {
   pad_pin_layer TopMetal2
 
   cells {
-    sg13g2_pad_io {
+    ixc013_b16m {
       cell_name ixc013_b16m
       orient {bottom R0 right R90 top R180 left R270}
       flip_pair 1
     }
-    sg13g2_pad_io_pd {
+    ixc013_b16mpdn {
       cell_name ixc013_b16mpdn
       orient {bottom R0 right R90 top R180 left R270}
       flip_pair 1
     }
-    sg13g2_pad_io_pu {
+    ixc013_b16mpup {
       cell_name ixc013_b16mpup
       orient {bottom R0 right R90 top R180 left R270}
       flip_pair 1
     }
-    sg13g2_pad_in {
+    ixc013_i16x {
       cell_name ixc013_i16x
       orient {bottom R0 right R90 top R180 left R270}
       flip_pair 1
@@ -57,7 +57,7 @@ Footprint library {
       orient {bottom R0 right R90 top R180 left R270}
     }
     gndcore {
-      cell_name vsscore
+      cell_name gndcore
       physical_only 1
       orient {bottom R0 right R90 top R180 left R270}
     }
@@ -67,7 +67,7 @@ Footprint library {
       orient {bottom R0 right R90 top R180 left R270}
     }
     gndpad {
-      cell_name vsspad
+      cell_name gndpad
       physical_only 1
       orient {bottom R0 right R90 top R180 left R270}
     }

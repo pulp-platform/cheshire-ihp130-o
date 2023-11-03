@@ -6,11 +6,7 @@
 # - Philippe Sauter <phsauter@ethz.ch>
 
 # get environment variables
-set vlog_netlist  $::env(VLOG_NETLIST)
-set top_design    $::env(TOP_DESIGN)
-set tech_cells    $::env(YOSYS_TECH_CELLS)
-set tech_macros   $::env(YOSYS_TECH_MACROS)
-set report_dir	  $::env(REPORTS)
+source [file join [file dirname [info script]] yosys_common.tcl]
 
 # read library files
 read_liberty "${tech_cells}"
@@ -19,15 +15,17 @@ foreach file $tech_macros {
 }
 
 # load netlist
-read_verilog $vlog_netlist
+read_verilog $netlist
 link_design $top_design
 
 # constraints
-read_sdc ../../common/openroad/src/iguana.sdc
+read_sdc ../openroad/src/basilisk.sdc
 
 # timing report
-report_checks -path_delay max -path_group clk_hyp
-report_checks -path_delay max -path_group clk_jtag
-report_checks -path_delay max -path_group clk_main
+report_checks -path_delay max -path_group clk_sys
+report_checks -path_delay max -path_group clk_jtg
+report_checks -path_delay max -path_group clk_rtc
+report_checks -path_delay max -path_group clk_sli
+report_checks -path_delay max -path_group clk_hyp_rwdsi
 
 exit

@@ -22,7 +22,7 @@ Footprint definition {
 
   offsets 0
   # tracks platforms/sky130/tracks_hs.info
-  pin_layer Metal3
+  # pin_layer TopMetal2
 
   pad_inst_name "%s"
   pad_pin_name "%s"
@@ -32,8 +32,8 @@ Footprint definition {
     pad_vccio_5.i_pad         {type vdd_pad   side  left  cell {origin {x    0.000 y 4990.000}} pin 23}
     pad_gndio_4.i_pad         {type vss_pad   side  left  cell {origin {x    0.000 y 4860.000}} pin 89}
     pad_gndio_5.i_pad         {type vss_pad   side  left  cell {origin {x    0.000 y 4730.000}} pin 89}
-    pad_uart_rx.i_pad         {type sig_io    side  left  cell {origin {x    0.000 y 4600.000}} pin 24}
-    pad_uart_tx.i_pad         {type sig_io    side  left  cell {origin {x    0.000 y 4470.000}} pin 25}
+    pad_uart_rx.i_pad         {type sig_io_pu side  left  cell {origin {x    0.000 y 4600.000}} pin 24}
+    pad_uart_tx.i_pad         {type sig_io_pu side  left  cell {origin {x    0.000 y 4470.000}} pin 25}
     pad_gpio_11.i_pad         {type sig_io    side  left  cell {origin {x    0.000 y 4340.000}} pin 26}
     pad_hyper_cs_0_n.i_pad    {type sig_io    side  left  cell {origin {x    0.000 y 4210.000}} pin 27}
     pad_hyper_cs_1_n.i_pad    {type sig_io    side  left  cell {origin {x    0.000 y 4080.000}} pin 28}
@@ -71,13 +71,13 @@ Footprint definition {
     pad_gndio_8.i_pad         {type vss_pad   side bottom cell {origin {x  700.000 y    0.000}} pin 89}
     pad_gndio_9.i_pad         {type vss_pad   side bottom cell {origin {x  850.000 y    0.000}} pin 89}
     pad_gpio_6.i_pad          {type sig_io    side bottom cell {origin {x 1000.000 y    0.000}} pin 46}
-    pad_i2c_sda.i_pad         {type sig_io    side bottom cell {origin {x 1150.000 y    0.000}} pin 47}
-    pad_i2c_scl.i_pad         {type sig_io    side bottom cell {origin {x 1300.000 y    0.000}} pin 48}
-    pad_slink_clk_i.i_pad     {type sig_io    side bottom cell {origin {x 1450.000 y    0.000}} pin 49}
-    pad_slink_0_i.i_pad       {type sig_io    side bottom cell {origin {x 1600.000 y    0.000}} pin 50}
-    pad_slink_1_i.i_pad       {type sig_io    side bottom cell {origin {x 1750.000 y    0.000}} pin 51}
-    pad_slink_2_i.i_pad       {type sig_io    side bottom cell {origin {x 1900.000 y    0.000}} pin 52}
-    pad_slink_3_i.i_pad       {type sig_io    side bottom cell {origin {x 2050.000 y    0.000}} pin 53}
+    pad_i2c_sda.i_pad         {type sig_io_pu side bottom cell {origin {x 1150.000 y    0.000}} pin 47}
+    pad_i2c_scl.i_pad         {type sig_io_pu side bottom cell {origin {x 1300.000 y    0.000}} pin 48}
+    pad_slink_clk_i.i_pad     {type sig_i     side bottom cell {origin {x 1450.000 y    0.000}} pin 49}
+    pad_slink_0_i.i_pad       {type sig_i     side bottom cell {origin {x 1600.000 y    0.000}} pin 50}
+    pad_slink_1_i.i_pad       {type sig_i     side bottom cell {origin {x 1750.000 y    0.000}} pin 51}
+    pad_slink_2_i.i_pad       {type sig_i     side bottom cell {origin {x 1900.000 y    0.000}} pin 52}
+    pad_slink_3_i.i_pad       {type sig_i     side bottom cell {origin {x 2050.000 y    0.000}} pin 53}
     pad_gpio_7.i_pad          {type sig_io    side bottom cell {origin {x 2200.000 y    0.000}} pin 54}
     pad_gndco_12.i_pad        {type vss_core  side bottom cell {origin {x 2350.000 y    0.000}} pin 89}
     pad_gndco_13.i_pad        {type vss_core  side bottom cell {origin {x 2500.000 y    0.000}} pin 89}
@@ -131,8 +131,8 @@ Footprint definition {
     pad_gndco_23.i_pad        {type vss_core  side  right cell {origin {x 6250.000 y 3500.000}}  pin 89}
     pad_vga_hsync.i_pad       {type sig_io    side  right cell {origin {x 6250.000 y 3630.000}}  pin 80}
     pad_spih_sck.i_pad        {type sig_io    side  right cell {origin {x 6250.000 y 3760.000}}  pin 81}
-    pad_spih_csb_0.i_pad      {type sig_io    side  right cell {origin {x 6250.000 y 3890.000}}  pin 82}
-    pad_spih_csb_1.i_pad      {type sig_io    side  right cell {origin {x 6250.000 y 4020.000}}  pin 83}
+    pad_spih_csb_0.i_pad      {type sig_io_pu side  right cell {origin {x 6250.000 y 3890.000}}  pin 82}
+    pad_spih_csb_1.i_pad      {type sig_io_pu side  right cell {origin {x 6250.000 y 4020.000}}  pin 83}
     pad_spih_sd_0.i_pad       {type sig_io    side  right cell {origin {x 6250.000 y 4150.000}}  pin 84}
     pad_spih_sd_1.i_pad       {type sig_io    side  right cell {origin {x 6250.000 y 4280.000}}  pin 85}
     pad_spih_sd_2.i_pad       {type sig_io    side  right cell {origin {x 6250.000 y 4410.000}}  pin 86}
@@ -151,10 +151,10 @@ Footprint definition {
     pad_gpio_2.i_pad          {type sig_io    side top    cell {origin {x 4960.000 y 5498.000}} pin  4}
     pad_gpio_3.i_pad          {type sig_io    side top    cell {origin {x 4810.000 y 5498.000}} pin  5}
     pad_gpio_4.i_pad          {type sig_io    side top    cell {origin {x 4660.000 y 5498.000}} pin  6}
-    pad_rtc.i_pad             {type sig_io    side top    cell {origin {x 4510.000 y 5498.000}} pin  7}
-    pad_clk.i_pad             {type sig_io    side top    cell {origin {x 4360.000 y 5498.000}} pin  8}
-    pad_jtag_tck.i_pad        {type sig_io    side top    cell {origin {x 4210.000 y 5498.000}} pin  9}
-    pad_jtag_tms.i_pad        {type sig_io    side top    cell {origin {x 4060.000 y 5498.000}} pin 10}
+    pad_rtc.i_pad             {type sig_i     side top    cell {origin {x 4510.000 y 5498.000}} pin  7}
+    pad_clk.i_pad             {type sig_i     side top    cell {origin {x 4360.000 y 5498.000}} pin  8}
+    pad_jtag_tck.i_pad        {type sig_io_pd side top    cell {origin {x 4210.000 y 5498.000}} pin  9}
+    pad_jtag_tms.i_pad        {type sig_io_pd side top    cell {origin {x 4060.000 y 5498.000}} pin 10}
     pad_gndco_0.i_pad         {type vss_core  side top    cell {origin {x 3910.000 y 5498.000}} pin 89}
     pad_gndco_1.i_pad         {type vss_core  side top    cell {origin {x 3760.000 y 5498.000}} pin 89}
     pad_vddco_0.i_pad         {type vdd_core  side top    cell {origin {x 3610.000 y 5498.000}} pin 11}
@@ -167,13 +167,13 @@ Footprint definition {
     pad_vddco_5.i_pad         {type vdd_core  side top    cell {origin {x 2560.000 y 5498.000}} pin 13}
     pad_gndco_4.i_pad         {type vss_core  side top    cell {origin {x 2410.000 y 5498.000}} pin 89}
     pad_gndco_5.i_pad         {type vss_core  side top    cell {origin {x 2260.000 y 5498.000}} pin 89}
-    pad_jtag_tdi.i_pad        {type sig_io    side top    cell {origin {x 2110.000 y 5498.000}} pin 14}
-    pad_jtag_trst_n.i_pad     {type sig_io    side top    cell {origin {x 1960.000 y 5498.000}} pin 15}
-    pad_jtag_tdo.i_pad        {type sig_io    side top    cell {origin {x 1810.000 y 5498.000}} pin 16}
-    pad_rst_n.i_pad           {type sig_io    side top    cell {origin {x 1660.000 y 5498.000}} pin 17}
-    pad_boot_mode_0.i_pad     {type sig_io    side top    cell {origin {x 1510.000 y 5498.000}} pin 18}
-    pad_boot_mode_1.i_pad     {type sig_io    side top    cell {origin {x 1360.000 y 5498.000}} pin 19}
-    pad_test_mode.i_pad       {type sig_io    side top    cell {origin {x 1210.000 y 5498.000}} pin 20}
+    pad_jtag_tdi.i_pad        {type sig_io_pd side top    cell {origin {x 2110.000 y 5498.000}} pin 14}
+    pad_jtag_trst_n.i_pad     {type sig_io_pu side top    cell {origin {x 1960.000 y 5498.000}} pin 15}
+    pad_jtag_tdo.i_pad        {type sig_io_pd side top    cell {origin {x 1810.000 y 5498.000}} pin 16}
+    pad_rst_n.i_pad           {type sig_io_pu side top    cell {origin {x 1660.000 y 5498.000}} pin 17}
+    pad_boot_mode_0.i_pad     {type sig_io_pd  side top    cell {origin {x 1510.000 y 5498.000}} pin 18}
+    pad_boot_mode_1.i_pad     {type sig_io_pd  side top    cell {origin {x 1360.000 y 5498.000}} pin 19}
+    pad_test_mode.i_pad       {type sig_io_pd  side top    cell {origin {x 1210.000 y 5498.000}} pin 20}
     pad_gpio_5.i_pad          {type sig_io    side top    cell {origin {x 1060.000 y 5498.000}} pin 21}
     pad_gndio_2.i_pad         {type vss_pad   side top    cell {origin {x  910.000 y 5498.000}} pin 89}
     pad_gndio_3.i_pad         {type vss_pad   side top    cell {origin {x  760.000 y 5498.000}} pin 89}

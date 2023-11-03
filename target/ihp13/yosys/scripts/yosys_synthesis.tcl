@@ -28,9 +28,6 @@ foreach file $vlog_files {
 	yosys read_verilog -sv "$file"
 }
 
-# ToDo: only modules, not cells
-# yosys select -write ${report_dir}/${proj_name}_hierarchy_rtl.rpt *
-
 # blackbox requested modules
 if { [info exists ::env(YOSYS_BLACKBOX_MODULES)] } {
     foreach module $::env(YOSYS_BLACKBOX_MODULES) {
@@ -40,6 +37,7 @@ if { [info exists ::env(YOSYS_BLACKBOX_MODULES)] } {
     }
 }
 
+# preserve hierarchy of selected modules/instances
 if { [info exists ::env(YOSYS_KEEP_HIER_INST)] } {
     foreach sel $::env(YOSYS_KEEP_HIER_INST) {
         puts "Keeping hierarchy of selection: $sel"
@@ -53,8 +51,7 @@ if { [info exists ::env(YOSYS_KEEP_HIER_INST)] } {
 # synth - check
 yosys hierarchy -check -top $top_design
 yosys proc
-yosys tee -q -o "${report_dir}/${proj_name}_rtl_initial.rpt" stat
-#yosys write_verilog "$work_dir/${proj_name}_yosys_rtl_initial.v"
+yosys tee -q -o "${report_dir}/${proj_name}_initial.rpt" stat
 
 # synth - coarse:
 # yosys synth -run coarse -noalumacc
@@ -85,7 +82,7 @@ yosys opt_dff -sat
 yosys share
 yosys clean
 
-#yosys write_verilog -norename ${work_dir}/${proj_name}.yosys.abstract.v
+#yosys write_verilog -norename ${work_dir}/${proj_name}_abstract.yosys.v
 yosys tee -q -o "${report_dir}/${proj_name}_abstract.rpt" stat -tech cmos
 
 yosys techmap
@@ -100,7 +97,6 @@ if {[envVarValid "YOSYS_FLATTEN_HIER"]} {
 	yosys flatten
 }
 
-# yosys select -write ${report_dir}/${proj_name}_hierarchy_netlist.rpt *
 yosys clean -purge
 
 # -----------------------------------------------------------------------------
@@ -131,9 +127,8 @@ if { [envVarValid "YOSYS_USE_LSORACLE"] && 0 } {
 yosys tee -q -o "${report_dir}/${proj_name}_pre_tech.rpt" stat -tech cmos
 yosys tee -q -o "${report_dir}/${proj_name}_pre_tech.json" stat -json -tech cmos
 
-# rename DFFs from the driven signal
 yosys splitnets -ports -format __v
-# do not use '-ports 'with blackboxed flow to avoid changing ports
+# rename DFFs from the driven signal
 yosys rename -wire -suffix _reg t:*DFF*
 yosys select -write ${report_dir}/${proj_name}_registers.rpt t:*DFF*
 # rename all other cells
@@ -141,8 +136,14 @@ yosys autoname t:*DFF* %n
 yosys clean -purge
 
 # print paths to important instances
-yosys select -write ${report_dir}/${proj_name}_memories.rpt t:RM_IHPSG13_*
-yosys select -write ${report_dir}/${proj_name}_macro_cells.rpt t:delay_line_*
+set report [open ${report_dir}/${proj_name}_instances.rpt "w"]
+close $report
+if { [info exists ::env(YOSYS_REPORT_INSTS)] } {
+    foreach sel $::env(YOSYS_REPORT_INSTS) {
+        puts "Keeping hierarchy of selection: $sel"
+        yosys tee -q -a ${report_dir}/${proj_name}_instances.rpt  select -list {*}$sel
+    }
+}
 
 
 # mapping to technology
@@ -169,7 +170,7 @@ yosys clean -purge
 
 # -----------------------------------------------------------------------------
 # prep for openROAD
-yosys write_verilog -norename -noexpr -attr2comment ${work_dir}/${proj_name}.yosys.debug.v
+yosys write_verilog -norename -noexpr -attr2comment ${work_dir}/${proj_name}_debug.yosys.v
 
 yosys setundef -zero
 yosys clean -purge

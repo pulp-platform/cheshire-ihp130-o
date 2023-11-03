@@ -91,3 +91,7 @@ always_ff @(negedge ddr_rcv_clk_i, negedge rst_ni) ddr_q <= !rst_ni ? '0 : ddr_i
 
 Apparently yosys does it according to IEEE 1364.1 and we should change our source
 [yosys-issue](https://github.com/YosysHQ/yosys/issues/3292#issuecomment-1114819303)
+
+
+### pdk
+- [ ] the way `wire_load_model` is defined doesn't seem to be supported by `abc` or `openSTA` -> no `-c` flags in abc scripts
