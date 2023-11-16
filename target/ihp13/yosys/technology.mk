@@ -5,13 +5,19 @@
 # Authors:
 # - Philippe Sauter <phsauter@ethz.ch>
 
-TECH_CELLS 	?= $(TECH_ROOT)/sg13g2_stdcell/lib/sg13g2_stdcell_typ_1p20V_25C.lib
-TECH_MACROS	?= $(addprefix $(IG_ROOT)/target/ihp13/pdk/future/sg13g2_sram/, \
-										RM_IHPSG13_1P_64x64_c2_bm_bist_dummy.lib \
-										RM_IHPSG13_1P_256x64_c2_bm_bist_dummy.lib \
-										RM_IHPSG13_1P_1024x64_c2_bm_bist_dummy.lib ) \
-				$(IG_ROOT)/target/ihp13/pdk/future/sg13g2_iocell/sg13g2_iocell_typ_1p2V_3p3V_25C.lib \
-				$(IG_ROOT)/target/ihp13/macro_cells/mc_sg13g2_delay/delay_line_D4_O1_6P000.lib
+TECH_DIR	?= $(TARGET_DIR)/pdk
+
+TECH_CELLS_DIR		:= $(TECH_DIR)/ihp-sg13g2/ihp-sg13g2/libs.ref/sg13g2_stdcell
+TECH_MACROS_DIR 	:= $(TECH_DIR)/future/sg13g2_sram
+TECH_IOCELLS_DIR 	:= $(TECH_DIR)/future/sg13g2_iocell
+
+TECH_CELLS 	:= $(TECH_CELLS_DIR)/lib/sg13g2_stdcell_typ_1p20V_25C.lib
+TECH_MACROS	:= $(addprefix $(TECH_MACROS_DIR)/, \
+						RM_IHPSG13_1P_64x64_c2_bm_bist_dummy.lib \
+						RM_IHPSG13_1P_256x64_c2_bm_bist_dummy.lib \
+						RM_IHPSG13_1P_1024x64_c2_bm_bist_dummy.lib ) \
+				$(TECH_IOCELLS_DIR)/sg13g2_iocell_typ_1p2V_3p3V_25C.lib \
+				$(TARGET_DIR)/src/mc_delay/delay_line_D4_O1_6P000.lib
 
 TECH_CELL_TIEHI_CELL	:= sg13g2_tiehi
 TECH_CELL_TIEHI_PIN 	:= L_HI

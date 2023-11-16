@@ -4,36 +4,38 @@ dch
 scorr
 lcorr
 scleanup
+dretime
+retime -M 3 {D}
 strash
 
 &get -n
 &st
 &dch
-&nf {D}
+&nf
 &put
 
 &get -n
 &st
 &syn2
-&if -g -K 6 {D}
+&if -g -K 6
 &synch2
-&nf {D}
+&nf
 &put
 
 &get -n
 &st
 &syn2
-&if -g -K 6 {D}
+&if -g -K 6
 &synch2
-&nf {D}
+&nf
 &put
 
 &get -n
 &st
 &syn2
-&if -g -K 6 {D}
+&if -g -K 6
 &synch2
-&nf {D}
+&nf
 &put
 
 buffer -N 10

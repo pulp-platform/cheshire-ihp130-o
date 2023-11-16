@@ -17,6 +17,7 @@ set variables {
     tech_macros { YOSYS_TECH_MACROS        ""                       }
     tech_tiehi  { YOSYS_TECH_TIEHI         ""                       }
     tech_tielo  { YOSYS_TECH_TIELO         ""                       }
+    proj_name   { PROJ_NAME                ""                       }
     build_dir   { BUILD                    "[set dir [pwd]]/build"  }
     work_dir    { WORK                     "[set dir [pwd]]/WORK"   }
     report_dir  { REPORTS                  "[set dir [pwd]]/report" }
