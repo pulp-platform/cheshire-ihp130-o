@@ -1,0 +1,46 @@
+--- iguana_chip.morty.sv	2023-11-24 20:24:17.174584909 +0100
++++ iguana_chip.morty.modified.sv	2023-11-24 19:47:23.349856886 +0100
+@@ -118564,10 +118564,13 @@
+   logic icache_rd_full, icache_rd_empty;
+   logic dcache_rd_full, dcache_rd_empty;
+   logic dcache_wr_full, dcache_wr_empty;
++  logic [$clog2(AxiDataWidth/8)-1:0] dcache_paddr_off;
+ 
+   assign icache_data_ack_o  = icache_data_req_i & ~icache_data_full;
+   assign dcache_data_ack_o  = dcache_data_req_i & ~dcache_data_full;
+ 
++  assign dcache_paddr_off = dcache_data.paddr[$clog2(AxiDataWidth/8)-1:0];
++
+   // arbiter
+   assign arb_req           = {~(dcache_data_empty |
+                                 dcache_wr_full    |
+@@ -118665,10 +118668,10 @@
+             axi_wr_req   = 1'b1;
+             axi_wr_be    = '0;
+             unique case(dcache_data.size[1:0])
+-              2'b00:   axi_wr_be[0][dcache_data.paddr[$clog2(AxiDataWidth/8)-1:0]]       = '1;  // byte
+-              2'b01:   axi_wr_be[0][dcache_data.paddr[$clog2(AxiDataWidth/8)-1:0] +:2 ]  = '1;  // hword
+-              2'b10:   axi_wr_be[0][dcache_data.paddr[$clog2(AxiDataWidth/8)-1:0] +:4 ]  = '1;  // word
+-              default: axi_wr_be[0][dcache_data.paddr[$clog2(AxiDataWidth/8)-1:0] +:8 ]  = '1; // dword                                                    = '1; // dword
++              2'b00:   axi_wr_be = 1'b1  << dcache_paddr_off;  // byte
++              2'b01:   axi_wr_be = 2'b11 << dcache_paddr_off;  // hword
++              2'b10:   axi_wr_be = 4'hF  << dcache_paddr_off;  // word
++              default: axi_wr_be = 8'hFF << dcache_paddr_off;  // dword
+             endcase
+           end
+           //////////////////////////////////////
+@@ -118682,10 +118685,10 @@
+             axi_wr_req   = 1'b1;
+             axi_wr_be    = '0;
+             unique case(dcache_data.size[1:0])
+-              2'b00:   axi_wr_be[0][dcache_data.paddr[$clog2(AxiDataWidth/8)-1:0]]       = '1;  // byte
+-              2'b01:   axi_wr_be[0][dcache_data.paddr[$clog2(AxiDataWidth/8)-1:0] +:2 ]  = '1;  // hword
+-              2'b10:   axi_wr_be[0][dcache_data.paddr[$clog2(AxiDataWidth/8)-1:0] +:4 ]  = '1;  // word
+-              default: axi_wr_be[0][dcache_data.paddr[$clog2(AxiDataWidth/8)-1:0] +:8 ]  = '1; // dword
++              2'b00:   axi_wr_be = 1'b1  << dcache_paddr_off;  // byte
++              2'b01:   axi_wr_be = 2'b11 << dcache_paddr_off;  // hword
++              2'b10:   axi_wr_be = 4'hF  << dcache_paddr_off;  // word
++              default: axi_wr_be = 8'hFF << dcache_paddr_off;  // dword
+             endcase
+             amo_gen_r_d  = 1'b1;
+             // need to use a separate ID here, so concat an additional bit

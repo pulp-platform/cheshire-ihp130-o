@@ -19,16 +19,29 @@ module tc_sram_blackbox #(
 ) ();
 endmodule
 
-`define IHP13_TC_SRAM_TIEOFF \
-  .A_BIST_CLK   ( '0 ), \
-  .A_BIST_ADDR  ( '0 ), \
-  .A_BIST_DIN   ( '0 ), \
-  .A_BIST_BM    ( '0 ), \
-  .A_BIST_MEN   ( '0 ), \
-  .A_BIST_WEN   ( '0 ), \
-  .A_BIST_REN   ( '0 ), \
-  .A_BIST_EN    ( '0 ), \
-  .A_DLY        ( '0 )
+// need to be specific with sizes, sv2v doesn't know the port-sizes
+// so it will convert them to 1-bit, then every other tool complains
+`define IHP13_TC_SRAM_256x64_TIEOFF \
+  .A_BIST_CLK   (  1'b0 ), \
+  .A_BIST_ADDR  (  8'd0 ), \
+  .A_BIST_DIN   ( 64'd0 ), \
+  .A_BIST_BM    ( 64'd0 ), \
+  .A_BIST_MEN   (  1'b0 ), \
+  .A_BIST_WEN   (  1'b0 ), \
+  .A_BIST_REN   (  1'b0 ), \
+  .A_BIST_EN    (  1'b0 ), \
+  .A_DLY        (  1'b0 )
+
+`define IHP13_TC_SRAM_1024x64_TIEOFF \
+  .A_BIST_CLK   (  1'b0 ), \
+  .A_BIST_ADDR  ( 10'd0 ), \
+  .A_BIST_DIN   ( 64'd0 ), \
+  .A_BIST_BM    ( 64'd0 ), \
+  .A_BIST_MEN   (  1'b0 ), \
+  .A_BIST_WEN   (  1'b0 ), \
+  .A_BIST_REN   (  1'b0 ), \
+  .A_BIST_EN    (  1'b0 ), \
+  .A_DLY        (  1'b0 )
 
 module tc_sram #(
   parameter int unsigned NumWords     = 32'd1024,
@@ -85,7 +98,7 @@ module tc_sram #(
      .A_REN   ( ~we_i   ),
      .A_DIN   ( wdata64 ),
      .A_DOUT  ( rdata64 ),
-     `IHP13_TC_SRAM_TIEOFF
+     `IHP13_TC_SRAM_256x64_TIEOFF
     );
 
   end else if (NumWords == 256 && DataWidth == 45 && P1L1) begin: gen_256x45xBx1
@@ -105,7 +118,7 @@ module tc_sram #(
      .A_REN   ( ~we_i   ),
      .A_DIN   ( wdata64 ),
      .A_DOUT  ( rdata64 ),
-     `IHP13_TC_SRAM_TIEOFF
+     `IHP13_TC_SRAM_256x64_TIEOFF
     );
 
   end else if (NumWords == 256 & DataWidth == 64 & P1L1) begin : gen_256x64xBx1
@@ -119,7 +132,7 @@ module tc_sram #(
      .A_REN   ( ~we_i   ),
      .A_DIN   ( wdata_i ),
      .A_DOUT  ( rdata_o ),
-     `IHP13_TC_SRAM_TIEOFF
+     `IHP13_TC_SRAM_256x64_TIEOFF
     );
 
   end else if (NumWords == 256 && DataWidth == 128 && P1L1) begin : gen_256x128xBx1
@@ -139,7 +152,7 @@ module tc_sram #(
      .A_REN   ( ~we_i           ),
      .A_DIN   ( wdata64[1]      ),
      .A_DOUT  ( rdata64[1]      ),
-     `IHP13_TC_SRAM_TIEOFF
+     `IHP13_TC_SRAM_256x64_TIEOFF
     );
     RM_IHPSG13_1P_256x64_c2_bm_bist i_cut_low (
      .A_CLK   ( clk_i           ),
@@ -150,7 +163,7 @@ module tc_sram #(
      .A_REN   ( ~we_i           ),
      .A_DIN   ( wdata64[0]      ),
      .A_DOUT  ( rdata64[0]      ),
-     `IHP13_TC_SRAM_TIEOFF
+     `IHP13_TC_SRAM_256x64_TIEOFF
     );
 
   end else if (NumWords == 256 && DataWidth == 256 && P1L1) begin : gen_256x256xBx1
@@ -172,7 +185,7 @@ module tc_sram #(
         .A_REN   ( ~we_i           ),
         .A_DIN   ( wdata64[c]      ),
         .A_DOUT  ( rdata64[c]      ),
-        `IHP13_TC_SRAM_TIEOFF
+        `IHP13_TC_SRAM_256x64_TIEOFF
       );
     end
 
@@ -200,7 +213,7 @@ module tc_sram #(
        .A_REN   ( ~we_i    ),
        .A_DIN   ( wdata_i  ),
        .A_DOUT  ( rdata[c] ),
-       `IHP13_TC_SRAM_TIEOFF
+       `IHP13_TC_SRAM_1024x64_TIEOFF
       );
     end
 
