@@ -10,10 +10,22 @@ module tc_clk_inverter (
     input  logic clk_i,
     output logic clk_o
   );
-
+  (* keep *)(* dont_touch = "true" *)
   sg13g2_inv_1 i_inv (
     .A ( clk_i ),
     .Y ( clk_o )
+  );
+
+endmodule
+
+module tc_clk_buffer (
+  input  logic clk_i,
+  output logic clk_o
+);
+  (* keep *)(* dont_touch = "true" *)
+  sg13g2_buf_1 i_buf (
+    .A ( clk_i ),
+    .X ( clk_o )
   );
 
 endmodule
@@ -24,7 +36,7 @@ module tc_clk_mux2 (
     input  logic clk_sel_i,
     output logic clk_o
   );
-
+  (* keep *)(* dont_touch = "true" *)
   sg13g2_mux2_1 i_mux (
     .A0 ( clk0_i    ),
     .A1 ( clk1_i    ),
@@ -42,7 +54,7 @@ module tc_clk_gating #(
     input  logic test_en_i,
     output logic clk_o
   );
-
+  (* keep *)(* dont_touch = "true" *)
   sg13g2_slgcp_1 i_clkgate (
     .GATE ( en_i ),
     .SCE  ( test_en_i   ),
