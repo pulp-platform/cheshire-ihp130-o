@@ -11,10 +11,12 @@
 # get environment variables
 source [file join [file dirname [info script]] yosys_common.tcl]
 
-# ABC script with retiming and sequential opt
-set abc_sequential_script [file join [file dirname [info script]] abc-sequential.script]
 # ABC script without DFF optimizations
 set abc_combinational_script [file join [file dirname [info script]] abc-speed-opt.script]
+# ABC script with sequential opt
+set abc_sequential_script [file join [file dirname [info script]] abc-sequential.script]
+# ABC script with retiming and sequential opt
+set abc_seq_retime_script [file join [file dirname [info script]] abc-sequential-retime.script]
 
 # read library files
 foreach file $lib_list {
@@ -26,6 +28,9 @@ foreach file $vlog_files {
 	yosys read_verilog -sv "$file"
 }
 
+# ToDo: only modules, not cells
+# yosys select -write ${report_dir}/${proj_name}_hierarchy_rtl.rpt *
+
 # blackbox requested modules
 if { [info exists ::env(YOSYS_BLACKBOX_MODULES)] } {
     foreach module $::env(YOSYS_BLACKBOX_MODULES) {
@@ -35,11 +40,11 @@ if { [info exists ::env(YOSYS_BLACKBOX_MODULES)] } {
     }
 }
 
-# keep some hierarchies (only relevant if YOSYS_FLATTEN_HIER exists)
 if { [info exists ::env(YOSYS_KEEP_HIER_INST)] } {
     foreach sel $::env(YOSYS_KEEP_HIER_INST) {
         puts "Keeping hierarchy of selection: $sel"
-        yosys setattr -set keep_hierarchy 1 $sel
+        yosys select -list {*}$sel
+        yosys setattr -set keep_hierarchy 1 {*}$sel
     }
 }
 
@@ -48,24 +53,25 @@ if { [info exists ::env(YOSYS_KEEP_HIER_INST)] } {
 # synth - check
 yosys hierarchy -check -top $top_design
 yosys proc
-yosys tee -q -o "${report_dir}/${top_design}_rtl_initial.rpt" stat
-yosys write_verilog "$work_dir/${top_design}_yosys_rtl_initial.v"
+yosys tee -q -o "${report_dir}/${proj_name}_rtl_initial.rpt" stat
+#yosys write_verilog "$work_dir/${proj_name}_yosys_rtl_initial.v"
 
 # synth - coarse:
 # yosys synth -run coarse -noalumacc
-yosys proc
 yosys opt_expr
 yosys opt_clean
 yosys check
 yosys opt -nodffe -nosdff
-yosys fsm
+yosys fsm -fm_set_fsm_file ${report_dir}/${proj_name}_fsm_map.log
 yosys opt -full
 yosys wreduce 
 # yosys peepopt -bmux
 yosys peepopt
 yosys opt_clean
 yosys share
-yosys opt_clean
+yosys opt
+yosys booth
+yosys opt -fast
 yosys memory -nomap
 yosys opt_clean
 
@@ -75,31 +81,26 @@ yosys opt -fast
 yosys memory_map
 yosys opt -full
 
-# yosys opt_dff -sat
-yosys opt -full
+yosys opt_dff -sat
 yosys share
 yosys clean
 
-yosys write_verilog -norename ${work_dir}/${top_design}_netlist_abstract.v
-yosys tee -q -o "${report_dir}/${top_design}_abstract.rpt" stat -tech cmos
-
-# remove iff https://github.com/YosysHQ/yosys/issues/3833 is fixed
-# yosys techmap -extern t:*shiftx*
-# yosys techmap -extern t:*shift*
+#yosys write_verilog -norename ${work_dir}/${proj_name}.yosys.abstract.v
+yosys tee -q -o "${report_dir}/${proj_name}_abstract.rpt" stat -tech cmos
 
 yosys techmap
-yosys share
 yosys opt -fast
 yosys clean -purge
 
 # -----------------------------------------------------------------------------
-yosys tee -q -o "${report_dir}/${top_design}_generic.rpt" stat -tech cmos
-yosys tee -q -o "${report_dir}/${top_design}_generic.json" stat -json -tech cmos
+yosys tee -q -o "${report_dir}/${proj_name}_generic.rpt" stat -tech cmos
+yosys tee -q -o "${report_dir}/${proj_name}_generic.json" stat -json -tech cmos
 
 if {[envVarValid "YOSYS_FLATTEN_HIER"]} {
 	yosys flatten
 }
 
+# yosys select -write ${report_dir}/${proj_name}_hierarchy_netlist.rpt *
 yosys clean -purge
 
 # -----------------------------------------------------------------------------
@@ -116,41 +117,51 @@ if { [envVarValid "YOSYS_USE_LSORACLE"] && 0 } {
     close $lso_script
 
     # LSOracle synthesis
-    yosys tee -q -o "${report_dir}/${top_design}_pre_lso_stats.rpt" stat
+    yosys tee -q -o "${report_dir}/${proj_name}_pre_lso_stats.rpt" stat
     yosys lsoracle -script $lso_script_path -lso_exe $::env(LSORACLE_EXE)
-    yosys tee -q -o "${report_dir}/${top_design}_post_lso_stats.rpt" stat
+    yosys tee -q -o "${report_dir}/${proj_name}_post_lso_stats.rpt" stat
     yosys opt -purge
     # yosys techmap t:*lut*
     yosys techmap
-    yosys tee -q -o "${report_dir}/${top_design}_post2_lso_stats.rpt" stat
+    yosys tee -q -o "${report_dir}/${proj_name}_post2_lso_stats.rpt" stat
     yosys clean -purge
 }
 
 # -----------------------------------------------------------------------------
-yosys tee -q -o "${report_dir}/${top_design}_pre_tech.rpt" stat -tech cmos
-yosys tee -q -o "${report_dir}/${top_design}_pre_tech.json" stat -json -tech cmos
+yosys tee -q -o "${report_dir}/${proj_name}_pre_tech.rpt" stat -tech cmos
+yosys tee -q -o "${report_dir}/${proj_name}_pre_tech.json" stat -json -tech cmos
 
 # rename DFFs from the driven signal
-yosys splitnets -driver -ports -format __I
+yosys splitnets -ports -format __v
 # do not use '-ports 'with blackboxed flow to avoid changing ports
 yosys rename -wire -suffix _reg t:*DFF*
-yosys select -write ${report_dir}/${top_design}_registers.rpt t:*DFF*
+yosys select -write ${report_dir}/${proj_name}_registers.rpt t:*DFF*
 # rename all other cells
 yosys autoname t:*DFF* %n
 yosys clean -purge
 
+# print paths to important instances
+yosys select -write ${report_dir}/${proj_name}_memories.rpt t:RM_IHPSG13_*
+yosys select -write ${report_dir}/${proj_name}_macro_cells.rpt t:delay_line_*
+
+
 # mapping to technology
-if { [envVarValid "YOSYS_USE_SEQ_ABC"] } {
-    puts "Using sequential abc optimizations with retiming"
+if { [envVarValid "YOSYS_USE_ABC_SEQ"] } {
+    puts "Using sequential abc optimizations"
     # sequential optimizations requires D-FF mapping after abc
     set abc_seq_script [processAbcScript $abc_sequential_script]
-    # yosys abc -dff -liberty "$tech_cells" -D $period_ps -script $abc_seq_script -exe /usr/scratch2/pisoc12/sem23f30/abc-patched/abc
-    yosys abc -dff -liberty "$tech_cells" -D $period_ps -script $abc_seq_script
+    yosys abc -dff -keepff -liberty "$tech_cells" -D $period_ps -script $abc_seq_script
+    yosys dfflibmap -liberty "$tech_cells"
+} elseif { [envVarValid "YOSYS_USE_ABC_RETIME"] } {
+    puts "Using sequential abc optimizations with retiming"
+    # sequential optimizations requires D-FF mapping after abc
+    set abc_retime_script [processAbcScript $abc_seq_retime_script]
+    yosys abc -dff -keepff -liberty "$tech_cells" -D $period_ps -script $abc_retime_script
     yosys dfflibmap -liberty "$tech_cells"
 } else {
     puts "Using combinational-only abc optimizations"
-    yosys dfflibmap -liberty "$tech_cells"
     set abc_comb_script [processAbcScript $abc_combinational_script]
+    yosys dfflibmap -liberty "$tech_cells"
     yosys abc -liberty "$tech_cells" -D $period_ps -script $abc_comb_script
 } 
 
@@ -158,7 +169,7 @@ yosys clean -purge
 
 # -----------------------------------------------------------------------------
 # prep for openROAD
-yosys write_verilog -norename -noexpr -attr2comment ${work_dir}/${top_design}_netlist_debug.v
+yosys write_verilog -norename -noexpr -attr2comment ${work_dir}/${proj_name}.yosys.debug.v
 
 yosys setundef -zero
 yosys clean -purge
@@ -166,12 +177,10 @@ yosys clean -purge
 yosys hilomap -singleton -hicell {*}[split ${tech_tiehi} " "] -locell {*}[split ${tech_tielo} " "]
 
 # final reports
-yosys tee -q -o "${report_dir}/${top_design}_synth.rpt" check
-yosys tee -q -o "${report_dir}/${top_design}_area.rpt" stat -top $top_design {*}$liberty_args
-yosys tee -q -o "${report_dir}/${top_design}_area_logic.rpt" stat -top $top_design -liberty "$tech_cells"
+yosys tee -q -o "${report_dir}/${proj_name}_synth.rpt" check
+yosys tee -q -o "${report_dir}/${proj_name}_area.rpt" stat -top $top_design {*}$liberty_args
+yosys tee -q -o "${report_dir}/${proj_name}_area_logic.rpt" stat -top $top_design -liberty "$tech_cells"
 
 # final netlist
 yosys write_verilog -noattr -noexpr -nohex -nodec $netlist
 
-# cleanup
-yosys clean

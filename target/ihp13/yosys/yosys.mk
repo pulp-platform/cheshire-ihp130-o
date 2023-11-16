@@ -17,7 +17,7 @@ YOSYS := /home/msc23h5/repos/yosys-phsauter/yosys
 
 # Directories
 # Todo: create a common 'project.mk' to set project config variables (or use iguana.mk?)
-YOSYS_DIR       := $(realpath $(dir $(realpath $(lastword $(MAKEFILE_LIST)))))
+YOSYS_DIR 		:= $(realpath $(dir $(realpath $(lastword $(MAKEFILE_LIST)))))
 IG_ROOT		    ?= $(realpath $(YOSYS_DIR)/../../..)
 TECH_ROOT		?= $(IG_ROOT)/target/ihp13/pdk/ihp-sg13g2/ihp-sg13g2/libs.ref
 BUILD			?= $(YOSYS_DIR)/build
@@ -33,12 +33,12 @@ include $(YOSYS_DIR)/tools.mk
 include $(YOSYS_DIR)/technology.mk
 include $(YOSYS_DIR)/project-synth.mk
 
-TOP_DESIGN	?= iguana_chip
-SV2V_FILE	  := $(IG_ROOT)/target/ihp13/pickle/out/$(TOP_DESIGN).sv2v.v
-VLOG_FILES  := $(SV2V_FILE)
-# SYNTH_TOP	:= $(shell sed -n 's|module \($(TOP_DESIGN)__[[:alnum:]_]*\)\s.*$$|\1|p' $(SV2V_FILE) 2> /dev/null | tail -1)
-SYNTH_TOP	  := $(TOP_DESIGN)
-NETLIST		  := $(BUILD)/$(TOP_DESIGN)_yosys.v
+TOP_DESIGN		?= iguana_chip
+SV2V_FILE		:= $(IG_ROOT)/target/ihp13/pickle/out/$(TOP_DESIGN).sv2v.v
+VLOG_FILES  	:= $(SV2V_FILE)
+SYNTH_TOP		?= $(TOP_DESIGN)
+PROJ_NAME		?= $(TOP_DESIGN)
+NETLIST			:= $(BUILD)/$(PROJ_NAME).yosys.v
 
 # as dependency: re-generate netlist only when sv2v is out-of-date
 $(NETLIST): $(SV2V_FILE)
@@ -51,16 +51,17 @@ run-yosys: $(VLOG_FILES)
 	@mkdir -p $(BUILD)
 	@mkdir -p $(WORK)
 	@mkdir -p $(REPORTS)
-	@rm -f $(YOSYS_DIR)/yosys.log
 	VLOG_FILES="$(VLOG_FILES)" \
 	TOP_DESIGN="$(SYNTH_TOP)" \
+	PROJ_NAME="$(PROJ_NAME)" \
 	WORK="$(WORK)" \
 	BUILD="$(BUILD)" \
 	REPORTS="$(REPORTS)" \
 	NETLIST="$(NETLIST)" \
 	$(YOSYS) -c $(YOSYS_DIR)/scripts/yosys_synthesis.tcl \
 		2>&1 | TZ=UTC gawk '{ print strftime("[%Y-%m-%d %H:%M %Z]"), $$0 }' \
-		| tee $(YOSYS_DIR)/yosys.log | grep -E "\[.*\] [0-9\.]+ Executing";
+		| tee "$(YOSYS_DIR)/yosys_$(shell date +"%Y-%m-%d_%H_%M_%Z").log \
+		| grep -E "\[.*\] [0-9\.]+ Executing";
 
 # analyze timing of netlist
 run-sta: $(NETLIST)
@@ -72,27 +73,6 @@ run-sta: $(NETLIST)
 	sta $(YOSYS_DIR)/scripts/opensta_timings.tcl
 
 .PHONY: synth run-yosys run-sta 
-
-
-# CPU/MEM monitoring of yosys (useful for pin-pointing 'bad' commands)
-PROFILER_DB := $(REPORTS)/yosys-usage.sqlite
-PROFILER_SVG := $(REPORTS)/yosys-usage.svg
-
-run-yosys-profiled: $(VLOG_FILES) run-profiler
-	cd $(YOSYS_DIR) && $(MAKE) -f yosys.mk run-yosys
-	-pkill -F $(WORK)/procpath.pid 2>/dev/null
-	@rm -f $(WORK)/procpath.pid
-	procpath plot -d $(PROFILER_DB) -f $(PROFILER_SVG) -q cpu -q rss
-
-run-profiler: $(PROCPATH)
-	@rm -f $(PROFILER_DB)
-	@mkdir -p $(WORK)
-	@mkdir -p $(REPORTS)
-	@echo "Launching procpath (records process usage)..."
-	procpath record -i 30 -d $(PROFILER_DB) '$$..children[?("yosys" in @.cmdline)]' & \
-	echo $$! > $(WORK)/procpath.pid
-
-.PHONY: run-yosys-profiler run-profiler
 
 
 # Hierarchically split synthesis
@@ -125,6 +105,7 @@ run-yosys-hier-synth: $(HIER_LIST_SUCCESS)
 	VLOG_FILES="$(VLOG_FILES)" \
 	TOP_DESIGN="$(SYNTH_TOP)" \
 	HIER_DEPTH="${HIER_DEPTH}" \
+	PROJ_NAME="$(PROJ_NAME)" \
 	WORK="$(HIER_WORK)" \
 	BUILD="$(HIER_BUILD)" \
 	REPORTS="$(HIER_REPORTS)" \
@@ -137,6 +118,7 @@ $(HIER_LIST_SUCCESS): $(VLOG_FILES)
 	VLOG_FILES="$(VLOG_FILES)" \
 	TOP_DESIGN="$(SYNTH_TOP)" \
 	HIER_DEPTH="${HIER_DEPTH}" \
+	PROJ_NAME="$(PROJ_NAME)" \
 	WORK="$(HIER_WORK)" \
 	BUILD="$(HIER_BUILD)" \
 	REPORTS="$(HIER_REPORTS)" \
@@ -153,6 +135,7 @@ $(HIER_WORK)/%.mapped.v: $(HIER_WORK)/%.rtl.v
 	VLOG_FILES="$<" \
 	TOP_DESIGN="$*" \
 	HIER_DEPTH="${HIER_DEPTH}" \
+	PROJ_NAME="$(PROJ_NAME)" \
 	WORK="$(HIER_WORK)" \
 	BUILD="$(HIER_BUILD)" \
 	REPORTS="$(HIER_REPORTS)" \
@@ -177,6 +160,28 @@ run-sta-hier: $(HIER_NETLIST)
 	sta $(YOSYS_DIR)/scripts/opensta_timings.tcl
 
 .PHONY: run-yosys-hier run-yosys-hier-synth run-sta-hier 
+
+
+# CPU/MEM monitoring of yosys (useful for pin-pointing 'bad' commands)
+PROFILER_DB := $(REPORTS)/yosys-usage.sqlite
+PROFILER_SVG := $(REPORTS)/yosys-usage.svg
+
+run-yosys-profiled: $(VLOG_FILES) run-profiler
+	cd $(YOSYS_DIR) && $(MAKE) -f yosys.mk run-yosys
+	-pkill -F $(WORK)/procpath.pid 2>/dev/null
+	@rm -f $(WORK)/procpath.pid
+	procpath plot -d $(PROFILER_DB) -f $(PROFILER_SVG) -q cpu -q rss
+
+run-profiler: $(PROCPATH)
+	@rm -f $(PROFILER_DB)
+	@mkdir -p $(WORK)
+	@mkdir -p $(REPORTS)
+	@echo "Launching procpath (records process usage)..."
+	procpath record -i 30 -d $(PROFILER_DB) '$$..children[?("yosys" in @.cmdline)]' & \
+	echo $$! > $(WORK)/procpath.pid
+
+.PHONY: run-yosys-profiler run-profiler
+
 
 clean:
 	if [ -f $(WORK)/procpath.pid ]; then \

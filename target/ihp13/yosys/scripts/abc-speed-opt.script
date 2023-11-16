@@ -1,35 +1,52 @@
 &get -n
 &st
 &dch
-&nf
+&nf {D}
 &put
 
 &get -n
 &st
 &syn2
-&if -g -K 6
+&if -g -K 6 {D}
 &synch2
-&nf
+&nf {D}
 &put
 
 &get -n
 &st
 &syn2
-&if -g -K 6
+&if -g -K 6 {D}
 &synch2
-&nf
+&nf {D}
 &put
 
 &get -n
 &st
 &syn2
-&if -g -K 6
+&if -g -K 6 {D}
 &synch2
-&nf
+&nf {D}
 &put
 
-buffer
+&get -n
+&st
+&syn2
+&if -g -K 6 {D}
+&synch2
+&nf {D}
+&put
+
+&get -n
+&st
+&syn2
+&if -g -K 6 {D}
+&synch2
+&nf {D}
+&put
+
+buffer -N 10
 topo
+nodedup
 stime -p
 upsize {D}
 dnsize {D}
