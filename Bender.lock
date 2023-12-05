@@ -141,8 +141,8 @@ packages:
     dependencies:
     - common_cells
   hyperbus:
-    revision: e11b1aea02685f1d72f4fbd8cfd3505f993f2a11
-    version: 0.0.2
+    revision: 80de8df600edc5d7956a94c9d42f911d6e61efd7
+    version: 0.0.4
     source:
       Git: https://github.com/pulp-platform/hyperbus
     dependencies:
@@ -189,8 +189,8 @@ packages:
     - common_cells
     - common_verification
   riscv-dbg:
-    revision: 138d74bcaa90c70180c12215db3776813d2a95f2
-    version: 0.8.0
+    revision: 358f90110220adf7a083f8b65d157e836d706236
+    version: 0.8.1
     source:
       Git: https://github.com/pulp-platform/riscv-dbg.git
     dependencies:

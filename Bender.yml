@@ -14,7 +14,7 @@ package:
 dependencies:
   axi:                { git: https://github.com/pulp-platform/axi,                version: 0.39.1   }
   cheshire:           { git: https://github.com/pulp-platform/cheshire,           rev:     d4b73a8  }
-  hyperbus:           { git: https://github.com/pulp-platform/hyperbus,           rev:     e11b1ae  } # TODO: master commit; request release
+  hyperbus:           { git: https://github.com/pulp-platform/hyperbus,           version: 0.0.4    }
   register_interface: { git: https://github.com/pulp-platform/register_interface, version: 0.4.2    }
 
 sources:
