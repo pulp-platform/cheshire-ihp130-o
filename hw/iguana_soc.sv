@@ -168,6 +168,7 @@ module iguana_soc import iguana_pkg::*; import cheshire_pkg::*; (
     .vga_blue_o
   );
 
+  `ifndef NO_HYPERBUS
   // Hyperbus interface
   hyperbus #(
     .NumChips         ( HypNumChips ),
@@ -214,5 +215,17 @@ module iguana_soc import iguana_pkg::*; import cheshire_pkg::*; (
     .hyper_dq_oe_o,
     .hyper_reset_no
   );
+  `else
+    assign axi_llc_mst_rsp  =  '0;
+    assign reg_ext_slv_rsp  =  '0;
+    assign hyper_cs_no      = 1'b1;
+    assign hyper_ck_o       = 1'b0;
+    assign hyper_ck_no      = 1'b1;
+    assign hyper_rwds_o     = 1'b0;
+    assign hyper_rwds_oe_o  = 1'b0;
+    assign hyper_dq_o       =  '0;
+    assign hyper_dq_oe_o    = 1'b0;
+    assign hyper_reset_no   = 1'b1;
+  `endif
 
 endmodule
