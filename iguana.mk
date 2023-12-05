@@ -46,6 +46,8 @@ include $(CHS_ROOT)/cheshire.mk
 ####################
 PROJ_NAME	:= basilisk
 TOP_DESIGN 	:= iguana_chip
+# default: use hyperbus, options: NO_HYPERBUS
+# HYPER_CONF := NO_HYPERBUS
 
 IG_CVA6_CONFIG := cv64a6_imafdcsclic_sv39
 IG_CVA6_PKG_FILE := $(shell $(BENDER) path cva6)/core/include/$(IG_CVA6_CONFIG)_config_pkg.sv
@@ -74,7 +76,7 @@ ig-hw-cva6:
 		mv $(IG_CVA6_PKG_FILE).tmp $(IG_CVA6_PKG_FILE);  \
     done
 
-
+MORTY_DEFINES := VERILATOR SYNTHESIS MORTY TARGET_ASIC $(HYPER_CONF)
 BENDER_PROJ_TARGETS := asic ihp13 cva6 $(IG_CVA6_CONFIG)
 BENDER_SYNTH_TARGETS := rtl $(BENDER_PROJ_TARGETS)
 
