@@ -18,6 +18,7 @@ SV2V  	?= sv2v
 # directory of the path to the last called Makefile (this one)
 PICKLE_DIR	:= $(realpath $(dir $(realpath $(lastword $(MAKEFILE_LIST)))))
 IG_DIR		?= $(realpath $(PICKLE_DIR)/../../..)
+TARGET_DIR	?= $(realpath $(PICKLE_DIR)/..)
 PICKLE_OUT 	?= $(PICKLE_DIR)/out
 
 # Project variables
@@ -50,7 +51,7 @@ BENDER_SOURCES := $(PICKLE_OUT)/$(PROJ_NAME).sources.json
 MORTY_OUT := $(PICKLE_OUT)/$(PROJ_NAME).morty.sv
 
 # Generate sources manifest for use by Morty
-$(BENDER_SOURCES): $(CHS_HW_ALL) $(IG_ROOT)/Bender.yml $(wildcard $(IG_ROOT)/hw/*.sv)
+$(BENDER_SOURCES): $(CHS_HW_ALL) $(IG_ROOT)/Bender.yml $(wildcard $(IG_ROOT)/hw/*.sv) $(wildcard $(TARGET_DIR)/src/*.sv)
 	mkdir -p $(dir $@)
 	$(BENDER) sources -f $(foreach t,$(BENDER_SYNTH_TARGETS),-t $(t))  > $@
 
