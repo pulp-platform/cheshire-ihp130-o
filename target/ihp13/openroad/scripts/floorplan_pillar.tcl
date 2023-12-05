@@ -373,11 +373,11 @@ addHaloToBlock $haloBlock $cva6_icache_tag_3
 ##########################################################################
 # Place delay lines
 ##########################################################################
-# delay lines are placed by EDA tool
-set X [expr $floor_leftX]
-placeInstance $delay_line_rx $X 3250 R0
-addHaloToBlock $haloBlock $delay_line_rx
+if { ![info exists ::env(HYPER_CONF)] || $::env(HYPER_CONF) ne "NO_HYPERBUS"} {
+  set X [expr $floor_leftX]
+  placeInstance $delay_line_rx $X 3250 R0
+  addHaloToBlock $haloBlock $delay_line_rx
 
-placeInstance $delay_line_tx $X 3320 R0
-addHaloToBlock $haloBlock $delay_line_tx
-
+  placeInstance $delay_line_tx $X 3320 R0
+  addHaloToBlock $haloBlock $delay_line_tx
+}

@@ -377,6 +377,7 @@ cut_rows
 ##########################################################################
 # Place delay line
 ##########################################################################
-
-placeInstance $delay_line_rx 4218.48 1601.28 R0
-placeInstance $delay_line_tx 4339.44 1656.96 R0
+if { ![info exists ::env(HYPER_CONF)] || $::env(HYPER_CONF) ne "NO_HYPERBUS"} {
+  placeInstance $delay_line_rx 4218.48 1601.28 R0
+  placeInstance $delay_line_tx 4339.44 1656.96 R0
+}

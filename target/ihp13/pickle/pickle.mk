@@ -35,11 +35,12 @@ define rtl-patches
 endef
 
 # Function to apply replacements and patches at a given pickled stage
+# Skip failing Hunks/patches and continue
 define apply-patches
 	$(foreach file, $(wildcard $(PICKLE_DIR)/patches/$1/*.sed),
 	sed -i -f $(file) $@)
 	$(foreach file, $(wildcard $(PICKLE_DIR)/patches/$1/*.patch),
-	patch --no-backup-if-mismatch -u $@ -i $(file))
+	-patch --no-backup-if-mismatch -u $@ -i $(file))
 	$(foreach file, $(wildcard $(PICKLE_DIR)/patches/$1/*.append),
 	cat $(file) >> $@)
 endef
@@ -58,7 +59,7 @@ $(BENDER_SOURCES): $(CHS_HW_ALL) $(IG_ROOT)/Bender.yml $(wildcard $(IG_ROOT)/hw/
 # Pickle all synthesizable RTL into a single file
 $(MORTY_OUT): $(BENDER_SOURCES) $(wildcard $(PICKLE_DIR)/patches/morty/*) $(IG_CVA6_PKG_FILE)
 	$(call rtl-patches,)
-	$(MORTY) -q -f $< -o $@ -D VERILATOR=1 -D SYNTHESIS=1 -D MORTY=1 -D TARGET_ASIC=1 --keep_defines --top $(TOP_DESIGN)
+	$(MORTY) -q -f $< -o $@ $(foreach d,$(MORTY_DEFINES),-D $(d)=1) --keep_defines --top $(TOP_DESIGN)
 	$(call apply-patches,morty)
 
 run-morty: $(MORTY_OUT)

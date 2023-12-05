@@ -18,7 +18,8 @@ TOP_DESIGN 	?= iguana_chip
 PROJ_NAME	?= $(TOP_DESIGN)
 
 NETLIST		?= $(TARGET_DIR)/yosys/out/$(PROJ_NAME).yosys.v
-
+# leave emtpy if the netlist includes hyperbus, otherwise HYPER_CONF=NO_HYPERBUS
+HYPER_CONF	?= 
 
 backend-all: run-openroad
 
@@ -31,6 +32,7 @@ run-openroad:
 	PROJ_NAME="$(PROJ_NAME)" \
 	SAVE="$(SAVE)" \
 	REPORTS="$(REPORTS)" \
+	HYPER_CONF="$(HYPER_CONF)" \
 	$(OPENROAD) scripts/chip.tcl -gui \
 		2>&1 | TZ=UTC gawk '{ print strftime("[%Y-%m-%d %H:%M %Z]"), $$0 }' \
 		| tee "$(OPENROAD_DIR)/openroad_$(shell date +"%Y-%m-%d_%H_%M_%Z").log";
