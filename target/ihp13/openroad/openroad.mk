@@ -10,8 +10,8 @@ OPENROAD 		?= openroad
 OPENROAD_DIR    := $(realpath $(dir $(realpath $(lastword $(MAKEFILE_LIST)))))
 IG_ROOT		    ?= $(realpath $(OPENROAD_DIR)/../../..)
 TARGET_DIR		?= $(realpath $(OPENROAD_DIR)/..)
-SAVE			:= $(OPENROAD_DIR)/save
-REPORTS			:= $(OPENROAD_DIR)/reports
+SAVE			?= $(OPENROAD_DIR)/save
+REPORTS			?= $(OPENROAD_DIR)/reports
 
 # Project variables
 TOP_DESIGN 	?= iguana_chip
@@ -33,7 +33,7 @@ run-openroad:
 	SAVE="$(SAVE)" \
 	REPORTS="$(REPORTS)" \
 	HYPER_CONF="$(HYPER_CONF)" \
-	$(OPENROAD) scripts/chip.tcl -gui \
+	$(OPENROAD) scripts/chip.tcl \
 		2>&1 | TZ=UTC gawk '{ print strftime("[%Y-%m-%d %H:%M %Z]"), $$0 }' \
 		| tee "$(OPENROAD_DIR)/openroad_$(shell date +"%Y-%m-%d_%H_%M_%Z").log";
 

@@ -163,7 +163,7 @@ ig-nonfree:
 	git clone $(IG_NONFREE_REMOTE) $(IG_ROOT)/target/nonfree
 	cd $(IG_ROOT)/target/nonfree && git checkout $(IG_NONFREE_COMMIT)
 
-include $(IG_ROOT)/target/nonfree/nonfree.mk
+-include $(IG_ROOT)/target/nonfree/nonfree.mk
 
 #################################
 # Phonies (KEEP AT END OF FILE) #
