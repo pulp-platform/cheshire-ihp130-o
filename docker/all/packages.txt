@@ -1,0 +1,13 @@
+git
+gdb
+valgrind
+libtool
+llvm-libs
+make
+python36
+python3-pip
+qt5-qtbase
+qt5-qtimageformats
+readline-7.0*
+tcl
+patch

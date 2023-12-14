@@ -1,0 +1,8 @@
+python36
+git
+tcl
+cmake-3.20*
+clang-16.0*
+clang-devel-16.0*
+boost-1.66*
+gmp-devel
