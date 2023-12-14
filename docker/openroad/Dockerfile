@@ -1,3 +1,10 @@
+# Copyright (c) 2022 ETH Zurich and University of Bologna.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Authors:
+# - Philippe Sauter <phsauter@ethz.ch>
+#
 # based on: https://docs.docker.com/build/building/multi-stage/
 # syntax=docker/dockerfile:1
 ARG DOCKER_BASE_IMG=almalinux:8.9
