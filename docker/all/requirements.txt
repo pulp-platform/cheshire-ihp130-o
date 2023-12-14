@@ -1,0 +1,6 @@
+hjson
+Mako
+PyYAML
+setuptools
+tabulate
+procpath

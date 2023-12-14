@@ -1,0 +1,13 @@
+version: '3'
+
+services:
+  pulp-iguana:
+    image: phsauter/pulp-iguana:dev
+    user: "${UID}:${GID}"
+    volumes:
+      - ./:/app
+      - /app/docker # exclude docker folder
+    stdin_open: true
+    tty: true
+    command: /bin/bash
+    working_dir: /app
