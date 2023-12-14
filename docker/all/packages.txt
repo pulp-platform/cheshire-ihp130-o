@@ -3,11 +3,11 @@ gdb
 valgrind
 libtool
 llvm-libs
+readline-7.0*
+tcl
 make
 python36
 python3-pip
 qt5-qtbase
 qt5-qtimageformats
-readline-7.0*
-tcl
 patch

@@ -17,7 +17,21 @@ This project is still under active development; some parts may not yet be fully 
 Unless specified otherwise in the respective file headers, all code checked into this repository is made available under a permissive license. All hardware sources and tool scripts are licensed under the Solderpad Hardware License 0.51 (see `LICENSE`). All software sources are licensed under Apache 2.0.
 
 
-## Required Tools
+
+## Tools
+
+### Docker
+
+As long as you do not want to tinker with the tools, the easiest setup is with the docker image.
+
+1. [Install Docker](https://docs.docker.com/engine/install/)
+   1. Optional but recommended: [Docker as non-root user](https://docs.docker.com/engine/install/linux-postinstall/)
+2. [Install docker-compose](https://docs.docker.com/compose/install/)
+3. clone repository
+4. in the repo-root, execute `./use-docker.sh`
+
+### Local install
+
 Make sure the following tools are installed.
 Then check `tools.mk`, it contains the paths to all tools. They either need to be in the `PATH` or set directly.
 
@@ -42,7 +56,9 @@ pip3 install procpath
 ```
 
 
-### Quick Start
+
+## Quick Start
+
 More documentation specifically for Iguana/Basilisk is currently not available.
 However, the [Cheshire Documentation](https://pulp-platform.github.io/cheshire/) gives a good overview of this project as well.
 
