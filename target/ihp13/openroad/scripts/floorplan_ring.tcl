@@ -24,47 +24,6 @@ foreach inst $insts {
 }
 
 ##########################################################################
-# Floorplan: Die Size and Padring 
-##########################################################################
-
-puts "Rotated Floorplan"
-ICeWall::load_footprint src/basilisk.strategy
-
-initialize_floorplan \
-  -die_area  [ICeWall::get_die_area] \
-  -core_area [ICeWall::get_core_area] \
-  -site      CoreSite
-
-ICeWall::init_footprint src/basilisk.sigmap
-
-
-##########################################################################
-# Tracks 
-##########################################################################
-puts "Metal Tracks"
-make_tracks Metal1    -x_offset 0 -x_pitch 0.48 -y_offset 0 -y_pitch 0.42
-make_tracks Metal2    -x_offset 0 -x_pitch 0.48 -y_offset 0 -y_pitch 0.42
-make_tracks Metal3    -x_offset 0 -x_pitch 0.48 -y_offset 0 -y_pitch 0.42
-make_tracks Metal4    -x_offset 0 -x_pitch 0.48 -y_offset 0 -y_pitch 0.42
-make_tracks Metal5    -x_offset 0 -x_pitch 0.48 -y_offset 0 -y_pitch 0.42
-make_tracks TopMetal1 -x_offset 1.64 -x_pitch 3.28 -y_offset 1.64 -y_pitch 3.28
-make_tracks TopMetal2 -x_offset 2.00 -x_pitch 4.00 -y_offset 2.00 -y_pitch 4.00
-
-
-##########################################################################
-# Placing macros
-##########################################################################
-source scripts/floorplan_util.tcl
-
-
-##########################################################################
-# Macro paths
-##########################################################################
-puts "Macro Names"
-source scripts/macros.tcl
-
-
-##########################################################################
 # RAM size
 ##########################################################################
 # RM_IHPSG13_1P_1024x64_c2_bm_bist
@@ -91,23 +50,68 @@ set padMargin         310.0
 # thickness of annular ring for power-ring
 set floorMargin       110.0
 # extra keepout annular ring inside floor (only applies to macros!)
-set floorPaddingX		    2.0
-set floorPaddingY		    5.0
+set floorPaddingX       2.0
+set floorPaddingY       5.0
+
+set coreMargin        [expr $padMargin + $floorMargin]
+
 
 # minimum macro-to-macro distance
-set macroMargin 		   10.0
+set macroMargin        10.0
 # halo around each macro
 set haloBlockL         10.0
 set haloBlockR         10.0
 set haloBlockB         10.0
 set haloBlockT         10.0
 
-set floor_leftX			  [expr $padMargin + $floorMargin + $floorPaddingX]
-set floor_bottomY		  [expr $padMargin + $floorMargin + $floorPaddingY]
-set floor_rightX		  [expr $chipW - $padMargin - $floorMargin - $floorPaddingX]
-set floor_topY			  [expr $chipH - $padMargin - $floorMargin - $floorPaddingY]
-set floor_midpointX 	[expr $floor_leftX + ($floor_rightX - $floor_leftX)/2]
-set floor_midpointY 	[expr $floor_bottomY + ($floor_topY - $floor_bottomY)/2]
+set floor_leftX       [expr $coreMargin + $floorPaddingX]
+set floor_bottomY     [expr $coreMargin + $floorPaddingY]
+set floor_rightX      [expr $chipW - $coreMargin - $floorPaddingX]
+set floor_topY        [expr $chipH - $coreMargin - $floorPaddingY]
+set floor_midpointX   [expr $floor_leftX + ($floor_rightX - $floor_leftX)/2]
+set floor_midpointY   [expr $floor_bottomY + ($floor_topY - $floor_bottomY)/2]
+
+
+##########################################################################
+# Chip and Core Area
+##########################################################################
+
+puts "Rotated Floorplan"
+initialize_floorplan -die_area "0 0 $chipW $chipH" \
+                     -core_area "$coreMargin $coreMargin [expr $chipW-$coreMargin] [expr $chipH-$coreMargin]" \
+                     -sites "CoreSite"
+# ToDo: get sites from stdcell lef as union of all regex-matches "^\s*SITE\s+([0-9a-zA-Z_]+)\s*;\s*$"
+
+##########################################################################
+# Tracks 
+##########################################################################
+puts "Metal Tracks"
+make_tracks Metal1    -x_offset 0 -x_pitch 0.48 -y_offset 0 -y_pitch 0.42
+make_tracks Metal2    -x_offset 0 -x_pitch 0.48 -y_offset 0 -y_pitch 0.42
+make_tracks Metal3    -x_offset 0 -x_pitch 0.48 -y_offset 0 -y_pitch 0.42
+make_tracks Metal4    -x_offset 0 -x_pitch 0.48 -y_offset 0 -y_pitch 0.42
+make_tracks Metal5    -x_offset 0 -x_pitch 0.48 -y_offset 0 -y_pitch 0.42
+make_tracks TopMetal1 -x_offset 1.64 -x_pitch 3.28 -y_offset 1.64 -y_pitch 3.28
+make_tracks TopMetal2 -x_offset 2.00 -x_pitch 4.00 -y_offset 2.00 -y_pitch 4.00
+
+
+##########################################################################
+# Pads/IOs 
+##########################################################################
+source src/basilisk_io.tcl
+
+
+##########################################################################
+# Placing macros
+##########################################################################
+source scripts/floorplan_util.tcl
+
+
+##########################################################################
+# Macro paths
+##########################################################################
+puts "Macro Names"
+source scripts/macros.tcl
 
 ##########################################################################
 # Placing 

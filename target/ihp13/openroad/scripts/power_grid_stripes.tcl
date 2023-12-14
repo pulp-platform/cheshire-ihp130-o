@@ -90,7 +90,7 @@ set pgcrOffset [expr ($PowRingSpace - $pgcrSpacing - 2 * $pgcrWidth) / 2]
 # TopMetal Core Power Grid
 set tpgWidth 24
 set tpgSpacing 12
-set tpgPitch 300
+set tpgPitch 280
 
 # Macro Power Rings -> M3 and M2
 ## Spacing must be larger than pitch of M2
@@ -150,11 +150,6 @@ proc sram_power { name macro mprWidth mprSpacing mprOffset mpgWidth mpgSpacing} 
     add_pdn_connect -grid ${name}_grid -layers {TopMetal2 TopMetal1}
 }
 
-sram_power "sram0" "RM_IHPSG13_1P_64x64_c2_bm_bist"   $mprWidth $mprSpacing $mprOffset $mpgWidth $mpgSpacing
-sram_power "sram1" "RM_IHPSG13_1P_256x64_c2_bm_bist"  $mprWidth $mprSpacing $mprOffset $mpgWidth $mpgSpacing
-sram_power "sram2" "RM_IHPSG13_1P_1024x64_c2_bm_bist" $mprWidth $mprSpacing $mprOffset $mpgWidth $mpgSpacing
-
-
 ##########################################################################
 ##  Core Power
 ##########################################################################
@@ -185,7 +180,7 @@ add_pdn_stripe -grid {core_grid} -layer {Metal1} -width {0.44} -offset {0} \
 # Top power grid
 # Top 2 Stripe
 add_pdn_stripe -grid {core_grid} -layer {TopMetal2} -width $tpgWidth \
-               -pitch $tpgPitch -spacing $tpgSpacing -offset {80} \
+               -pitch $tpgPitch -spacing $tpgSpacing -offset {100} \
                -extend_to_core_ring
 
 # Top 1 Stripe
@@ -208,6 +203,10 @@ add_pdn_connect -grid {core_grid} -layers {TopMetal2 Metal3}
 add_pdn_connect -grid {core_grid} -layers {Metal3 Metal1}
 add_pdn_connect -grid {core_grid} -layers {Metal3 Metal2}
 
+
+sram_power "sram0" "RM_IHPSG13_1P_64x64_c2_bm_bist"   $mprWidth $mprSpacing $mprOffset $mpgWidth $mpgSpacing
+sram_power "sram1" "RM_IHPSG13_1P_256x64_c2_bm_bist"  $mprWidth $mprSpacing $mprOffset $mpgWidth $mpgSpacing
+sram_power "sram2" "RM_IHPSG13_1P_1024x64_c2_bm_bist" $mprWidth $mprSpacing $mprOffset $mpgWidth $mpgSpacing
 
 ##########################################################################
 ##  Generate

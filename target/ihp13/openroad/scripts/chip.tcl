@@ -33,7 +33,6 @@ link_design $top_design
 
 puts "Read constraints"
 read_sdc -echo src/basilisk.sdc > ${report_dir}/read_sdc.rpt
-set_propagated_clock [all_clocks]
 
 puts "Check constraints"
 check_setup -verbose > ${report_dir}/check_setup.rpt
@@ -71,6 +70,8 @@ if { $step_by_step_debug } {
 }
 
 
+
+
 ### Repair config 
 # Dont touch IO pads as "remove_buffers" removes some of them
 set_dont_touch [get_cells * -filter "ref_name == ixc013_i16x"]
@@ -94,10 +95,6 @@ set_dont_touch [get_nets *_io]
 
 #set_debug_level RSZ repair_net 3
 save_reports 0 "${proj_name}.removed_buffers"
-puts "Repair design"
-repair_design -max_utilization 100
-repair_timing
-save_reports 0 "${proj_name}.preplace_repaired"
 
 puts "Post synth-opt area"
 report_design_area
@@ -111,7 +108,7 @@ report_tns -digits 3
 ###############################################################################
 # GLOBAL PLACEMENT                                                            #
 ###############################################################################
-set GPL_ARGS {  -density 0.65
+set GPL_ARGS {  -density 0.66
                 -pad_left 1
                 -pad_right 1 }
 #                -timing_driven
@@ -248,35 +245,39 @@ if { $step_by_step_debug } {
 ###############################################################################
 if { $routing_repairs } {
     grt::set_verbose 0
-    puts "Repair setup"
-    repair_timing -setup -repair_tns 80 -max_utilization 100
+    # Repair design using global route parasitics
+    puts "Perform buffer insertion..."
+    repair_design
+
+    # Running DPL to fix overlapped instances
+    # Run to get modified net by DPL
+    global_route -start_incremental
+    detailed_placement
+    # Route only the modified net by DPL
+    global_route -end_incremental -congestion_report_file ${report_dir}/congestion_global_route_design_repaired.rpt
+    save_reports 0 "${proj_name}.global_route_design_repaired"
+    save_checkpoint ${proj_name}.global_route
+
+    # Repair timing using global route parasitics
+    puts "Repair setup and hold violations..."
     estimate_parasitics -global_routing
+    repair_timing -setup -repair_tns 80 -max_utilization 100
     save_reports 0 "${proj_name}.global_route_setup_repaired"
     save_checkpoint ${proj_name}.global_route
 
-    puts "Repair hold"
+    estimate_parasitics -global_routing
     repair_timing -hold -hold_margin 0.05 -repair_tns 80 -allow_setup_violations -max_utilization 100 -verbose
     puts "Repair hold done"
-    estimate_parasitics -global_routing
-    #save_reports 0 "${proj_name}.global_route_hold_repaired"
+    save_reports 0 "${proj_name}.global_route_hold_repaired"
+    save_checkpoint ${proj_name}.global_route
 
-    puts "Repair design"
-    repair_design -max_utilization 100
-    # -cap_margin 0.02
-    # place inserted cells
-    puts "Detailed placement"
+    # Running DPL to fix overlapped instances
+    # Run to get modified net by DPL
+    global_route -start_incremental
     detailed_placement {*}$DPL_ARGS
-    puts "Check placement"
-    check_placement -verbose
+    # Route only the modified net by DPL
+    global_route -end_incremental -congestion_report_file ${report_dir}/congestion_timing_repaired.rpt
 
-    # Final global routing
-    puts "Global route"
-    global_route -guide_file ${report_dir}/route_repair.guide \
-                -congestion_report_file ${report_dir}/congestion_repair.rpt \
-                -congestion_iterations 30 \
-                -allow_congestion
-    
-    puts "Estimate parasitics"
     estimate_parasitics -global_routing
     save_reports 1 "${proj_name}.global_route_repaired"
     save_checkpoint ${proj_name}.routing_repairs
