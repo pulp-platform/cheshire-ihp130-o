@@ -16,7 +16,7 @@ proc save_checkpoint { checkpoint_name } {
     write_verilog ${checkpoint}.v
     write_db ${checkpoint}.odb
     exec zip ${checkpoint}.zip ${checkpoint}.def ${checkpoint}.v ${checkpoint}.odb
-    file delete ${checkpoint}.zip ${checkpoint}.def ${checkpoint}.v ${checkpoint}.odb
+    file delete ${checkpoint}.def ${checkpoint}.v ${checkpoint}.odb
 }
 
 proc load_checkpoint { checkpoint_name } {
