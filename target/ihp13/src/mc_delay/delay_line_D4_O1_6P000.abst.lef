@@ -56,6 +56,69 @@ MACRO delay_line_D4_O1_6P000
         RECT  9.02 0 9.22 0.72 ;
     END
   END delay_i[3]
+
+  PIN VSS
+    DIRECTION INOUT ;
+    USE GROUND ;
+# P/G power stripe data as pin
+    PORT
+      LAYER Metal1 ;
+        RECT 0.000000 37.580000 39.840000 38.020000 ;
+    END
+    PORT
+      LAYER Metal1 ;
+        RECT 0.000000 30.020000 39.840000 30.460000 ;
+    END
+    PORT
+      LAYER Metal1 ;
+        RECT 0.000000 22.460000 39.840000 22.900000 ;
+    END
+    PORT
+      LAYER Metal1 ;
+        RECT 0.000000 14.900000 39.840000 15.340000 ;
+    END
+    PORT
+      LAYER Metal1 ;
+        RECT 0.000000 7.340000 39.840000 7.780000 ;
+    END
+    PORT
+      LAYER Metal1 ;
+        RECT 0.000000 -0.220000 39.840000 0.220000 ;
+    END
+# end of P/G power stripe data as pin
+  END VSS
+
+  PIN VDD
+    DIRECTION INOUT ;
+    USE POWER ;
+# P/G power stripe data as pin
+    PORT
+      LAYER Metal1 ;
+        RECT 0.000000 41.360000 39.840000 41.800000 ;
+    END
+    PORT
+      LAYER Metal1 ;
+        RECT 0.000000 33.800000 39.840000 34.240000 ;
+    END
+    PORT
+      LAYER Metal1 ;
+        RECT 0.000000 26.240000 39.840000 26.680000 ;
+    END
+    PORT
+      LAYER Metal1 ;
+        RECT 0.000000 18.680000 39.840000 19.120000 ;
+    END
+    PORT
+      LAYER Metal1 ;
+        RECT 0.000000 11.120000 39.840000 11.560000 ;
+    END
+    PORT
+      LAYER Metal1 ;
+        RECT 0.000000 3.560000 39.840000 4.000000 ;
+    END
+# end of P/G power stripe data as pin
+  END VDD
+
   OBS
     LAYER Metal1 ;
      RECT  0 -0.22 39.84 41.8 ;

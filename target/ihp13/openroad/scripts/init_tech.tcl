@@ -31,8 +31,8 @@ read_liberty -corner tt ../pdk/future/sg13g2_sram/RM_IHPSG13_1P_1024x64_c2_bm_bi
 read_liberty -corner ff ../pdk/future/sg13g2_sram/RM_IHPSG13_1P_1024x64_c2_bm_bist_dummy.lib
 
 # Delay Line
-read_liberty -corner tt ../src/mc_delay/delay_line_D4_O1_6P000.lib
-read_liberty -corner ff ../src/mc_delay/delay_line_D4_O1_6P000.lib
+read_liberty -corner tt ../src/mc_delay/delay_line_D4_O1_6P000.mid_guess.lib
+read_liberty -corner ff ../src/mc_delay/delay_line_D4_O1_6P000.min_guess.lib
 
 # tech lef
 read_lef ../pdk/ihp-sg13g2/ihp-sg13g2/libs.ref/sg13g2_stdcell/lef/sg13g2_tech.lef
