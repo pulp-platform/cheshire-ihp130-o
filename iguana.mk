@@ -44,12 +44,18 @@ include $(CHS_ROOT)/cheshire.mk
 ####################
 # HW Configuration #
 ####################
-PROJ_NAME	 ?= basilisk_nohyp_2way_sbe4
-TOP_DESIGN 	 := iguana_chip
-# default: use hyperbus, options: NO_HYPERBUS
-HYPER_CONF   := NO_HYPERBUS
-L1CACHE_WAYS := 2
-SCOREBOARD_ENTRIES := 4
+# name of the project/chip itself
+PROJ_NAME 	:= bowsers_castle
+# name of the top-module in the design
+TOP_DESIGN 	:= iguana_chip
+# default (empty): use hyperbus, options: NO_HYPERBUS
+HYPER_CONF			:= NO_HYPERBUS
+L1CACHE_WAYS 		:= 2
+SCOREBOARD_ENTRIES 	:= 4
+# name used for netlist/synthesis related files
+#RTL_NAME	:= basilisk
+RTL_NAME	 := basilisk_nohyp_2way_sbe4
+
 
 IG_CVA6_CONFIG := cv64a6_imafdcsclic_sv39
 IG_CVA6_PKG_FILE := $(shell $(BENDER) path cva6)/core/include/$(IG_CVA6_CONFIG)_config_pkg.sv

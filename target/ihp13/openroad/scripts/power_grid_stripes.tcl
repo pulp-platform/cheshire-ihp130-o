@@ -9,7 +9,7 @@
 
 # Power planning
 
-puts "Power Grid"
+utl::report "Power Grid"
 # ToDo: Check connectivity on left and right power pad cells
 
 ##########################################################################
@@ -29,12 +29,12 @@ if {[info exists power_grid_defined]} {
 proc setLayerDirection { name direction } {
     set tech [ord::get_db_tech]
     set layer [odb::dbTech_findLayer $tech $name]
-    puts $name
-    puts "Was:"
-    puts [odb::dbTechLayer_getDirection $layer]
+    utl::report $name
+    utl::report "Was:"
+    utl::report [odb::dbTechLayer_getDirection $layer]
     odb::dbTechLayer_setDirection $layer $direction
-    puts "Now:"
-    puts [odb::dbTechLayer_getDirection $layer]
+    utl::report "Now:"
+    utl::report [odb::dbTechLayer_getDirection $layer]
 }
 
 # setLayerDirection Metal1 HORIZONTAL
@@ -127,14 +127,10 @@ proc sram_power { name macro mprWidth mprSpacing mprOffset mpgWidth mpgSpacing} 
         -add_connect
 
     # temporary, find out how to get sram-height properly
-    if {[string match "RM_IHPSG13_1P_64x64_c2_bm_bist" $macro]} {
-        set sram_height 118.78
-    } elseif {[string match "RM_IHPSG13_1P_256x64_c2_bm_bist" $macro]} {
-        set sram_height 118.78
-    } else {
-        set sram_height 336.46
-    }
-    set stripe_dist [expr $sram_height - 12 - 2*$mpgWidth - $mpgSpacing]
+    set sram  [[ord::get_db] findMaster $macro]
+    set sramHeight  [ord::dbu_to_microns [$sram getHeight]]
+    set stripe_dist [expr $sramHeight - 12 - 2*$mpgWidth - $mpgSpacing]
+    utl::report "stripe_dist of $macro: $stripe_dist"
 
     # for the large macros there is enough space for an additional stripe
     if {$stripe_dist > 170} {

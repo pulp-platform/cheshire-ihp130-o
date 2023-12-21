@@ -9,7 +9,7 @@
 
 # Power planning
 
-puts "Power Grid"
+utl::report "Power Grid"
 
 
 ##########################################################################
@@ -26,12 +26,12 @@ if {[info exists power_grid_defined]} {
 proc setLayerDirection { name direction } {
     set tech [ord::get_db_tech]
     set layer [odb::dbTech_findLayer $tech $name]
-    puts $name
-    puts "Was:"
-    puts [odb::dbTechLayer_getDirection $layer]
+    utl::report $name
+    utl::report "Was:"
+    utl::report [odb::dbTechLayer_getDirection $layer]
     odb::dbTechLayer_setDirection $layer $direction
-    puts "Now:"
-    puts [odb::dbTechLayer_getDirection $layer]
+    utl::report "Now:"
+    utl::report [odb::dbTechLayer_getDirection $layer]
 }
 
 setLayerDirection Metal1 VERTICAL
@@ -106,14 +106,14 @@ proc sram_power { name macro mprWidth mprSpacing mprOffset} {
     define_pdn_grid -macro -cells $macro -name ${name}_grid \
         -grid_over_boundary -voltage_domains {CORE}
 
-    puts "test"
+    utl::report "test"
     add_pdn_ring -grid ${name}_grid \
         -layer        {Metal2 Metal3} \
         -widths       "$mprWidth $mprWidth" \
         -spacings     "$mprSpacing $mprSpacing" \
         -core_offsets "$mprOffset $mprOffset" \
         -add_connect
-    puts "test2"
+    utl::report "test2"
     add_pdn_stripe -grid ${name}_grid -layer {TopMetal1} -width {2.50} \
     #               -pitch {100} -offset {10} -extend_to_core_ring -starts_with POWER
 

@@ -16,14 +16,15 @@ SV2V  	?= sv2v
 
 # Directories
 # directory of the path to the last called Makefile (this one)
-PICKLE_DIR	:= $(realpath $(dir $(realpath $(lastword $(MAKEFILE_LIST)))))
-IG_DIR		?= $(realpath $(PICKLE_DIR)/../../..)
-TARGET_DIR	?= $(realpath $(PICKLE_DIR)/..)
-PICKLE_OUT 	?= $(PICKLE_DIR)/out
+PICKLE_DIR		:= $(realpath $(dir $(realpath $(lastword $(MAKEFILE_LIST)))))
+IG_DIR			?= $(realpath $(PICKLE_DIR)/../../..)
+TARGET_DIR		?= $(realpath $(PICKLE_DIR)/..)
+PICKLE_OUT_DIR	?= $(PICKLE_DIR)
+PICKLE_OUT 		?= $(PICKLE_OUT_DIR)/out
 
 # Project variables
 TOP_DESIGN 	?= iguana_chip
-PROJ_NAME	?= $(TOP_DESIGN)
+RTL_NAME	?= $(TOP_DESIGN)
 
 ###########
 # Patches #
@@ -48,8 +49,8 @@ endef
 #########
 # Morty #
 #########
-BENDER_SOURCES := $(PICKLE_OUT)/$(PROJ_NAME).sources.json
-MORTY_OUT := $(PICKLE_OUT)/$(PROJ_NAME).morty.sv
+BENDER_SOURCES := $(PICKLE_OUT)/$(RTL_NAME).sources.json
+MORTY_OUT := $(PICKLE_OUT)/$(RTL_NAME).morty.sv
 
 # Generate sources manifest for use by Morty
 $(BENDER_SOURCES): $(CHS_HW_ALL) $(IG_ROOT)/Bender.yml $(wildcard $(IG_ROOT)/hw/*.sv) $(wildcard $(TARGET_DIR)/src/*.sv)
@@ -61,13 +62,15 @@ $(MORTY_OUT): $(BENDER_SOURCES) $(wildcard $(PICKLE_DIR)/patches/morty/*) $(IG_C
 	$(call rtl-patches,)
 	$(MORTY) -q -f $< -o $@ $(foreach d,$(MORTY_DEFINES),-D $(d)=1) --keep_defines --top $(TOP_DESIGN)
 	$(call apply-patches,morty)
+	$(MAKE) ig-hw-conf-json
+	cp $(RTL_CONF_JSON) $(PICKLE_OUT)/$(RTL_NAME).conf.json
 
 run-morty: $(MORTY_OUT)
 
 #########
 # SVase #
 #########
-SVASE_OUT := $(PICKLE_OUT)/$(PROJ_NAME).svase.sv
+SVASE_OUT := $(PICKLE_OUT)/$(RTL_NAME).svase.sv
 
 # Pre-elaborate SystemVerilog pickle
 $(SVASE_OUT): $(MORTY_OUT) $(wildcard $(PICKLE_DIR)/patches/svase/*)
@@ -80,7 +83,7 @@ run-svase: $(SVASE_OUT)
 ########
 # SV2V #
 ########
-SV2V_OUT := $(PICKLE_OUT)/$(PROJ_NAME).sv2v.v
+SV2V_OUT := $(PICKLE_OUT)/$(RTL_NAME).sv2v.v
 
 # Convert pickle to Verilog
 $(SV2V_OUT): $(SVASE_OUT) $(wildcard $(PICKLE_DIR)/patches/sv2v/*)

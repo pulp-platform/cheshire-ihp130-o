@@ -9,7 +9,7 @@
 
 # Initialize the PDK
 
-puts "Init tech"
+utl::report "Init tech"
 
 # LIB
 define_corners tt ff
@@ -61,7 +61,7 @@ set ctsBuf [ list sg13g2_buf_16 sg13g2_buf_8 sg13g2_buf_4 ]
 set ctsBufRoot sg13g2_buf_16
 
 set iocorner corner
-set iofill [ list filler1u filler2u filler4u filler10u ]
+set iofill [ list filler10u filler4u filler2u filler1u ]
 
 # TODO: eventually re-enable sg13g2_dfrbp_2
 set dont_use_cells {ixc013_i16x ixc013_b16m ixc013_b16mpup ixc013_b16mpdn sg13g2_dfrbp_2}
