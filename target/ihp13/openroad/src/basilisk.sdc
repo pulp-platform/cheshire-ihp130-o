@@ -319,25 +319,25 @@ set_false_path -hold  -fall_from [get_clocks clk_gen_slo_drv] -rise_to [get_cloc
 
 foreach pin [get_fanout -from [get_pins $CHS_SLINK_TX.data_out_q_0__reg/Q] -level 1] {
   if {[string match "*/X" [get_full_name $pin]]} {
-    puts [get_full_name $pin]
+    puts "SLINK out-reg0 output: [get_full_name $pin]"
     set_false_path -hold -rise_from clk_gen_slo_drv -to $pin
   }
 }
 foreach pin [get_fanout -from [get_pins $CHS_SLINK_TX.data_out_q_1__reg/Q] -level 1] { 
   if {[string match "*/X" [get_full_name $pin]]} {
-    puts [get_full_name $pin]
+    puts "SLINK out-reg1 output: [get_full_name $pin]"
     set_false_path -hold -rise_from clk_gen_slo_drv -to $pin
   }
 }
 foreach pin [get_fanout -from [get_pins $CHS_SLINK_TX.data_out_q_2__reg/Q] -level 1] { 
   if {[string match "*/X" [get_full_name $pin]]} {
-    puts [get_full_name $pin]
+    puts "SLINK out-reg2 output: [get_full_name $pin]"
     set_false_path -hold -rise_from clk_gen_slo_drv -to $pin
   }
 }
 foreach pin [get_fanout -from [get_pins $CHS_SLINK_TX.data_out_q_3__reg/Q] -level 1] { 
   if {[string match "*/X" [get_full_name $pin]]} {
-    puts [get_full_name $pin]
+    puts "SLINK out-reg3 output: [get_full_name $pin]"
     set_false_path -hold -rise_from clk_gen_slo_drv -to $pin
   }
 }
@@ -346,34 +346,35 @@ foreach pin [get_fanout -from [get_pins $CHS_SLINK_TX.data_out_q_3__reg/Q] -leve
 ##############
 ## Hyperbus ##
 ##############
+if { ![info exists ::env(HYPER_CONF)] || $::env(HYPER_CONF) ne "NO_HYPERBUS"} {
+  set HYP_MAX_SLEW 0.55
+  set HYP_IO       [get_ports {hyper_dq* hyper_rwds*}]
+  set HYP_CS       [get_ports hyper_cs_*]
+  set HYP_RST      [get_ports hyper_reset_no]
+  set HYP_OUT_CLK  [get_ports hyper_ck_o]
 
-set HYP_MAX_SLEW 0.55
-set HYP_IO       [get_ports {hyper_dq* hyper_rwds*}]
-set HYP_CS       [get_ports hyper_cs_*]
-set HYP_RST      [get_ports hyper_reset_no]
-set HYP_OUT_CLK  [get_ports hyper_ck_o]
+  # DDR Input: As for serial link, maximize the assumed *transition* interval by maximizing input delay span.
+  # However here, transitions happen *at* edge-aligned input clock edges, so they are centered *at* the edges.
+  # Therefore, the input transition interval becomes (T/4 - (T/4-skew), T/4 + (T/4-skew)).
+  set_input_delay -min -add_delay             -clock clk_hyp_rwdsi -network_latency_included [expr -$TCK_SYS / 4 + $HYP_MAX_SLEW] $HYP_IO
+  set_input_delay -min -add_delay -clock_fall -clock clk_hyp_rwdsi -network_latency_included [expr -$TCK_SYS / 4 + $HYP_MAX_SLEW] $HYP_IO
+  set_input_delay -max -add_delay             -clock clk_hyp_rwdsi -network_latency_included [expr  $TCK_SYS / 4 - $HYP_MAX_SLEW] $HYP_IO
+  set_input_delay -max -add_delay -clock_fall -clock clk_hyp_rwdsi -network_latency_included [expr  $TCK_SYS / 4 - $HYP_MAX_SLEW] $HYP_IO
 
-# DDR Input: As for serial link, maximize the assumed *transition* interval by maximizing input delay span.
-# However here, transitions happen *at* edge-aligned input clock edges, so they are centered *at* the edges.
-# Therefore, the input transition interval becomes (T/4 - (T/4-skew), T/4 + (T/4-skew)).
-set_input_delay -min -add_delay             -clock clk_hyp_rwdsi -network_latency_included [expr -$TCK_SYS / 4 + $HYP_MAX_SLEW] $HYP_IO
-set_input_delay -min -add_delay -clock_fall -clock clk_hyp_rwdsi -network_latency_included [expr -$TCK_SYS / 4 + $HYP_MAX_SLEW] $HYP_IO
-set_input_delay -max -add_delay             -clock clk_hyp_rwdsi -network_latency_included [expr  $TCK_SYS / 4 - $HYP_MAX_SLEW] $HYP_IO
-set_input_delay -max -add_delay -clock_fall -clock clk_hyp_rwdsi -network_latency_included [expr  $TCK_SYS / 4 - $HYP_MAX_SLEW] $HYP_IO
+  # DDR Output: Maximize *stable* interval we provide by maximizing output delay span.
+  # This is exactly analogous to the serial link case, as the sending clock is center-aligned with data.
+  set_output_delay -min -add_delay             -clock clk_sys -reference_pin $HYP_OUT_CLK [expr -$TCK_SYS / 4 + $HYP_MAX_SLEW] $HYP_IO
+  set_output_delay -min -add_delay -clock_fall -clock clk_sys -reference_pin $HYP_OUT_CLK [expr -$TCK_SYS / 4 + $HYP_MAX_SLEW] $HYP_IO
+  set_output_delay -max -add_delay             -clock clk_sys -reference_pin $HYP_OUT_CLK [expr  $TCK_SYS / 4 - $HYP_MAX_SLEW] $HYP_IO
+  set_output_delay -max -add_delay -clock_fall -clock clk_sys -reference_pin $HYP_OUT_CLK [expr  $TCK_SYS / 4 - $HYP_MAX_SLEW] $HYP_IO
 
-# DDR Output: Maximize *stable* interval we provide by maximizing output delay span.
-# This is exactly analogous to the serial link case, as the sending clock is center-aligned with data.
-set_output_delay -min -add_delay             -clock clk_sys -reference_pin $HYP_OUT_CLK [expr -$TCK_SYS / 4 + $HYP_MAX_SLEW] $HYP_IO
-set_output_delay -min -add_delay -clock_fall -clock clk_sys -reference_pin $HYP_OUT_CLK [expr -$TCK_SYS / 4 + $HYP_MAX_SLEW] $HYP_IO
-set_output_delay -max -add_delay             -clock clk_sys -reference_pin $HYP_OUT_CLK [expr  $TCK_SYS / 4 - $HYP_MAX_SLEW] $HYP_IO
-set_output_delay -max -add_delay -clock_fall -clock clk_sys -reference_pin $HYP_OUT_CLK [expr  $TCK_SYS / 4 - $HYP_MAX_SLEW] $HYP_IO
+  # CS is *synchronous* (edge aligned) with output clock at pad, *not* DDR
+  set_output_delay -min -add_delay -clock clk_sys -reference_pin $HYP_OUT_CLK [expr              + $HYP_MAX_SLEW] $HYP_CS
+  set_output_delay -max -add_delay -clock clk_sys -reference_pin $HYP_OUT_CLK [expr $TCK_SYS / 2 - $HYP_MAX_SLEW] $HYP_CS
 
-# CS is *synchronous* (edge aligned) with output clock at pad, *not* DDR
-set_output_delay -min -add_delay -clock clk_sys -reference_pin $HYP_OUT_CLK [expr              + $HYP_MAX_SLEW] $HYP_CS
-set_output_delay -max -add_delay -clock clk_sys -reference_pin $HYP_OUT_CLK [expr $TCK_SYS / 2 - $HYP_MAX_SLEW] $HYP_CS
-
-# We multicycle the passthrough reset as it does not quite reach through the chip in one cycle
-# set_multicycle_path -setup 2 -through $HYP_RST
-# set_multicycle_path -hold  1 -through $HYP_RST
-set_output_delay -min -add_delay -clock clk_sys -reference_pin $HYP_OUT_CLK [expr $TCK_SYS * 2 * 0.10] $HYP_RST
-set_output_delay -max -add_delay -clock clk_sys -reference_pin $HYP_OUT_CLK [expr $TCK_SYS * 2 * 0.35] $HYP_RST
+  # We multicycle the passthrough reset as it does not quite reach through the chip in one cycle
+  # set_multicycle_path -setup 2 -through $HYP_RST
+  # set_multicycle_path -hold  1 -through $HYP_RST
+  set_output_delay -min -add_delay -clock clk_sys -reference_pin $HYP_OUT_CLK [expr $TCK_SYS * 2 * 0.10] $HYP_RST
+  set_output_delay -max -add_delay -clock clk_sys -reference_pin $HYP_OUT_CLK [expr $TCK_SYS * 2 * 0.35] $HYP_RST
+}
