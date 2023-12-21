@@ -52,6 +52,9 @@ add_global_connection -net {VDD} -inst_pattern {.*} -pin_pattern {VDDCORE} -powe
 add_global_connection -net {VSS} -inst_pattern {.*} -pin_pattern {VSSCORE} -ground
 # rams
 add_global_connection -net {VDD} -inst_pattern {.*} -pin_pattern {VDDARRAY} -power
+add_global_connection -net {VDD} -inst_pattern {.*} -pin_pattern {VDDARRAY!} -power
+add_global_connection -net {VDD} -inst_pattern {.*} -pin_pattern {VDD!} -power
+add_global_connection -net {VSS} -inst_pattern {.*} -pin_pattern {VSS!} -ground
 
 # pads
 add_global_connection -net {VDDIO} -inst_pattern {.*} -pin_pattern {VDDPAD} -power
