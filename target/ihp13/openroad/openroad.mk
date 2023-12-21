@@ -14,12 +14,14 @@ SAVE			?= $(OPENROAD_DIR)/save
 REPORTS			?= $(OPENROAD_DIR)/reports
 
 # Project variables
+# if you are running the entire flow these are set by iguana.mk
+# in that case do not change them here
 TOP_DESIGN 	?= iguana_chip
 PROJ_NAME	?= $(TOP_DESIGN)
-
 NETLIST		?= $(TARGET_DIR)/yosys/out/$(PROJ_NAME).yosys.v
-# leave emtpy if the netlist includes hyperbus, otherwise HYPER_CONF=NO_HYPERBUS
-HYPER_CONF	?= 
+# emtpy if the netlist includes hyperbus, otherwise HYPER_CONF=NO_HYPERBUS
+HYPER_CONF	 ?= 
+L1CACHE_WAYS ?=
 
 backend-all: run-openroad
 
@@ -33,6 +35,7 @@ run-openroad:
 	SAVE="$(SAVE)" \
 	REPORTS="$(REPORTS)" \
 	HYPER_CONF="$(HYPER_CONF)" \
+	L1CACHE_WAYS="$(L1CACHE_WAYS)" \
 	$(OPENROAD) scripts/chip.tcl \
 		2>&1 | TZ=UTC gawk '{ print strftime("[%Y-%m-%d %H:%M %Z]"), $$0 }' \
 		| tee "$(OPENROAD_DIR)/openroad_$(shell date +"%Y-%m-%d_%H_%M_%Z").log";

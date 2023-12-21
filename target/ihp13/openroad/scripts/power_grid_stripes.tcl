@@ -10,7 +10,7 @@
 # Power planning
 
 puts "Power Grid"
-
+# ToDo: Check connectivity on left and right power pad cells
 
 ##########################################################################
 # Reset
