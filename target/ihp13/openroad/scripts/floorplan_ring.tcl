@@ -11,7 +11,7 @@
 # Macros mostly at the bottom and top with a few on the sides
 # aranged to leave a large roughly circular center for logic
 
-puts "Floorplan: Ring"
+utl::report "Floorplan: Ring"
 
 ##########################################################################
 # Mark all macros as unplaced
@@ -80,7 +80,7 @@ set haloBlockT         10.0
 # Chip and Core Area
 ##########################################################################
 
-puts "Rotated Floorplan"
+utl::report "Rotated Floorplan"
 initialize_floorplan -die_area "0 0 $chipW $chipH" \
                      -core_area "$coreMargin $coreMargin [expr $chipW-$coreMargin] [expr $chipH-$coreMargin]" \
                      -sites "CoreSite"
@@ -105,7 +105,7 @@ set floor_midpointY   [expr $floor_bottomY + ($floor_topY - $floor_bottomY)/2]
 ##########################################################################
 # Tracks 
 ##########################################################################
-puts "Metal Tracks"
+utl::report "Metal Tracks"
 make_tracks Metal1    -x_offset 0 -x_pitch 0.48 -y_offset 0 -y_pitch 0.42
 make_tracks Metal2    -x_offset 0 -x_pitch 0.48 -y_offset 0 -y_pitch 0.42
 make_tracks Metal3    -x_offset 0 -x_pitch 0.48 -y_offset 0 -y_pitch 0.42
@@ -133,13 +133,13 @@ source scripts/floorplan_util.tcl
 ##########################################################################
 # Macro paths
 ##########################################################################
-puts "Macro Names"
+utl::report "Macro Names"
 source scripts/macros.tcl
 
 ##########################################################################
 # Placing 
 ##########################################################################
-puts "Place Macros"
+utl::report "Place Macros"
 # routing channels between groups of side-by-side macros
 set channelX   40.0
 # routing channels between groups of macros on-top of eachother
