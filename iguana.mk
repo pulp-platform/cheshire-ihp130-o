@@ -44,10 +44,12 @@ include $(CHS_ROOT)/cheshire.mk
 ####################
 # HW Configuration #
 ####################
-PROJ_NAME	:= basilisk
-TOP_DESIGN 	:= iguana_chip
+PROJ_NAME	 ?= basilisk_nohyp_2way_sbe4
+TOP_DESIGN 	 := iguana_chip
 # default: use hyperbus, options: NO_HYPERBUS
-# HYPER_CONF := NO_HYPERBUS
+HYPER_CONF   := NO_HYPERBUS
+L1CACHE_WAYS := 2
+SCOREBOARD_ENTRIES := 4
 
 IG_CVA6_CONFIG := cv64a6_imafdcsclic_sv39
 IG_CVA6_PKG_FILE := $(shell $(BENDER) path cva6)/core/include/$(IG_CVA6_CONFIG)_config_pkg.sv
@@ -55,11 +57,12 @@ IG_CVA6_PKG_FILE := $(shell $(BENDER) path cva6)/core/include/$(IG_CVA6_CONFIG)_
 IG_CVA6_PKG_PARAMS := \
 	CVA6ConfigHExtEn=0 \
 	CVA6ConfigDcacheByteSize=16384 \
-	CVA6ConfigDcacheSetAssoc=4 \
+	CVA6ConfigDcacheSetAssoc=$(L1CACHE_WAYS) \
 	CVA6ConfigDcacheType=WT \
 	CVA6ConfigDataUserWidth=64 \
 	CVA6ConfigIcacheByteSize=16384 \
-	CVA6ConfigIcacheSetAssoc=4
+	CVA6ConfigIcacheSetAssoc=$(L1CACHE_WAYS) \
+	CVA6ConfigNrScoreboardEntries=$(SCOREBOARD_ENTRIES)
 
 # configure CVA6 for this project
 ig-hw-cva6:

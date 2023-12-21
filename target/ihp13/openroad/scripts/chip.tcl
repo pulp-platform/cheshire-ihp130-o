@@ -47,7 +47,11 @@ puts "Time: $time sec deltaT: $deltaT"
 
 # floorplan -> Few seconds
 puts "Create Floorplan"
-source scripts/floorplan_ring.tcl
+if { [info exists ::env(L1CACHE_WAYS)] && $::env(L1CACHE_WAYS) eq "2"} {
+    source scripts/floorplan_slabs_2way.tcl
+} else {
+    source scripts/floorplan_slabs.tcl
+}
 save_checkpoint ${proj_name}.floorplan
 set deltaT [expr [elapsed_run_time] - $time]
 set time [elapsed_run_time]
