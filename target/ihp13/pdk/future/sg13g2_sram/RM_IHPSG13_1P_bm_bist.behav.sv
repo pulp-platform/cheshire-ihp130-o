@@ -108,3 +108,42 @@ module RM_IHPSG13_1P_1024x64_c2_bm_bist #(
   ) i_internal (.*);
 
 endmodule
+
+module RM_IHPSG13_1P_2048x64_c2_bm_bist #(
+  // Constant parameters; do not override
+  parameter type addr_t = logic [10:0],
+  parameter type data_t = logic [63:0]
+) (`RM_IHPSG13_PORT_MAP);
+
+  RM_IHPSG13_1P_bm_bist_internal #(
+    .addr_t ( addr_t ),
+    .data_t ( data_t )
+  ) i_internal (.*);
+
+endmodule
+
+module RM_IHPSG13_1P_512x64_c2_bm_bist #(
+  // Constant parameters; do not override
+  parameter type addr_t = logic [8:0],
+  parameter type data_t = logic [63:0]
+) (`RM_IHPSG13_PORT_MAP);
+
+  RM_IHPSG13_1P_bm_bist_internal #(
+    .addr_t ( addr_t ),
+    .data_t ( data_t )
+  ) i_internal (.*);
+
+endmodule
+
+module RM_IHPSG13_1P_256x48_c2_bm_bist #(
+  // Constant parameters; do not override
+  parameter type addr_t = logic [7:0],
+  parameter type data_t = logic [47:0]
+) (`RM_IHPSG13_PORT_MAP);
+
+  RM_IHPSG13_1P_bm_bist_internal #(
+    .addr_t ( addr_t ),
+    .data_t ( data_t )
+  ) i_internal (.*);
+
+endmodule

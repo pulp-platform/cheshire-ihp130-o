@@ -46,10 +46,18 @@ sources:
       - target/ihp13/src/mc_delay.sv
 
   - target: all(ihp13, simulation)
+    defines:
+      FUNCTIONAL: ~
     files:
       - target/ihp13/src/mc_delay/delay_line_D4_O1_6P000.behav.sv
       - target/ihp13/pdk/ihp-sg13g2/ihp-sg13g2/libs.ref/sg13g2_stdcell/verilog/sg13g2_stdcell.v
-      - target/ihp13/pdk/future/sg13g2_sram/RM_IHPSG13_1P_bm_bist.behav.sv
+      - target/ihp13/pdk/ihp-sg13g2/ihp-sg13g2/libs.ref/sg13g2_sram/verilog/RM_IHPSG13_1P_core_behavioral_bm_bist.v
+      - target/ihp13/pdk/ihp-sg13g2/ihp-sg13g2/libs.ref/sg13g2_sram/verilog/RM_IHPSG13_1P_64x64_c2_bm_bist.v
+      - target/ihp13/pdk/ihp-sg13g2/ihp-sg13g2/libs.ref/sg13g2_sram/verilog/RM_IHPSG13_1P_256x48_c2_bm_bist.v
+      - target/ihp13/pdk/ihp-sg13g2/ihp-sg13g2/libs.ref/sg13g2_sram/verilog/RM_IHPSG13_1P_256x64_c2_bm_bist.v
+      - target/ihp13/pdk/ihp-sg13g2/ihp-sg13g2/libs.ref/sg13g2_sram/verilog/RM_IHPSG13_1P_512x64_c2_bm_bist.v
+      - target/ihp13/pdk/ihp-sg13g2/ihp-sg13g2/libs.ref/sg13g2_sram/verilog/RM_IHPSG13_1P_1024x64_c2_bm_bist.v
+      - target/ihp13/pdk/ihp-sg13g2/ihp-sg13g2/libs.ref/sg13g2_sram/verilog/RM_IHPSG13_1P_2048x64_c2_bm_bist.v
       - target/ihp13/pdk/future/sg13g2_iocell/sg13g2_iocell.behav.sv
 
   - target: all(sv2v, ihp13)
