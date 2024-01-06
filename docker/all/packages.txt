@@ -11,3 +11,4 @@ python3-pip
 qt5-qtbase
 qt5-qtimageformats
 patch
+zip
