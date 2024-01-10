@@ -91,15 +91,15 @@ set pgcrWidth 30
 set pgcrOffset [expr ($PowRingSpace - $pgcrSpacing - 2 * $pgcrWidth) / 2]
 
 # TopMetal Core Power Grid
-set tpgWidth 24
-set tpgSpacing 12
-set tpgPitch 280
+set tpgWidth   24;  # arbitrary number
+set tpgSpacing 12;  # arbitrary number
+set tpgPitch  280;  # multiple of the x-axis pad-to-pad distance (140u)
 
 # Macro Power Rings -> M3 and M2
 ## Spacing must be larger than pitch of M2
-set mprSpacing 0.8
+set mprSpacing 1
 ## Width
-set mprWidth 0.52
+set mprWidth 2
 ## Offset from Macro to power ring
 set mprOffset [expr $mprSpacing * 2]
 
@@ -114,17 +114,17 @@ proc sram_power { name macro mprWidth mprSpacing mprOffset mpgWidth mpgSpacing} 
     # Macro Grid and Rings
     define_pdn_grid -macro -cells $macro -name ${name}_grid \
         -grid_over_boundary -voltage_domains {CORE} \
-        -halo {10 10 10 10}
+        -halo {10 10}
 
     # TODO: Ring is usually not complete -> relying on stripes for power next to macros
     # Some sort of meta-macro-ring around an entire group of macros would be nice
     # power-ring around a larger blockage?
-    # add_pdn_ring -grid ${name}_grid \
-    #     -layer        {Metal2 Metal3} \
-    #     -widths       "$mprWidth $mprWidth" \
-    #     -spacings     "$mprSpacing $mprSpacing" \
-    #     -core_offsets "$mprOffset $mprOffset" \
-    #     -add_connect
+    add_pdn_ring -grid ${name}_grid \
+        -layer        {Metal3 Metal4} \
+        -widths       "$mprWidth $mprWidth" \
+        -spacings     "$mprSpacing $mprSpacing" \
+        -core_offsets "$mprOffset $mprOffset" \
+        -add_connect
 
     # temporary, find out how to get sram-height properly
     if {[string match "RM_IHPSG13_1P_64x64_c2_bm_bist" $macro]} {
@@ -142,11 +142,13 @@ proc sram_power { name macro mprWidth mprSpacing mprOffset mpgWidth mpgSpacing} 
     }
 
     add_pdn_stripe -grid ${name}_grid -layer {TopMetal1} -width $mpgWidth -spacing $mpgSpacing \
-                   -pitch $stripe_dist -offset {12} -extend_to_boundary -starts_with POWER -snap_to_grid
+                   -pitch $stripe_dist -offset {12} -extend_to_core_ring -starts_with POWER -snap_to_grid
 
+    # Connection of Macro Power Ring to standard-cell rails
+    add_pdn_connect -grid ${name}_grid -layers {Metal4 Metal1}
     # Connection of Stripes on Macro to Macro Power Ring
-    add_pdn_connect -grid ${name}_grid -layers {TopMetal1 Metal2} -ongrid {Metal3}
-    add_pdn_connect -grid ${name}_grid -layers {TopMetal1 Metal3} -ongrid {Metal3}
+    add_pdn_connect -grid ${name}_grid -layers {TopMetal1 Metal2}
+    add_pdn_connect -grid ${name}_grid -layers {TopMetal1 Metal3}
     # Connection of Stripes on Macro to Macro Power Pins
     add_pdn_connect -grid ${name}_grid -layers {TopMetal1 Metal4}
     # Connection of Stripes on Macro to Core Power Stripes
@@ -207,15 +209,18 @@ add_pdn_connect -grid {core_grid} -layers {Metal3 Metal1}
 add_pdn_connect -grid {core_grid} -layers {Metal3 Metal2}
 
 
-sram_power "sram0" "RM_IHPSG13_1P_64x64_c2_bm_bist"   $mprWidth $mprSpacing $mprOffset $mpgWidth $mpgSpacing
-sram_power "sram1" "RM_IHPSG13_1P_256x64_c2_bm_bist"  $mprWidth $mprSpacing $mprOffset $mpgWidth $mpgSpacing
-sram_power "sram2" "RM_IHPSG13_1P_1024x64_c2_bm_bist" $mprWidth $mprSpacing $mprOffset $mpgWidth $mpgSpacing
+sram_power "sram_64x64"   "RM_IHPSG13_1P_64x64_c2_bm_bist"   $mprWidth $mprSpacing $mprOffset $mpgWidth $mpgSpacing
+sram_power "sram_256x48"  "RM_IHPSG13_1P_256x48_c2_bm_bist"  $mprWidth $mprSpacing $mprOffset $mpgWidth $mpgSpacing
+sram_power "sram_256x64"  "RM_IHPSG13_1P_256x64_c2_bm_bist"  $mprWidth $mprSpacing $mprOffset $mpgWidth $mpgSpacing
+sram_power "sram_512x64"  "RM_IHPSG13_1P_512x64_c2_bm_bist"  $mprWidth $mprSpacing $mprOffset $mpgWidth $mpgSpacing
+sram_power "sram_1024x64" "RM_IHPSG13_1P_1024x64_c2_bm_bist" $mprWidth $mprSpacing $mprOffset $mpgWidth $mpgSpacing
+sram_power "sram_2048x64" "RM_IHPSG13_1P_2048x64_c2_bm_bist" $mprWidth $mprSpacing $mprOffset $mpgWidth $mpgSpacing
 
 ##########################################################################
 ##  Generate
 ##########################################################################
 
-pdngen -failed_via_report reports/pdngen_report.rpt
+pdngen -failed_via_report ${report_dir}/${proj_name}_pdngen.rpt
 
 # setLayerDirection Metal1 VERTICAL
 
