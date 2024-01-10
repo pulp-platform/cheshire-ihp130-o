@@ -26,26 +26,29 @@ foreach inst $insts {
 ##########################################################################
 # RAM size
 ##########################################################################
-# RM_IHPSG13_1P_1024x64_c2_bm_bist
-# only for axi_llc_data_ways data macro
-# set RamSize1024   [dbCellDim [dbInstCellName [dbGetInstByName $axi_data_0_high ]]]
-set RamSize1024x64_W 784.48
-set RamSize1024x64_H 336.46
+set RamMaster64x64    [[ord::get_db] findMaster "RM_IHPSG13_1P_64x64_c2_bm_bist"]
+set RamSize64x64_W    [ord::dbu_to_microns [$RamMaster64x64 getWidth]]
+set RamSize64x64_H    [ord::dbu_to_microns [$RamMaster64x64 getHeight]]
 
-# RM_IHPSG13_1P_256x64_c2_bm_bist
-# all other macros
-# set RamSize256   [dbCellDim [dbInstCellName [dbGetInstByName $cva6_icache_tag_0_low ]]]
-set RamSize256x64_W 784.48
-set RamSize256x64_H 118.78
+set RamMaster256x64   [[ord::get_db] findMaster "RM_IHPSG13_1P_256x64_c2_bm_bist"]
+set RamSize256x64_W   [ord::dbu_to_microns [$RamMaster256x64 getWidth]]
+set RamSize256x64_H   [ord::dbu_to_microns [$RamMaster256x64 getHeight]]
 
-set RamSize256x48_W 596.48
-set RamSize256x48_H 118.78
+set RamMaster256x48   [[ord::get_db] findMaster "RM_IHPSG13_1P_256x48_c2_bm_bist"]
+set RamSize256x48_W   [ord::dbu_to_microns [$RamMaster256x48 getWidth]]
+set RamSize256x48_H   [ord::dbu_to_microns [$RamMaster256x48 getHeight]]
 
-set RamSize512x64_W 784.48
-set RamSize512x64_H 191.34
+set RamMaster512x64   [[ord::get_db] findMaster "RM_IHPSG13_1P_512x64_c2_bm_bist"]
+set RamSize512x64_W   [ord::dbu_to_microns [$RamMaster512x64 getWidth]]
+set RamSize512x64_H   [ord::dbu_to_microns [$RamMaster512x64 getHeight]]
 
-set RamSize2048x64_W 784.48
-set RamSize2048x64_H 626.7
+set RamMaster1024x64  [[ord::get_db] findMaster "RM_IHPSG13_1P_1024x64_c2_bm_bist"]
+set RamSize1024x64_W  [ord::dbu_to_microns [$RamMaster1024x64 getWidth]]
+set RamSize1024x64_H  [ord::dbu_to_microns [$RamMaster1024x64 getHeight]]
+
+set RamMaster2048x64  [[ord::get_db] findMaster "RM_IHPSG13_1P_2048x64_c2_bm_bist"]
+set RamSize2048x64_W  [ord::dbu_to_microns [$RamMaster2048x64 getWidth]]
+set RamSize2048x64_H  [ord::dbu_to_microns [$RamMaster2048x64 getHeight]]
 
 
 ##########################################################################
@@ -64,7 +67,6 @@ set floorPaddingY       5.0
 
 set coreMargin        [expr $padMargin + $floorMargin]
 
-
 # minimum macro-to-macro distance
 set macroMargin        20.0
 # halo around each macro
@@ -72,13 +74,6 @@ set haloBlockL         10.0
 set haloBlockR         10.0
 set haloBlockB         10.0
 set haloBlockT         10.0
-
-set floor_leftX       [expr $coreMargin + $floorPaddingX]
-set floor_bottomY     [expr $coreMargin + $floorPaddingY]
-set floor_rightX      [expr $chipW - $coreMargin - $floorPaddingX]
-set floor_topY        [expr $chipH - $coreMargin - $floorPaddingY]
-set floor_midpointX   [expr $floor_leftX + ($floor_rightX - $floor_leftX)/2]
-set floor_midpointY   [expr $floor_bottomY + ($floor_topY - $floor_bottomY)/2]
 
 
 ##########################################################################
@@ -89,7 +84,23 @@ puts "Rotated Floorplan"
 initialize_floorplan -die_area "0 0 $chipW $chipH" \
                      -core_area "$coreMargin $coreMargin [expr $chipW-$coreMargin] [expr $chipH-$coreMargin]" \
                      -sites "CoreSite"
+
 # ToDo: get sites from stdcell lef as union of all regex-matches "^\s*SITE\s+([0-9a-zA-Z_]+)\s*;\s*$"
+
+# core gets snapped to site-grid -> adjust
+set coreArea          [ord::get_core_area]
+set coreArea_leftX    [lindex $coreArea 0]
+set coreArea_bottomY  [lindex $coreArea 1]
+set coreArea_rightX   [lindex $coreArea 2]
+set coreArea_topY     [lindex $coreArea 3]
+
+set floor_leftX       [expr $coreArea_leftX + $floorPaddingX]
+set floor_bottomY     [expr $coreArea_bottomY + $floorPaddingY]
+set floor_rightX      [expr $coreArea_rightX - $floorPaddingX]
+set floor_topY        [expr $coreArea_topY - $floorPaddingY]
+set floor_midpointX   [expr $floor_leftX + ($floor_rightX - $floor_leftX)/2]
+set floor_midpointY   [expr $floor_bottomY + ($floor_topY - $floor_bottomY)/2]
+
 
 ##########################################################################
 # Tracks 
@@ -102,6 +113,9 @@ make_tracks Metal4    -x_offset 0 -x_pitch 0.48 -y_offset 0 -y_pitch 0.42
 make_tracks Metal5    -x_offset 0 -x_pitch 0.48 -y_offset 0 -y_pitch 0.42
 make_tracks TopMetal1 -x_offset 1.64 -x_pitch 3.28 -y_offset 1.64 -y_pitch 3.28
 make_tracks TopMetal2 -x_offset 2.00 -x_pitch 4.00 -y_offset 2.00 -y_pitch 4.00
+
+# useful to align things (eg: standard-cell macros)
+set siteHeight        [ord::microns_to_dbu [[dpl::get_row_site] getHeight]]
 
 
 ##########################################################################
@@ -221,56 +235,56 @@ addHaloToBlock $haloBlockL $haloBlockB $haloBlockR $haloBlockT $axi_hitmiss_tag_
 # cva6_icache_tag_0_low
 set X [expr $floor_rightX - $RamSize256x64_W]
 set Y [expr $floor_bottomY]
-placeInstance $cva6_icache_tag_0 $X $Y R0
+placeInstance $cva6_icache_tag_0 $X $Y R180
 addHaloToBlock $haloBlockL $haloBlockB $haloBlockR $haloBlockT $cva6_icache_tag_0
 
 # cva6_icache_tag_0_high
 set X [expr $X ]
 set Y [expr $Y + $macroMargin + $RamSize256x64_H]
-placeInstance $cva6_icache_tag_1 $X $Y R0
+placeInstance $cva6_icache_tag_1 $X $Y R180
 addHaloToBlock $haloBlockL $haloBlockB $haloBlockR $haloBlockT $cva6_icache_tag_1
 
 # cva6_icache_tag_1_low
 set X [expr $X ]
 set Y [expr $Y + $macroMargin + $RamSize256x64_H]
-placeInstance $cva6_icache_tag_2 $X $Y R0
+placeInstance $cva6_icache_tag_2 $X $Y R180
 addHaloToBlock $haloBlockL $haloBlockB $haloBlockR $haloBlockT $cva6_icache_tag_2
 
 # cva6_icache_tag_1_high
 set X [expr $X ]
 set Y [expr $Y + $macroMargin + $RamSize256x64_H]
-placeInstance $cva6_icache_tag_3 $X $Y R0
+placeInstance $cva6_icache_tag_3 $X $Y R180
 addHaloToBlock $haloBlockL $haloBlockB $haloBlockR $haloBlockT $cva6_icache_tag_3
 
 
 ##########################################################################
 # Place cva6_wt_dcache_tag
 ##########################################################################
-# L1 Data tags go on-top of I-Cache tags
-
-# cva6_wt_dcache_tag_1_low
-set X [expr $X - $RamSize256x64_W - $channelX]
-set Y [expr $floor_bottomY]
-placeInstance $cva6_wt_dcache_tag_3 $X $Y R0
-addHaloToBlock $haloBlockL $haloBlockB $haloBlockR $haloBlockT $cva6_wt_dcache_tag_3
-
-# cva6_wt_dcache_tag_1_high
-set X [expr $X ]
-set Y [expr $Y + $macroMargin + $RamSize256x64_H]
-placeInstance $cva6_wt_dcache_tag_2 $X $Y R0
-addHaloToBlock $haloBlockL $haloBlockB $haloBlockR $haloBlockT $cva6_wt_dcache_tag_2
+# L1 Data tags go on the left of I-Cache tags
 
 # cva6_wt_dcache_tag_0_low
-set X [expr $X ]
-set Y [expr $Y + $macroMargin + $RamSize256x64_H]
-placeInstance $cva6_wt_dcache_tag_1 $X $Y R0
-addHaloToBlock $haloBlockL $haloBlockB $haloBlockR $haloBlockT $cva6_wt_dcache_tag_1
+set X [expr $X - $channelX - $RamSize256x64_W]
+set Y [expr $floor_bottomY]
+placeInstance $cva6_wt_dcache_tag_0 $X $Y R180
+addHaloToBlock $haloBlockL $haloBlockB $haloBlockR $haloBlockT $cva6_wt_dcache_tag_0
 
 # cva6_wt_dcache_tag_0_high
 set X [expr $X ]
 set Y [expr $Y + $macroMargin + $RamSize256x64_H]
-placeInstance $cva6_wt_dcache_tag_0 $X $Y R0
-addHaloToBlock $haloBlockL $haloBlockB $haloBlockR $haloBlockT $cva6_wt_dcache_tag_0
+placeInstance $cva6_wt_dcache_tag_1 $X $Y R180
+addHaloToBlock $haloBlockL $haloBlockB $haloBlockR $haloBlockT $cva6_wt_dcache_tag_1
+
+# cva6_wt_dcache_tag_1_low
+set X [expr $X ]
+set Y [expr $Y + $macroMargin + $RamSize256x64_H]
+placeInstance $cva6_wt_dcache_tag_2 $X $Y R180
+addHaloToBlock $haloBlockL $haloBlockB $haloBlockR $haloBlockT $cva6_wt_dcache_tag_2
+
+# cva6_wt_dcache_tag_1_high
+set X [expr $X ]
+set Y [expr $Y + $macroMargin + $RamSize256x64_H]
+placeInstance $cva6_wt_dcache_tag_3 $X $Y R180
+addHaloToBlock $haloBlockL $haloBlockB $haloBlockR $haloBlockT $cva6_wt_dcache_tag_3
 
 
 ##########################################################################
@@ -394,9 +408,8 @@ cut_rows -halo_width_y 10 -halo_width_x 20
 # delay lines after cut since they are essentially multi-row standard cells
 
 if { ![info exists ::env(HYPER_CONF)] || $::env(HYPER_CONF) ne "NO_HYPERBUS"} {
-  set X [expr $coreMargin]
-  # 420u to core bottom, 8 tracks further in is first power stripe, 785 cell-rows above first
-  placeInstance $delay_line_rx $X [expr $coreMargin + 8*0.42 + 3.78*785] R0
-
-  placeInstance $delay_line_tx $X [expr $coreMargin + 8*0.42 + 3.78*800] R0
+  set X [expr $coreArea_leftX]
+  # 785 cell-rows above first (bottom of core-area)
+  placeInstance $delay_line_rx $X [expr $coreArea_bottomY + $siteHeight*785] R0
+  placeInstance $delay_line_tx $X [expr $coreArea_bottomY + $siteHeight*800] R0
 }
