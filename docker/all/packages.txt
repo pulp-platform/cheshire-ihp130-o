@@ -8,6 +8,8 @@ tcl
 make
 python36
 python3-pip
+mesa-libGL
+mesa-dri-drivers
 qt5-qtbase
 qt5-qtimageformats
 patch
