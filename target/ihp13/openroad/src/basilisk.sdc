@@ -83,10 +83,10 @@ set_load -min 9 ${PINS_HYP_FAST}
 ##################
 
 # We target 100 MHz
-set TCK_SYS 25.0
+set TCK_SYS 40.0
 create_clock -name clk_sys -period $TCK_SYS [get_ports clk_i]
 
-set TCK_JTG 25.0
+set TCK_JTG 50.0
 create_clock -name clk_jtg -period $TCK_JTG [get_ports jtag_tck_i]
 
 set TCK_RTC 50.0

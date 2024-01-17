@@ -45,16 +45,18 @@ include $(CHS_ROOT)/cheshire.mk
 # HW Configuration #
 ####################
 # name of the project/chip itself
-PROJ_NAME 	:= bowsers_castle
+PROJ_NAME 	:= basilsik
 # name of the top-module in the design
 TOP_DESIGN 	:= iguana_chip
 # default (empty): use hyperbus, options: NO_HYPERBUS
 HYPER_CONF			:= NO_HYPERBUS
 L1CACHE_WAYS 		:= 2
 SCOREBOARD_ENTRIES 	:= 4
+# default (empty or ORIG): use pre-generated from cheshire; SPLIT: bootrom split in four parts
+BOOTROM_CONF        := SPLIT
 # name used for netlist/synthesis related files
 #RTL_NAME	:= basilisk
-RTL_NAME	 := basilisk_nohyp_2way_sbe4
+RTL_NAME	 := basilisk_dkong
 
 
 IG_CVA6_CONFIG := cv64a6_imafdcsclic_sv39
@@ -70,21 +72,60 @@ IG_CVA6_PKG_PARAMS := \
 	CVA6ConfigIcacheSetAssoc=$(L1CACHE_WAYS) \
 	CVA6ConfigNrScoreboardEntries=$(SCOREBOARD_ENTRIES)
 
+RTL_CONF_JSON := $(IG_ROOT)/hw/generated/$(RTL_NAME).json
+# document the RTL configuration
+ig-hw-conf-json:
+	mkdir -p $(IG_ROOT)/hw/generated/
+	@jq -n \
+		--arg hyp "$(HYPER_CONF)" \
+		--argjson l1 $(L1CACHE_WAYS) \
+		--argjson sbe $(SCOREBOARD_ENTRIES) \
+		--arg rtl "$(RTL_NAME)" \
+		--arg boot "$(BOOTROM_CONF)" \
+		'{ "Hyperbus": $$hyp, "Bootrom": $$boot, "L1-Cache Ways": $$l1, "Scoreboard Entries": $$sbe, "RTL name": $$rtl }' \
+		> $(RTL_CONF_JSON)
+
 # configure CVA6 for this project
 ig-hw-cva6:
 	@cp -n $(IG_CVA6_PKG_FILE) $(IG_CVA6_PKG_FILE).orig
 	@cp $(IG_CVA6_PKG_FILE).orig $(IG_CVA6_PKG_FILE)
 	@echo "cva6: configure $(notdir $(IG_CVA6_PKG_FILE))"
 	for param_val in $(IG_CVA6_PKG_PARAMS); do \
-        param=$$(echo "$$param_val" | cut -d '=' -f 1); \
-        value=$$(echo "$$param_val" | cut -d '=' -f 2); \
+		param=$$(echo "$$param_val" | cut -d '=' -f 1); \
+		value=$$(echo "$$param_val" | cut -d '=' -f 2); \
 		echo "param: $$param ; value: $$value"\
 		echo "cva6: setting $$param = $$value"; \
-        sed "s|\(\s*localparam\s*\)$$param\(\s*=\s*\)[a-zA-Z0-9_]*\(.*\)|\1$$param\2$$value\3|g" \
-            $(IG_CVA6_PKG_FILE) > $(IG_CVA6_PKG_FILE).tmp; \
+		sed "s|\(\s*localparam\s*\)$$param\(\s*=\s*\)[a-zA-Z0-9_]*\(.*\)|\1$$param\2$$value\3|g" \
+			$(IG_CVA6_PKG_FILE) > $(IG_CVA6_PKG_FILE).tmp; \
 		mv $(IG_CVA6_PKG_FILE).tmp $(IG_CVA6_PKG_FILE);  \
-    done
+	done
+	$(MAKE) ig-hw-conf-json
 
+IG_CHS_BOOTROM_DIR := $(shell $(BENDER) path cheshire)/hw/bootrom
+IG_CHS_BOOTROM_FILE := $(IG_CHS_BOOTROM_DIR)/cheshire_bootrom.sv
+
+# use split default-bootrom instead for better routability
+ig-hw-bootrom-split:
+	@cp -n $(IG_CHS_BOOTROM_FILE) $(IG_CHS_BOOTROM_FILE).orig
+	cd $(IG_CHS_BOOTROM_DIR) && ln -sfr $(IG_ROOT)/hw/cheshire_bootrom_split.sv cheshire_bootrom.sv
+
+ig-hw-bootrom-orig:
+	if [ -e "$(IG_CHS_BOOTROM_FILE).orig" ]; then \
+		rm $(IG_CHS_BOOTROM_FILE); \
+        cp $(IG_CHS_BOOTROM_FILE).orig $(IG_CHS_BOOTROM_FILE); \
+    fi
+
+ifeq ($(BOOTROM_CONF), ORIG)
+    BOOTROM_CONF_TARGET = ig-hw-bootrom-orig
+else ifeq ($(BOOTROM_CONF), SPLIT)
+    BOOTROM_CONF_TARGET = ig-hw-bootrom-split
+else ifeq ($(BOOTROM_CONF),)
+    BOOTROM_CONF_TARGET = ig-hw-bootrom-orig
+else
+    $(error Invalid value for BOOTROM_CONF: $(BOOTROM_CONF))
+endif
+
+HW_CONF_TARGETS := ig-hw-cva6 $(BOOTROM_CONF_TARGET) ig-hw-conf-json
 MORTY_DEFINES := VERILATOR SYNTHESIS MORTY TARGET_ASIC $(HYPER_CONF)
 BENDER_PROJ_TARGETS := asic ihp13 cva6 $(IG_CVA6_CONFIG)
 BENDER_SYNTH_TARGETS := rtl $(BENDER_PROJ_TARGETS)
@@ -151,6 +192,10 @@ ig-sim-synth-gui: $(IG_SIM_DIR)/vsim/compile.ihp13.synth.tcl
 	rm -rf target/sim/vsim/work
 	cd target/sim/vsim; questa-2022.3 vsim -do '$(SIM_PRE_COMPILE); source $<; source start.iguana.tcl;'
 
+ig-sim-split-bootrom:
+	rm -rf target/sim/vsim/work
+	cd target/sim/vsim && questa-2022.3 vsim -c -do compile.bootrom.rtl.tcl
+	cd target/sim/vsim && questa-2022.3 vsim tb_cheshire_bootrom -c -do "run -all; exit"
 
 IG_SIM_ALL += $(IG_SIM_DIR)/models/s27ks0641.sdf
 IG_SIM_ALL += $(IG_SIM_DIR)/vsim/compile.ihp13.rtl.tcl
@@ -158,7 +203,7 @@ IG_SIM_ALL += $(IG_SIM_DIR)/vsim/compile.ihp13.sv2v.tcl
 IG_SIM_ALL += $(IG_SIM_DIR)/vsim/compile.ihp13.synth.tcl
 IG_SIM_ALL += $(IG_SIM_DIR)/vsim/compile.ihp13.gate.tcl
 
-.PHONY: ig-sim-rtl ig-sim-sv2v ig-sim-svase ig-sim-synth
+.PHONY: ig-sim-rtl ig-sim-sv2v ig-sim-svase ig-sim-synth ig-sim-split-bootrom
 
 
 ######################
@@ -178,7 +223,8 @@ ig-nonfree:
 # Phonies (KEEP AT END OF FILE) #
 #################################
 
-.PHONY: ig-all ig-clean-deps ig-sw-all ig-hw-all ig-bootrom-all ig-sim-all ig-hw-cva6 ig-nonfree ig-sim-clean
+.PHONY: ig-all ig-clean-deps ig-sw-all ig-hw-all ig-bootrom-all ig-sim-all 
+.PHONY: ig-hw-cva6 ig-hw-conf-json ig-hw-bootrom-split ig-hw-bootrom-orig ig-nonfree ig-sim-clean
 
 IG_ALL += $(CHS_ALL) $(IG_SIM_ALL)
 

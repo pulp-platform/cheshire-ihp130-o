@@ -58,11 +58,10 @@ $(BENDER_SOURCES): $(CHS_HW_ALL) $(IG_ROOT)/Bender.yml $(wildcard $(IG_ROOT)/hw/
 	$(BENDER) sources -f $(foreach t,$(BENDER_SYNTH_TARGETS),-t $(t))  > $@
 
 # Pickle all synthesizable RTL into a single file
-$(MORTY_OUT): $(BENDER_SOURCES) $(wildcard $(PICKLE_DIR)/patches/morty/*) $(IG_CVA6_PKG_FILE)
+$(MORTY_OUT): $(BENDER_SOURCES) $(wildcard $(PICKLE_DIR)/patches/morty/*) $(HW_CONF_TARGETS) $(IG_CVA6_PKG_FILE)
 	$(call rtl-patches,)
 	$(MORTY) -q -f $< -o $@ $(foreach d,$(MORTY_DEFINES),-D $(d)=1) --keep_defines --top $(TOP_DESIGN)
 	$(call apply-patches,morty)
-	$(MAKE) ig-hw-conf-json
 	cp $(RTL_CONF_JSON) $(PICKLE_OUT)/$(RTL_NAME).conf.json
 
 run-morty: $(MORTY_OUT)
