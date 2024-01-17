@@ -26,8 +26,14 @@ export YOSYS_FLATTEN_HIER := 1
 # kept as a seperate hierarchical element, all others will be flattened
 # https://yosyshq.readthedocs.io/projects/yosys/en/latest/cmd/select.html
 export YOSYS_KEEP_HIER_INST :=  "*/gen_bootrom.i_bootrom" \
+								"*/i_bootrom_part*" \
 								"*/gen_asic_regfile.i_ariane_regfile" \
 								"*/float_regfile_gen*i_ariane_fp_regfile" \
+								"*/i_cva6_icache" \
+								"*/i_wt_dcache" \
+								"*/i_scoreboard" \
+								"*/i_multiplier" \
+								"*/fpu_gen.fpu_i" \
 								"*/gen_serial_link.i_serial_link" \
 								"*/i_hyperbus" \
 								"*/i_dbg_dmi_jtag" \
@@ -37,7 +43,6 @@ export YOSYS_KEEP_HIER_INST :=  "*/gen_bootrom.i_bootrom" \
 								"*/gen_spi_host.i_spi_host" \
 								"*/gen_vga.i_axi_vga" \
 								"*/gen_llc.i_llc" \
-								"*/i_scoreboard*" \
 								"t:*cdc_fifo_gray__*" \
 								"t:*cdc_2phase_src__*" \
 								"t:*cdc_2phase_dst__*" \
