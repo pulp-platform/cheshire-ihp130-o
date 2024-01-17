@@ -63,17 +63,17 @@ set padMargin         310.0
 set floorMargin       110.0
 # extra keepout annular ring inside floor (only applies to macros!)
 set floorPaddingX       2.0
-set floorPaddingY       5.0
+set floorPaddingY       4.0
 
 set coreMargin        [expr $padMargin + $floorMargin]
 
 # minimum macro-to-macro distance
 set macroMargin        20.0
 # halo around each macro
-set haloBlockL         10.0
-set haloBlockR         10.0
-set haloBlockB         10.0
-set haloBlockT         10.0
+set haloBlockL          8.0
+set haloBlockR          8.0
+set haloBlockB          8.0
+set haloBlockT          8.0
 
 
 ##########################################################################
