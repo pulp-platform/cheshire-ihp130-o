@@ -4,9 +4,12 @@
 # abc log file
 *.history
 
+hw/generated
+
 # target/sim
 target/sim/models
 target/sim/vsim/compile.*.tcl
+!target/sim/vsim/compile.bootrom.rtl.tcl
 target/sim/vsim/*.log
 target/sim/vsim/modelsim.ini
 target/sim/vsim/transcript
@@ -16,6 +19,7 @@ target/nonfree
 
 # target/ihp13
 target/ihp13/pickle/out
+target/ihp13/macro_cells
 
 # Editor fun
 .dvt

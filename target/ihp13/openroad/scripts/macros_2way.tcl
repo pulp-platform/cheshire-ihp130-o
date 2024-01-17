@@ -27,24 +27,24 @@ foreach inst $delay_lines {
 set CHESHIRE        i_iguana_soc.i_cheshire_soc
 set CHS_L1_CACHE  	$CHESHIRE.gen_cva6_cores.__0.i_core_cva6.genblk3.i_cache_subsystem
 set CHS_ICACHE 		$CHS_L1_CACHE.i_cva6_icache
-set CHS_DCACHE 		$CHS_L1_CACHE.i_wt_dcache.i_wt_dcache_mem
+set CHS_DCACHE 		$CHS_L1_CACHE.i_wt_dcache/i_wt_dcache_mem
 set CHS_LLC_CACHE	$CHESHIRE.gen_llc.i_llc/i_axi_llc_top_raw
 set HYPERBUS        i_iguana_soc.i_hyperbus
 
 # CVA6 L1 I-Cache
 # tag sram
-set cva6_icache_tag_0_low   $CHS_ICACHE.gen_sram.__0.tag_sram.i_tc_sram.genblk2.genblk1.genblk1.gen_512x44xBx1.gen_cuts.__0.i_cut
-set cva6_icache_tag_0_high  $CHS_ICACHE.gen_sram.__0.tag_sram.i_tc_sram.genblk2.genblk1.genblk1.gen_512x44xBx1.gen_cuts.__1.i_cut
+set cva6_icache_tag_0_low   $CHS_ICACHE/gen_sram.__0.tag_sram.i_tc_sram.genblk2.genblk1.genblk1.gen_512x44xBx1.gen_cuts.__0.i_cut
+set cva6_icache_tag_0_high  $CHS_ICACHE/gen_sram.__0.tag_sram.i_tc_sram.genblk2.genblk1.genblk1.gen_512x44xBx1.gen_cuts.__1.i_cut
 
-set cva6_icache_tag_1_low   $CHS_ICACHE.gen_sram.__1.tag_sram.i_tc_sram.genblk2.genblk1.genblk1.gen_512x44xBx1.gen_cuts.__0.i_cut
-set cva6_icache_tag_1_high  $CHS_ICACHE.gen_sram.__1.tag_sram.i_tc_sram.genblk2.genblk1.genblk1.gen_512x44xBx1.gen_cuts.__1.i_cut
+set cva6_icache_tag_1_low   $CHS_ICACHE/gen_sram.__1.tag_sram.i_tc_sram.genblk2.genblk1.genblk1.gen_512x44xBx1.gen_cuts.__0.i_cut
+set cva6_icache_tag_1_high  $CHS_ICACHE/gen_sram.__1.tag_sram.i_tc_sram.genblk2.genblk1.genblk1.gen_512x44xBx1.gen_cuts.__1.i_cut
 
 # data sram
-set cva6_icache_data_0_low   $CHS_ICACHE.gen_sram.__0.data_sram.i_tc_sram.genblk2.genblk1.genblk1.genblk1.genblk1.genblk1.gen_512x128xBx1.i_cut_low
-set cva6_icache_data_0_high  $CHS_ICACHE.gen_sram.__0.data_sram.i_tc_sram.genblk2.genblk1.genblk1.genblk1.genblk1.genblk1.gen_512x128xBx1.i_cut_high
+set cva6_icache_data_0_low   $CHS_ICACHE/gen_sram.__0.data_sram.i_tc_sram.genblk2.genblk1.genblk1.genblk1.genblk1.genblk1.gen_512x128xBx1.i_cut_low
+set cva6_icache_data_0_high  $CHS_ICACHE/gen_sram.__0.data_sram.i_tc_sram.genblk2.genblk1.genblk1.genblk1.genblk1.genblk1.gen_512x128xBx1.i_cut_high
 
-set cva6_icache_data_1_low   $CHS_ICACHE.gen_sram.__1.data_sram.i_tc_sram.genblk2.genblk1.genblk1.genblk1.genblk1.genblk1.gen_512x128xBx1.i_cut_low
-set cva6_icache_data_1_high  $CHS_ICACHE.gen_sram.__1.data_sram.i_tc_sram.genblk2.genblk1.genblk1.genblk1.genblk1.genblk1.gen_512x128xBx1.i_cut_high
+set cva6_icache_data_1_low   $CHS_ICACHE/gen_sram.__1.data_sram.i_tc_sram.genblk2.genblk1.genblk1.genblk1.genblk1.genblk1.gen_512x128xBx1.i_cut_low
+set cva6_icache_data_1_high  $CHS_ICACHE/gen_sram.__1.data_sram.i_tc_sram.genblk2.genblk1.genblk1.genblk1.genblk1.genblk1.gen_512x128xBx1.i_cut_high
 
 # CVA6 L1 D-Cache (write-through)
 # tag sram 
