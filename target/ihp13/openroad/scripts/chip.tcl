@@ -56,10 +56,18 @@ source scripts/power_grid_stripes.tcl
 save_checkpoint ${proj_name}.power_grid
 report_image "${proj_name}.power" true
 
+# Used for estimate_parasitics
+set_wire_rc -clock -layer Metal4
+set_wire_rc -signal -layer Metal3
+
 
 ###############################################################################
-# Initial Repair Netlist                                                      #
+# Restructure Netlist                                                         #
 ###############################################################################
+utl::report "Repair tie fanout"
+source scripts/repair_tie.tcl
+
+report_metrics "${proj_name}.pre_opt_netlist"
 # Dont touch IO pads as "remove_buffers" removes some of them
 set_dont_touch [get_cells * -filter "ref_name == ixc013_i16x"]
 set_dont_touch [get_cells * -filter "ref_name == ixc013_b16m"]
@@ -69,19 +77,58 @@ set_dont_use $dont_use_cells
 
 utl::report "Remove buffers"
 remove_buffers
+
+# Hangs if placement density overlay is enabled or timing path
+utl::report "Repair synth netlist"
+repair_design -verbose
+repair_timing -setup -repair_tns 80
+
+puts "Repaired synth area"
+report_design_area
+report_worst_slack -min -digits 3
+puts "Repaired synth wns"
+report_worst_slack -max -digits 3
+puts "Repaired synth tns"
+report_tns -digits 3
+
+file mkdir ${save_dir}/${proj_name}.restructure
+restructure -target timing \
+            -slack_threshold 5.0 \
+            -liberty_file "../pdk/ihp-sg13g2/ihp-sg13g2/libs.ref/sg13g2_stdcell/lib/sg13g2_stdcell_typ_1p20V_25C.lib" \
+            -tielo_port sg13g2_tielo/L_LO \
+            -tiehi_port sg13g2_tiehi/L_HI \
+            -work_dir ${save_dir}/${proj_name}.restructure
+
+puts "Restructured area"
+report_design_area
+report_worst_slack -min -digits 3
+puts "Restructured wns"
+report_worst_slack -max -digits 3
+puts "Restructured tns"
+report_tns -digits 3
+
+utl::report "Remove buffers"
+remove_buffers
+utl::report "Buffer ports"
+buffer_ports
+utl::report "Repair restructured netlist"
+repair_design -verbose
+repair_timing -setup -repair_tns 80
+
+puts "Restructured and repaired area"
+report_design_area
+report_worst_slack -min -digits 3
+puts "Restructured and repaired wns"
+report_worst_slack -max -digits 3
+puts "Restructured and repaired tns"
+report_tns -digits 3
+
 # Unset dont touch or repair_hold crashes
 unset_dont_touch [get_cells * -filter "ref_name == ixc013_i16x"]
 unset_dont_touch [get_cells * -filter "ref_name == ixc013_b16m"]
 unset_dont_touch [get_cells * -filter "ref_name == ixc013_b16mpup"]
 # Set dont touch for io nets -> repair_hold otherwise tries to insert hold buffer into that net
 set_dont_touch [get_nets *_io]
-
-utl::report "Buffer ports"
-buffer_ports
-# Hangs if placement density overlay is enabled or timing path
-utl::report "Repair tie fanout"
-source scripts/repair_tie.tcl
-utl::report "Repair design"
 
 report_metrics "${proj_name}.pre_place"
 save_checkpoint ${proj_name}.pre_place
@@ -98,10 +145,6 @@ set GPL_ARGS {  -density 0.55
 # according to OR "on large designs" '-skip_initial_place' reduces the
 # HPWL (half perimeter wire length) by roughly 5%
 
-# Used for estimate_parasitics
-set_wire_rc -clock -layer Metal4
-set_wire_rc -signal -layer Metal3
-
 utl::report "Global Placement"
 global_placement {*}$GPL_ARGS
 report_metrics "${proj_name}.gpl"
@@ -113,7 +156,7 @@ estimate_parasitics -placement
 utl::report "Repair design"
 # needs to be after estimate_parasitics otherwise repair_design hangs
 repair_design -max_utilization 100 -verbose
-repair_timing -setup -repair_tns 100 -max_utilization 100
+repair_timing -setup -repair_tns 80 -max_utilization 100
 
 utl::report "Global Placement (2)"
 global_placement {*}$GPL_ARGS
@@ -174,7 +217,7 @@ report_metrics "${proj_name}.cts_unrepaired"
 # utl::report "Repair hold"
 # repair_timing -hold -hold_margin 0.05 -repair_tns 80 -allow_setup_violations -max_utilization 75
 utl::report "Repair setup"
-repair_timing -setup -repair_tns 100 -max_utilization 100
+repair_timing -setup -repair_tns 95 -max_utilization 100
 # place inserted cells
 utl::report "Detailed placement"
 detailed_placement {*}$DPL_ARGS
