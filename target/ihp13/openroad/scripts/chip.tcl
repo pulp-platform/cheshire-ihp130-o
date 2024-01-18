@@ -17,7 +17,7 @@ set save_dir $::env(SAVE)
 set time [elapsed_run_time]
 
 set step_by_step_debug 0
-set use_routing_repairs 1
+set use_routing_repairs 0
 set_thread_count 16
 
 source scripts/checkpoint.tcl
@@ -56,12 +56,10 @@ source scripts/power_grid_stripes.tcl
 save_checkpoint ${proj_name}.power_grid
 report_image "${proj_name}.power" true
 
-# Used for estimate_parasitics
-set_wire_rc -clock -layer Metal4
-set_wire_rc -signal -layer Metal3
-report_metrics "${proj_name}.power"
 
-### Repair config 
+###############################################################################
+# Initial Repair Netlist                                                      #
+###############################################################################
 # Dont touch IO pads as "remove_buffers" removes some of them
 set_dont_touch [get_cells * -filter "ref_name == ixc013_i16x"]
 set_dont_touch [get_cells * -filter "ref_name == ixc013_b16m"]
@@ -69,8 +67,8 @@ set_dont_touch [get_cells * -filter "ref_name == ixc013_b16mpup"]
 # Dont use pads for buffering during repair_design
 set_dont_use $dont_use_cells
 
-# utl::report "Remove buffers"
-# remove_buffers
+utl::report "Remove buffers"
+remove_buffers
 # Unset dont touch or repair_hold crashes
 unset_dont_touch [get_cells * -filter "ref_name == ixc013_i16x"]
 unset_dont_touch [get_cells * -filter "ref_name == ixc013_b16m"]
@@ -78,14 +76,21 @@ unset_dont_touch [get_cells * -filter "ref_name == ixc013_b16mpup"]
 # Set dont touch for io nets -> repair_hold otherwise tries to insert hold buffer into that net
 set_dont_touch [get_nets *_io]
 
-#set_debug_level RSZ repair_net 3
-report_metrics "${proj_name}.removed_buffers"
+utl::report "Buffer ports"
+buffer_ports
+# Hangs if placement density overlay is enabled or timing path
+utl::report "Repair tie fanout"
+source scripts/repair_tie.tcl
+utl::report "Repair design"
+
+report_metrics "${proj_name}.pre_place"
+save_checkpoint ${proj_name}.pre_place
 
 
 ###############################################################################
 # GLOBAL PLACEMENT                                                            #
 ###############################################################################
-set GPL_ARGS {  -density 0.5
+set GPL_ARGS {  -density 0.55
                 -pad_left 1
                 -pad_right 1 }
 #                -timing_driven
@@ -93,29 +98,37 @@ set GPL_ARGS {  -density 0.5
 # according to OR "on large designs" '-skip_initial_place' reduces the
 # HPWL (half perimeter wire length) by roughly 5%
 
+# Used for estimate_parasitics
+set_wire_rc -clock -layer Metal4
+set_wire_rc -signal -layer Metal3
+
 utl::report "Global Placement"
 global_placement {*}$GPL_ARGS
 report_metrics "${proj_name}.gpl"
-save_checkpoint ${proj_name}.gpl
 report_image "${proj_name}.gpl" true true
+save_checkpoint ${proj_name}.gpl
+
+utl::report "Estimate parasitics"
+estimate_parasitics -placement
+utl::report "Repair design"
+# needs to be after estimate_parasitics otherwise repair_design hangs
+repair_design -max_utilization 100 -verbose
+repair_timing -setup -repair_tns 100 -max_utilization 100
+
+utl::report "Global Placement (2)"
+global_placement {*}$GPL_ARGS
+report_metrics "${proj_name}.gpl2"
+report_image "${proj_name}.gpl2" true true
+save_checkpoint ${proj_name}.gpl2
+
 
 
 #############################################################################
 # DETAILED PLACEMENT                                                        #
 #############################################################################
+# set_placement_padding -instances [get_cells *i_bootrom*] -right 3 -left 3
 set DPL_ARGS {}
 # set DPL_ARGS { -max_displacement {600 200} }
-
-utl::report "Buffer ports"
-buffer_ports
-# Hangs if placement density overlay is enabled or timing path
-utl::report "Repair tie fanout"
-source scripts/repair_tie.tcl
-
-utl::report "Estimate parasitics"
-estimate_parasitics -placement
-utl::report "Repair design"
-repair_design -max_utilization 100
 
 utl::report "Detailed placement"
 detailed_placement {*}$DPL_ARGS
@@ -128,6 +141,7 @@ report_metrics "${proj_name}.dpl"
 save_checkpoint ${proj_name}.dpl
 report_image "${proj_name}.dpl" true true
 
+# repair_timing if report is still bad
 
 ###############################################################################
 # CLOCK TREE SYNTHESIS                                                        #
@@ -155,10 +169,12 @@ estimate_parasitics -placement
 
 # repair all setup timing
 report_metrics "${proj_name}.cts_unrepaired"
-utl::report "Repair hold"
-repair_timing -hold -hold_margin 0.05 -repair_tns 80 -allow_setup_violations -max_utilization 75
+# This may be too early to try hold fixing and will create unnecessary hold buffers
+# We should wait until we have some routing info
+# utl::report "Repair hold"
+# repair_timing -hold -hold_margin 0.05 -repair_tns 80 -allow_setup_violations -max_utilization 75
 utl::report "Repair setup"
-repair_timing -setup -repair_tns 70 -max_utilization 75
+repair_timing -setup -repair_tns 100 -max_utilization 100
 # place inserted cells
 utl::report "Detailed placement"
 detailed_placement {*}$DPL_ARGS
@@ -178,19 +194,19 @@ report_image "${proj_name}.cts" true false true
 ###############################################################################
 # reduce routing resources (max utilization) of layers by 10%
 # to spread out a bit more to other layers
-set_global_routing_layer_adjustment Metal1-TopMetal2 0.10
+set_global_routing_layer_adjustment Metal2-TopMetal2 0.10
 set_routing_layers -signal Metal2-TopMetal2 -clock Metal2-TopMetal1
 
 utl::report "Global route"
-global_route -guide_file ${report_dir}/route.guide \
-    -congestion_report_file ${report_dir}/congestion.rpt \
+global_route -guide_file ${report_dir}/${proj_name}_route.guide \
+    -congestion_report_file ${report_dir}/${proj_name}_congestion.rpt \
     -congestion_iterations 30 \
     -allow_congestion
 # default params but -allow_congestion
 # it goes on even if it didn't find a solution (may be able to fix afterwards)
 
-repair_antennas -iterations 5
-check_placement -verbose
+# repair_antennas -iterations 5
+# check_placement -verbose
 
 utl::report "Estimate parasitics"
 estimate_parasitics -global_routing
@@ -257,11 +273,11 @@ if { $use_routing_repairs } {
 
 
 utl::report "Detailed route"
-detailed_route -output_drc ${report_dir}/route_drc.rpt \
-               -output_maze ${report_dir}/maze.log \
-               -bottom_routing_layer Metal1 \
+detailed_route -output_drc ${report_dir}/${proj_name}_route_drc.rpt \
+               -output_maze ${report_dir}${proj_name}_maze.log \
+               -bottom_routing_layer Metal2 \
                -top_routing_layer TopMetal2 \
-               -droute_end_iter 30 \
+               -droute_end_iter 5 \
                -save_guide_updates \
                -verbose 1
 
