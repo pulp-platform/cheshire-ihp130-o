@@ -1132,7 +1132,7 @@ MACRO corner
   CLASS PAD ;
   ORIGIN 0 0 ;
   FOREIGN corner 0 0 ;
-  SIZE 311 BY 311 ;
+  SIZE 310 BY 310 ;
   SYMMETRY X Y R90 ;
   SITE IOSite ;
   PIN VSSPAD
@@ -1194,19 +1194,19 @@ MACRO corner
   END VDDCORE
   OBS
     LAYER Metal1 ;
-      RECT 0 0 311 311 ;
+      RECT 0 0 310 310 ;
     LAYER Metal2 ;
-      RECT 0 0 311 311 ;
+      RECT 0 0 310 310 ;
     LAYER Metal3 ;
-      RECT 0 0 311 311 ;
+      RECT 0 0 310 310 ;
     LAYER Metal4 ;
-      RECT 0 0 311 311 ;
+      RECT 0 0 310 310 ;
     LAYER Metal5 ;
-      RECT 0 0 311 311 ;
+      RECT 0 0 310 310 ;
     LAYER TopMetal1 ;
-      RECT 0 0 311 311 ;
+      RECT 0 0 310 310 ;
     LAYER TopMetal2 ;
-      RECT 0 0 311 311 ;
+      RECT 0 0 310 310 ;
   END
 END corner
 
