@@ -31,7 +31,7 @@ make_io_sites -horizontal_site IOSite \
     -offset 0 \
     -rotation_horizontal R0 \
     -rotation_vertical R0 \
-    -rotation_corner R0
+    -rotation_corner MY
 
 #Edge: LEFT (top to bottom)
 place_pad -row IO_WEST  -location 5060.0 "pad_vccio_0.i_pad"       ; # pin no: 1
@@ -202,7 +202,7 @@ connect_by_abutment
 
 # The bond pads are integrated into the IO cell
 # We need to assign the terminals a location that aligns to the bond pad.
-place_io_terminals *.i_pad/PAD
+# place_io_terminals *.i_pad/PAD
 
 remove_io_rows
 
