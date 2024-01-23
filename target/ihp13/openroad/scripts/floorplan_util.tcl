@@ -26,6 +26,24 @@ proc add_macro_blockage {negative_padding name1 name2} {
   return $blockage
 }
 
+proc create_vert_stripe_blockage {firstX lastX pitchX width minY maxY} {
+  set firstX_dbu [ord::microns_to_dbu $firstX]
+  set minY_dbu   [ord::microns_to_dbu $minY]
+  set lastX_dbu  [ord::microns_to_dbu $lastX]
+  set maxY_dbu   [ord::microns_to_dbu $maxY]
+  set pitchx_dbu [ord::microns_to_dbu $pitchX]
+  set width_dbu  [ord::microns_to_dbu $width]
+  set block      [ord::get_db_block]
+
+  for {set x $firstX_dbu} {$x <= $lastX_dbu} {set x [expr $x + $pitchx_dbu]} {
+    set x0 [expr $x - $width_dbu/2]
+    set x1 [expr $x + $width_dbu/2]
+    puts "$x0 $x1 $minY_dbu $maxY_dbu"
+    set blockage [odb::dbBlockage_create $block $x0 $minY_dbu $x1 $maxY_dbu]
+    set $blockage setSoft
+  }
+}
+
 # place_macro only allows R0, R180, MX, MY -> doesn't work for us
 proc placeInstance { name x y orient } {
   puts "placing $name at {$x $y} $orient"
