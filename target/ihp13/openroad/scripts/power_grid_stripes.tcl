@@ -11,6 +11,7 @@
 
 utl::report "Power Grid"
 # ToDo: Check connectivity on left and right power pad cells
+source scripts/floorplan_util.tcl
 
 ##########################################################################
 # Reset
@@ -91,30 +92,35 @@ set pgcrWidth 30
 set pgcrOffset [expr ($PowRingSpace - $pgcrSpacing - 2 * $pgcrWidth) / 2]
 
 # TopMetal Core Power Grid
-set tpgWidth    16;  # arbitrary number
-set tpgPitch   280;  # multiple of the x-axis pad-to-pad distance (140u)
+set tpgWidth    16; # arbitrary number
+set tpgPitch   280; # multiple of the x-axis pad-to-pad distance (140u)
 set tpgSpacing  [expr $tpgPitch/2 - $tpgWidth];  # equally spaced
+set tpgOffset  140; # fit between pins & start after the rotated macros
 
 # Macro Power Rings -> M3 and M2
-## Spacing must be larger than pitch of M2
-set mprSpacing 2
+## Spacing must be larger than pitch of M2/M3
+set mprSpacing 1
 ## Width
-set mprWidth 2
+set mprWidth 1
 ## Offset from Macro to power ring
-set mprOffsetX 4
+set mprOffsetX 2
 set mprOffsetY 2
 
-# macro power grid (stripes on TopMetal1)
+# macro power grid (stripes on TopMetal1/TopMetal2 depending on orientation)
+# TM1: 3.28 pitch, 1.64 half-pitch -> a stripe 3 tracks wide is 2*3.28+1.64 = 8.2
+# TM2: 4 pitch, 2 half-pitch -> a stripe 3 tracks wide is 2*4+2 = 10
+# -> using a common 8 with 2 spacing + with snap to grid should work ok for both
 set mpgWidth 8
-set mpgSpacing 8
+set mpgSpacing 2
+set mpgOffset 10; # arbitrary 
 
 ##########################################################################
 ##  SRAM power rings
 ##########################################################################
 proc sram_power { name macro } {
-    global mprWidth mprSpacing mprOffsetX mprOffsetY mpgWidth mpgSpacing
+    global mprWidth mprSpacing mprOffsetX mprOffsetY mpgWidth mpgSpacing mpgOffset
     # Macro Grid and Rings
-    define_pdn_grid -macro -cells $macro -name ${name}_grid \
+    define_pdn_grid -macro -cells $macro -name ${name}_grid -orient "R0 R180 MY MX" \
         -grid_over_boundary -voltage_domains {CORE} \
         -halo {4 4}
 
@@ -122,25 +128,24 @@ proc sram_power { name macro } {
     # Some sort of meta-macro-ring around an entire group of macros would be nice
     # power-ring around a larger blockage?
     add_pdn_ring -grid ${name}_grid \
-        -layer        {Metal3 Metal4} \
+        -layer        {Metal3 Metal2} \
         -widths       "$mprWidth $mprWidth" \
         -spacings     "$mprSpacing $mprSpacing" \
         -core_offsets "$mprOffsetX $mprOffsetY" \
         -add_connect
 
-    # temporary, find out how to get sram-height properly
     set sram  [[ord::get_db] findMaster $macro]
     set sramHeight  [ord::dbu_to_microns [$sram getHeight]]
-    set stripe_dist [expr $sramHeight - 12 - 2*$mpgWidth - $mpgSpacing]
+    set stripe_dist [expr $sramHeight - $mpgOffset - 2*$mpgWidth - $mpgSpacing]
     utl::report "stripe_dist of $macro: $stripe_dist"
 
     # for the large macros there is enough space for an additional stripe
-    if {$stripe_dist > 170} {
+    if {$stripe_dist > 180} {
         set stripe_dist [expr $stripe_dist/2]
     }
 
     add_pdn_stripe -grid ${name}_grid -layer {TopMetal1} -width $mpgWidth -spacing $mpgSpacing \
-                   -pitch $stripe_dist -offset {12} -extend_to_core_ring -starts_with POWER -snap_to_grid
+                   -pitch $stripe_dist -offset $mpgOffset -extend_to_core_ring -starts_with POWER -snap_to_grid
 
     # Connection of Macro Power Ring to standard-cell rails
     add_pdn_connect -grid ${name}_grid -layers {Metal4 Metal1}
@@ -151,6 +156,47 @@ proc sram_power { name macro } {
     add_pdn_connect -grid ${name}_grid -layers {TopMetal1 Metal4}
     # Connection of Stripes on Macro to Core Power Stripes
     add_pdn_connect -grid ${name}_grid -layers {TopMetal2 TopMetal1}
+}
+
+proc sram_power_rotated { name macro } {
+    global mprWidth mprSpacing mprOffsetX mprOffsetY mpgWidth mpgSpacing mpgOffset
+    # Macro Grid and Rings
+    define_pdn_grid -macro -cells $macro -name ${name}_rot_grid -orient "R90 R270 MXR90" \
+        -grid_over_boundary -voltage_domains {CORE} \
+        -halo {4 4}
+
+    # TODO: Ring is usually not complete -> relying on stripes for power next to macros
+    # Some sort of meta-macro-ring around an entire group of macros would be nice
+    # power-ring around a larger blockage?
+    add_pdn_ring -grid ${name}_rot_grid \
+        -layer        {Metal3 Metal2} \
+        -widths       "$mprWidth $mprWidth" \
+        -spacings     "$mprSpacing $mprSpacing" \
+        -core_offsets "$mprOffsetX $mprOffsetY" \
+        -add_connect
+
+    set sram  [[ord::get_db] findMaster $macro]
+    set sramHeight [ord::dbu_to_microns [$sram getHeight]]
+    set stripe_dist [expr $sramHeight - $mpgOffset - 2*$mpgWidth - $mpgSpacing]
+    utl::report "stripe_dist of $macro: $stripe_dist"
+
+    # for the large macros there is enough space for an additional stripe-pair
+    if {$stripe_dist > 180} {
+        set stripe_dist [expr $stripe_dist/2]
+    }
+
+    add_pdn_stripe -grid ${name}_rot_grid -layer {TopMetal2} -width $mpgWidth -spacing $mpgSpacing \
+                   -pitch $stripe_dist -offset $mpgOffset -extend_to_core_ring -starts_with POWER -snap_to_grid
+
+    # Connection of Macro Power Ring to standard-cell rails
+    add_pdn_connect -grid ${name}_rot_grid -layers {Metal4 Metal1}
+    # Connection of Stripes on Macro to Macro Power Ring
+    add_pdn_connect -grid ${name}_rot_grid -layers {TopMetal2 Metal2}
+    add_pdn_connect -grid ${name}_rot_grid -layers {TopMetal2 Metal3}
+    # Connection of Stripes on Macro to Macro Power Pins
+    add_pdn_connect -grid ${name}_rot_grid -layers {TopMetal2 Metal4}
+    # Connection of Stripes on Macro to Core Power Stripes
+    add_pdn_connect -grid ${name}_rot_grid -layers {TopMetal2 TopMetal1}
 }
 
 ##########################################################################
@@ -183,7 +229,7 @@ add_pdn_stripe -grid {core_grid} -layer {Metal1} -width {0.44} -offset {0} \
 # Top power grid
 # Top 2 Stripe
 add_pdn_stripe -grid {core_grid} -layer {TopMetal2} -width $tpgWidth \
-               -pitch $tpgPitch -spacing $tpgSpacing -offset {115} \
+               -pitch $tpgPitch -spacing $tpgSpacing -offset $tpgOffset \
                -extend_to_core_ring
 
 # Top 1 Stripe
@@ -214,6 +260,8 @@ sram_power "sram_512x64"  "RM_IHPSG13_1P_512x64_c2_bm_bist"
 sram_power "sram_1024x64" "RM_IHPSG13_1P_1024x64_c2_bm_bist"
 sram_power "sram_2048x64" "RM_IHPSG13_1P_2048x64_c2_bm_bist"
 
+sram_power_rotated "sram_256x48"  "RM_IHPSG13_1P_256x48_c2_bm_bist" 
+
 ##########################################################################
 ##  Generate
 ##########################################################################
@@ -221,6 +269,10 @@ sram_power "sram_2048x64" "RM_IHPSG13_1P_2048x64_c2_bm_bist"
 pdngen -failed_via_report ${report_dir}/${proj_name}_pdngen.rpt
 
 # setLayerDirection Metal1 VERTICAL
+
+# blockages under TM2 core grid
+set first_stripX [expr $tpgOffset + $coreArea_leftX]
+create_vert_stripe_blockage $first_stripX $coreArea_rightX [expr $tpgPitch/2] $tpgWidth $coreArea_bottomY $coreArea_topY
 
 
 ##########################################################################
