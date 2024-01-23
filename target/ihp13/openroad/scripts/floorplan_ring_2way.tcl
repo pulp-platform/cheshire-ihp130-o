@@ -62,13 +62,13 @@ set padMargin         310.0
 # thickness of annular ring for power-ring
 set floorMargin       110.0
 # extra keepout annular ring inside floor (only applies to macros!)
-set floorPaddingX       2.0
-set floorPaddingY       5.0
+set floorPaddingX       1.0
+set floorPaddingY       1.0
 
 set coreMargin        [expr $padMargin + $floorMargin]
 
 # minimum macro-to-macro distance
-set macroMargin        20.0
+set macroMargin        10.0
 # halo around each macro
 set haloBlockL         10.0
 set haloBlockR         10.0
@@ -141,10 +141,10 @@ source scripts/macros_2way.tcl
 ##########################################################################
 utl::report "Place Macros"
 # routing channels between groups of side-by-side macros
-set channelX   40.0
-# routing channels between groups of macros on-top of eachother
-# used to seperate the tags from the data caches
-set channelY 1000.0
+set channelX   20.0
+# routing channels between macros on-top of eachother
+set channelY   20.0
+
 
 ##########################################################################
 # Place axi_llc_data_ways data macro
@@ -163,72 +163,131 @@ set Y [expr $floor_topY - $RamSize2048x64_H]
 placeInstance $axi_data_1 $X $Y R0
 addHaloToBlock $channelX $haloBlockB $haloBlockR $haloBlockT $axi_data_1
 
-add_macro_blockage 0 $axi_data_0 $axi_data_1
-
 # Second group placed in top-right corner
-
 # LLC Way-3
-set X [expr $floor_rightX - $RamSize2048x64_W]
+set X [expr $X + $RamSize2048x64_W + $channelX]
 set Y [expr $floor_topY - $RamSize2048x64_H]
 placeInstance $axi_data_3 $X $Y R0
 addHaloToBlock $haloBlockL $haloBlockB $haloBlockR $haloBlockT $axi_data_3
 
 # LLC Way-2
-set X [expr $X - $RamSize2048x64_W - $channelX]
+set X [expr $X + $RamSize2048x64_W + $channelX]
 set Y [expr $floor_topY - $RamSize2048x64_H]
 placeInstance $axi_data_2 $X $Y R0
 addHaloToBlock $haloBlockL $haloBlockB $channelX $haloBlockT $axi_data_2
 
-add_macro_blockage 0 $axi_data_2 $axi_data_3
+add_macro_blockage 0 $axi_data_0 $axi_data_3
+
 
 ##########################################################################
 # Place axi_llc_hit_miss_unit tag macro
 ##########################################################################
-# Tags go in the top-middle
+# Tags go in the top-right
 
-# left column
-# axi_hitmiss_tag_0
-set X [expr $floor_leftX + 2*$channelX + 2*$RamSize2048x64_W]
-set Y [expr $floor_topY - $RamSize256x48_H]
-placeInstance $axi_hitmiss_tag_0 $X $Y R0
-addHaloToBlock $haloBlockL $haloBlockB $haloBlockR $haloBlockT $axi_hitmiss_tag_0
-
-# axi_hitmiss_tag_1
-set X [expr $X ]
-set Y [expr $Y - $macroMargin - $RamSize256x48_H]
-placeInstance $axi_hitmiss_tag_1 $X $Y R0
-addHaloToBlock $haloBlockL $haloBlockB $haloBlockR $haloBlockT $axi_hitmiss_tag_1
-
-# right column
+# three horizontal at the top
 # axi_hitmiss_tag_2
-set X [expr $floor_rightX - 2*$channelX - 2*$RamSize2048x64_W - $RamSize256x48_W]
+set X [expr $floor_rightX - $RamSize256x48_W]
 set Y [expr $floor_topY - $RamSize256x48_H]
 placeInstance $axi_hitmiss_tag_2 $X $Y R0
 addHaloToBlock $haloBlockL $haloBlockB $haloBlockR $haloBlockT $axi_hitmiss_tag_2
 
+# axi_hitmiss_tag_1
+set X [expr $X - $channelX - $RamSize256x48_W]
+set Y [expr $Y]
+placeInstance $axi_hitmiss_tag_1 $X $Y R0
+addHaloToBlock $haloBlockL $haloBlockB $haloBlockR $haloBlockT $axi_hitmiss_tag_1
+
+# axi_hitmiss_tag_0
+set X [expr $X - $channelX - $RamSize256x48_W]
+set Y [expr $Y]
+placeInstance $axi_hitmiss_tag_0 $X $Y R0
+addHaloToBlock $haloBlockL $haloBlockB $haloBlockR $haloBlockT $axi_hitmiss_tag_0
+
+# one rotated on the right-side
 # axi_hitmiss_tag_3
-set X [expr $X ]
-set Y [expr $Y - $macroMargin - $RamSize256x48_H]
-placeInstance $axi_hitmiss_tag_3 $X $Y R0
+set X [expr $floor_rightX - $RamSize256x48_H]
+set Y [expr $Y - $channelY - $RamSize256x48_W]
+placeInstance $axi_hitmiss_tag_3 $X $Y R270
 addHaloToBlock $haloBlockL $haloBlockB $haloBlockR $haloBlockT $axi_hitmiss_tag_3
 
 
+##########################################################################
+# Place cva6_icache_tag
+##########################################################################
+# L1 Instr tags go on the left side at the bottom, above the I-cache data
 
-# ##########################################################################
+# cva6_icache_tag_0_low
+set X [expr $floor_leftX]
+set Y [expr $floor_bottomY + 2*$channelY + 2*$RamSize512x64_H]
+placeInstance $cva6_icache_tag_0_low $X $Y R90
+addHaloToBlock $haloBlockL $haloBlockB $haloBlockR $haloBlockT $cva6_icache_tag_0_low
+
+# cva6_icache_tag_0_high
+set X [expr $X ]
+set Y [expr $Y + $RamSize256x48_W + $channelX]
+placeInstance $cva6_icache_tag_0_high $X $Y R90
+addHaloToBlock $haloBlockL $haloBlockB $haloBlockR $haloBlockT $cva6_icache_tag_0_high
+
+# cva6_icache_tag_1_low
+set X [expr $X ]
+set Y [expr $Y + $RamSize256x48_W + $channelX]
+placeInstance $cva6_icache_tag_1_low $X $Y R90
+addHaloToBlock $haloBlockL $haloBlockB $haloBlockR $haloBlockT $cva6_icache_tag_1_low
+
+# cva6_icache_tag_1_high
+set X [expr $X ]
+set Y [expr $Y + $RamSize256x48_W + $channelX]
+placeInstance $cva6_icache_tag_1_high $X $Y R90
+addHaloToBlock $haloBlockL $haloBlockB $haloBlockR $haloBlockT $cva6_icache_tag_1_high
+
+
+##########################################################################
+# Place cva6_icache_data
+##########################################################################
+# L1-Instruction cache goes into the bottom-left corner
+
+# cva6_icache_data_1_high
+set X [expr $floor_leftX]
+set Y [expr $floor_bottomY]
+placeInstance $cva6_icache_data_1_high $X $Y R180
+addHaloToBlock $haloBlockL $haloBlockB $haloBlockR $haloBlockT $cva6_icache_data_1_high
+
+# cva6_icache_data_0_high
+set X [expr $X ]
+set Y [expr $Y + $RamSize512x64_H + $channelY]
+placeInstance $cva6_icache_data_0_high $X $Y R180
+addHaloToBlock $haloBlockL $haloBlockB $haloBlockR $haloBlockT $cva6_icache_data_0_high
+
+# cva6_icache_data_1_low
+set X [expr $X + $RamSize512x64_W + $channelX]
+set Y [expr $floor_bottomY]
+placeInstance $cva6_icache_data_1_low $X $Y R180
+addHaloToBlock $haloBlockL $haloBlockB $channelX $haloBlockT $cva6_icache_data_1_low
+
+# cva6_icache_data_0_low
+set X [expr $X ]
+set Y [expr $Y + $RamSize512x64_H + $channelY]
+placeInstance $cva6_icache_data_0_low $X $Y R180
+addHaloToBlock $haloBlockL $haloBlockB $channelX $haloBlockT $cva6_icache_data_0_low
+
+add_macro_blockage $macroMargin $cva6_icache_data_1_low $cva6_icache_data_0_high
+
+
+###########################################################################
 # Place data sram 
-# ########################################################################## 
-# L1-Data cache goes into the bottom-left corner
+########################################################################### 
+# L1-Data cache goes at the bottom, next to the I-cache data
 
 # cva6_wt_dcache_data_1_high
-set X [expr $floor_leftX]
+set X [expr $X + $RamSize512x64_W + $channelX]
 set Y [expr $floor_bottomY]
 placeInstance $cva6_wt_dcache_data_1_high $X $Y R180
 addHaloToBlock $haloBlockL $haloBlockB $haloBlockR $haloBlockT $cva6_wt_dcache_data_1_high
 
 
 # cva6_wt_dcache_data_0_high
-set X [expr $X]
-set Y [expr $Y + $macroMargin + $RamSize512x64_H]
+set X [expr $X + $RamSize512x64_W + $channelX]
+set Y [expr $floor_bottomY]
 placeInstance $cva6_wt_dcache_data_0_high $X $Y R180
 addHaloToBlock $haloBlockL $haloBlockB $haloBlockR $haloBlockT $cva6_wt_dcache_data_0_high
 
@@ -240,106 +299,48 @@ placeInstance $cva6_wt_dcache_data_1_low $X $Y R180
 addHaloToBlock $channelX $haloBlockB $haloBlockR $haloBlockT $cva6_wt_dcache_data_1_low
 
 # cva6_wt_dcache_data_0_low
-set X [expr $X]
-set Y [expr $Y + $macroMargin + $RamSize512x64_H]
+set X [expr $X + $RamSize512x64_W + $channelX]
+set Y [expr $floor_bottomY]
 placeInstance $cva6_wt_dcache_data_0_low $X $Y R180
 addHaloToBlock $channelX $haloBlockB $haloBlockR $haloBlockT $cva6_wt_dcache_data_0_low
 
 add_macro_blockage 0 $cva6_wt_dcache_data_1_high $cva6_wt_dcache_data_0_low
 
+
 ##########################################################################
 # Place cva6_wt_dcache_tag
 ##########################################################################
-# L1 Data tags go in bottom-left, above the data
+# L1 Data tags go on the right side (rotated) at the bottom
 
 # cva6_wt_dcache_tag_1_low
-set X [expr $X + $RamSize512x64_W + $channelX]
+set X [expr $floor_rightX - $RamSize256x48_H]
 set Y [expr $floor_bottomY]
-placeInstance $cva6_wt_dcache_tag_1_low $X $Y R180
+placeInstance $cva6_wt_dcache_tag_1_low $X $Y R270
 addHaloToBlock $haloBlockL $haloBlockB $haloBlockR $haloBlockT $cva6_wt_dcache_tag_1_low
 
 # cva6_wt_dcache_tag_1_high
 set X [expr $X ]
-set Y [expr $Y + $macroMargin + $RamSize256x48_H]
-placeInstance $cva6_wt_dcache_tag_1_high $X $Y R180
+set Y [expr $Y + $RamSize256x48_W + $channelX]
+placeInstance $cva6_wt_dcache_tag_1_high $X $Y R270
 addHaloToBlock $haloBlockL $haloBlockB $haloBlockR $haloBlockT $cva6_wt_dcache_tag_1_high
 
 # cva6_wt_dcache_tag_0_low
 set X [expr $X ]
-set Y [expr $Y + $macroMargin + $RamSize256x48_H]
-placeInstance $cva6_wt_dcache_tag_0_low $X $Y R180
+set Y [expr $Y + $RamSize256x48_W + $channelX]
+placeInstance $cva6_wt_dcache_tag_0_low $X $Y R270
 addHaloToBlock $haloBlockL $haloBlockB $haloBlockR $haloBlockT $cva6_wt_dcache_tag_0_low
 
 # cva6_wt_dcache_tag_0_high
 set X [expr $X ]
-set Y [expr $Y + $macroMargin + $RamSize256x48_H]
-placeInstance $cva6_wt_dcache_tag_0_high $X $Y R180
+set Y [expr $Y + $RamSize256x48_W + $channelX]
+placeInstance $cva6_wt_dcache_tag_0_high $X $Y R270
 addHaloToBlock $haloBlockL $haloBlockB $haloBlockR $haloBlockT $cva6_wt_dcache_tag_0_high
 
 
-##########################################################################
-# Place cva6_icache_data
-##########################################################################
-# L1-Instruction cache goes into the bottom-right corner
-
-# cva6_icache_data_3_high
-set X [expr $floor_rightX - $RamSize512x64_W]
-set Y [expr $floor_bottomY]
-placeInstance $cva6_icache_data_1_high $X $Y R180
-addHaloToBlock $haloBlockL $haloBlockB $haloBlockR $haloBlockT $cva6_icache_data_1_high
-
-# cva6_icache_data_0_high
-set X [expr $X ]
-set Y [expr $Y + $macroMargin + $RamSize512x64_H]
-placeInstance $cva6_icache_data_0_high $X $Y R180
-addHaloToBlock $haloBlockL $haloBlockB $haloBlockR $haloBlockT $cva6_icache_data_0_high
-
-# cva6_icache_data_3_low
-set X [expr $X - $RamSize512x64_W - $channelX]
-set Y [expr $floor_bottomY]
-placeInstance $cva6_icache_data_1_low $X $Y R180
-addHaloToBlock $haloBlockL $haloBlockB $channelX $haloBlockT $cva6_icache_data_1_low
-
-# cva6_icache_data_0_low
-set X [expr $X ]
-set Y [expr $Y + $macroMargin + $RamSize512x64_H]
-placeInstance $cva6_icache_data_0_low $X $Y R180
-addHaloToBlock $haloBlockL $haloBlockB $channelX $haloBlockT $cva6_icache_data_0_low
-
-add_macro_blockage $macroMargin $cva6_icache_data_1_low $cva6_icache_data_0_high
-
-##########################################################################
-# Place cva6_icache_tag
-##########################################################################
-# L1 Instruction tags go in bottom-right, above the data
-
-# cva6_icache_tag_0_low
-set X [expr $X - $RamSize256x48_W - $channelX]
-set Y [expr $floor_bottomY]
-placeInstance $cva6_icache_tag_0_low $X $Y R180
-addHaloToBlock $haloBlockL $haloBlockB $haloBlockR $haloBlockT $cva6_icache_tag_0_low
-
-# cva6_icache_tag_0_high
-set X [expr $X ]
-set Y [expr $Y + $macroMargin + $RamSize256x48_H]
-placeInstance $cva6_icache_tag_0_high $X $Y R180
-addHaloToBlock $haloBlockL $haloBlockB $haloBlockR $haloBlockT $cva6_icache_tag_0_high
-
-# cva6_icache_tag_1_low
-set X [expr $X ]
-set Y [expr $Y + $macroMargin + $RamSize256x48_H]
-placeInstance $cva6_icache_tag_1_low $X $Y R180
-addHaloToBlock $haloBlockL $haloBlockB $haloBlockR $haloBlockT $cva6_icache_tag_1_low
-
-# cva6_icache_tag_1_high
-set X [expr $X ]
-set Y [expr $Y + $macroMargin + $RamSize256x48_H]
-placeInstance $cva6_icache_tag_1_high $X $Y R180
-addHaloToBlock $haloBlockL $haloBlockB $haloBlockR $haloBlockT $cva6_icache_tag_1_high
 
 # the blockages on-top of the macro blocks do not remove the std-cell rows between them
 # when using pdngen, so we cut them manually with an extra X-halo
-cut_rows -halo_width_y 10 -halo_width_x 20
+cut_rows -halo_width_y 10 -halo_width_x 10
 
 
 ##########################################################################
