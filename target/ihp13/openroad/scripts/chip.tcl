@@ -14,24 +14,29 @@ set netlist $::env(NETLIST)
 set top_design $::env(TOP_DESIGN)
 set report_dir $::env(REPORTS)
 set save_dir $::env(SAVE)
+set pdk_dir $::env(PDK)
 set time [elapsed_run_time]
 
 set step_by_step_debug 0
-set use_routing_repairs 0
-set_thread_count 16
+set use_routing_repairs 1
 
 source scripts/checkpoint.tcl
 source scripts/reports.tcl
 
 # initialize technology
-source scripts/init_tech.tcl
+set dzcockpit_dir "../../nonfree"
+if {[file isdirectory $dzcockpit_dir] && [file exists ${dzcockpit_dir}/or_init_tech.tcl]} {
+    source ${dzcockpit_dir}/or_init_tech.tcl
+} else {
+    source scripts/init_tech.tcl
+} 
 
 # read and check design
 utl::report "Read netlist"
 read_verilog $netlist
 link_design $top_design
 
-# utl::report "Read constraints"
+utl::report "Read constraints"
 read_sdc src/basilisk.sdc
 
 utl::report "Check constraints"

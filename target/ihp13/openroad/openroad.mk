@@ -41,6 +41,7 @@ run-openroad:
 	REPORTS="$(REPORTS)" \
 	HYPER_CONF="$(HYPER_CONF)" \
 	L1CACHE_WAYS="$(L1CACHE_WAYS)" \
+	PDK="$(TARGET_DIR)/pdk" \
 	$(OPENROAD) scripts/chip.tcl -gui \
 		-log $(LOG_PATH) \
 		2>&1 | TZ=UTC gawk '{ print strftime("[%Y-%m-%d %H:%M %Z]"), $$0 }';
