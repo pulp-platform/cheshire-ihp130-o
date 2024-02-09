@@ -9,53 +9,64 @@
 
 # Initialize the PDK
 
-utl::report "Init tech"
+utl::report "Init tech from Github PDK"
+
+set dlyline_dir   ${pdk_dir}/../src/mc_delay
+set pdk_cells_lib ${pdk_dir}/ihp-sg13g2/ihp-sg13g2/libs.ref/sg13g2_stdcell/lib
+set pdk_cells_lef ${pdk_dir}/ihp-sg13g2/ihp-sg13g2/libs.ref/sg13g2_stdcell/lef
+set pdk_sram_lib  ${pdk_dir}/ihp-sg13g2/ihp-sg13g2/libs.ref/sg13g2_sram/lib
+set pdk_sram_lef  ${pdk_dir}/ihp-sg13g2/ihp-sg13g2/libs.ref/sg13g2_sram/lef
+set pdk_io_lib    ${pdk_dir}/future/sg13g2_iocell/
+set pdk_io_lef    ${pdk_dir}/future/sg13g2_iocell/
 
 # LIB
 define_corners tt ff
 
-read_liberty -corner tt ../pdk/ihp-sg13g2/ihp-sg13g2/libs.ref/sg13g2_stdcell/lib/sg13g2_stdcell_typ_1p20V_25C.lib
-read_liberty -corner ff ../pdk/ihp-sg13g2/ihp-sg13g2/libs.ref/sg13g2_stdcell/lib/sg13g2_stdcell_fast_1p32V_m40C.lib
+puts "Init standard cells"
+read_liberty -corner tt ${pdk_cells_lib}/sg13g2_stdcell_typ_1p20V_25C.lib
+read_liberty -corner ff ${pdk_cells_lib}/sg13g2_stdcell_fast_1p32V_m40C.lib
 
-read_liberty -corner tt ../pdk/future/sg13g2_iocell/sg13g2_iocell_typ_1p2V_3p3V_25C.lib
-read_liberty -corner ff ../pdk/future/sg13g2_iocell/sg13g2_iocell_fast_1p32V_3p3V_m40C.lib
+puts "Init IO cells"
+read_liberty -corner tt ${pdk_io_lib}/sg13g2_iocell_typ_1p2V_3p3V_25C.lib
+read_liberty -corner ff ${pdk_io_lib}/sg13g2_iocell_fast_1p32V_3p3V_m40C.lib
 
+puts "Init SRAM macros"
 # Read Patched SRAMs TODO: add proper corners when released!
-read_liberty -corner tt ../pdk/ihp-sg13g2/ihp-sg13g2/libs.ref/sg13g2_sram/lib/RM_IHPSG13_1P_64x64_c2_bm_bist_typ_1p20V_25C.lib
-read_liberty -corner ff ../pdk/ihp-sg13g2/ihp-sg13g2/libs.ref/sg13g2_sram/lib/RM_IHPSG13_1P_64x64_c2_bm_bist_fast_1p32V_m55C.lib
+read_liberty -corner tt ${pdk_sram_lib}/RM_IHPSG13_1P_64x64_c2_bm_bist_typ_1p20V_25C.lib
+read_liberty -corner ff ${pdk_sram_lib}/RM_IHPSG13_1P_64x64_c2_bm_bist_fast_1p32V_m55C.lib
 
-read_liberty -corner tt ../pdk/ihp-sg13g2/ihp-sg13g2/libs.ref/sg13g2_sram/lib/RM_IHPSG13_1P_256x48_c2_bm_bist_typ_1p20V_25C.lib
-read_liberty -corner ff ../pdk/ihp-sg13g2/ihp-sg13g2/libs.ref/sg13g2_sram/lib/RM_IHPSG13_1P_256x48_c2_bm_bist_fast_1p32V_m55C.lib
+read_liberty -corner tt ${pdk_sram_lib}/RM_IHPSG13_1P_256x48_c2_bm_bist_typ_1p20V_25C.lib
+read_liberty -corner ff ${pdk_sram_lib}/RM_IHPSG13_1P_256x48_c2_bm_bist_fast_1p32V_m55C.lib
 
-read_liberty -corner tt ../pdk/ihp-sg13g2/ihp-sg13g2/libs.ref/sg13g2_sram/lib/RM_IHPSG13_1P_256x64_c2_bm_bist_typ_1p20V_25C.lib
-read_liberty -corner ff ../pdk/ihp-sg13g2/ihp-sg13g2/libs.ref/sg13g2_sram/lib/RM_IHPSG13_1P_256x64_c2_bm_bist_fast_1p32V_m55C.lib
+read_liberty -corner tt ${pdk_sram_lib}/RM_IHPSG13_1P_256x64_c2_bm_bist_typ_1p20V_25C.lib
+read_liberty -corner ff ${pdk_sram_lib}/RM_IHPSG13_1P_256x64_c2_bm_bist_fast_1p32V_m55C.lib
 
-read_liberty -corner tt ../pdk/ihp-sg13g2/ihp-sg13g2/libs.ref/sg13g2_sram/lib/RM_IHPSG13_1P_512x64_c2_bm_bist_typ_1p20V_25C.lib
-read_liberty -corner ff ../pdk/ihp-sg13g2/ihp-sg13g2/libs.ref/sg13g2_sram/lib/RM_IHPSG13_1P_512x64_c2_bm_bist_fast_1p32V_m55C.lib
+read_liberty -corner tt ${pdk_sram_lib}/RM_IHPSG13_1P_512x64_c2_bm_bist_typ_1p20V_25C.lib
+read_liberty -corner ff ${pdk_sram_lib}/RM_IHPSG13_1P_512x64_c2_bm_bist_fast_1p32V_m55C.lib
 
-read_liberty -corner tt ../pdk/ihp-sg13g2/ihp-sg13g2/libs.ref/sg13g2_sram/lib/RM_IHPSG13_1P_1024x64_c2_bm_bist_typ_1p20V_25C.lib
-read_liberty -corner ff ../pdk/ihp-sg13g2/ihp-sg13g2/libs.ref/sg13g2_sram/lib/RM_IHPSG13_1P_1024x64_c2_bm_bist_fast_1p32V_m55C.lib
+read_liberty -corner tt ${pdk_sram_lib}/RM_IHPSG13_1P_1024x64_c2_bm_bist_typ_1p20V_25C.lib
+read_liberty -corner ff ${pdk_sram_lib}/RM_IHPSG13_1P_1024x64_c2_bm_bist_fast_1p32V_m55C.lib
 
-read_liberty -corner tt ../pdk/ihp-sg13g2/ihp-sg13g2/libs.ref/sg13g2_sram/lib/RM_IHPSG13_1P_2048x64_c2_bm_bist_typ_1p20V_25C.lib
-read_liberty -corner ff ../pdk/ihp-sg13g2/ihp-sg13g2/libs.ref/sg13g2_sram/lib/RM_IHPSG13_1P_2048x64_c2_bm_bist_fast_1p32V_m55C.lib
+read_liberty -corner tt ${pdk_sram_lib}/RM_IHPSG13_1P_2048x64_c2_bm_bist_typ_1p20V_25C.lib
+read_liberty -corner ff ${pdk_sram_lib}/RM_IHPSG13_1P_2048x64_c2_bm_bist_fast_1p32V_m55C.lib
 
-# Delay Line
-read_liberty -corner tt ../src/mc_delay/delay_line_D4_O1_6P000.mid_guess.lib
-read_liberty -corner ff ../src/mc_delay/delay_line_D4_O1_6P000.min_guess.lib
+puts "Init delay-line macro"
+read_liberty -corner tt ${dlyline_dir}/delay_line_D4_O1_6P000.mid_guess.lib
+read_liberty -corner ff ${dlyline_dir}/delay_line_D4_O1_6P000.min_guess.lib
 
-# tech lef
-read_lef ../pdk/ihp-sg13g2/ihp-sg13g2/libs.ref/sg13g2_stdcell/lef/sg13g2_tech.lef
+puts "Init tech-lef"
+read_lef ${pdk_cells_lef}/sg13g2_tech.lef
 
-# cell lef
-read_lef ../pdk/ihp-sg13g2/ihp-sg13g2/libs.ref/sg13g2_stdcell/lef/sg13g2_stdcell.lef
-read_lef ../pdk/future/sg13g2_iocell/sg13g2_iocell.lef
-read_lef ../pdk/ihp-sg13g2/ihp-sg13g2/libs.ref/sg13g2_sram/lef/RM_IHPSG13_1P_64x64_c2_bm_bist.lef
-read_lef ../pdk/ihp-sg13g2/ihp-sg13g2/libs.ref/sg13g2_sram/lef/RM_IHPSG13_1P_256x48_c2_bm_bist.lef
-read_lef ../pdk/ihp-sg13g2/ihp-sg13g2/libs.ref/sg13g2_sram/lef/RM_IHPSG13_1P_256x64_c2_bm_bist.lef
-read_lef ../pdk/ihp-sg13g2/ihp-sg13g2/libs.ref/sg13g2_sram/lef/RM_IHPSG13_1P_512x64_c2_bm_bist.lef
-read_lef ../pdk/ihp-sg13g2/ihp-sg13g2/libs.ref/sg13g2_sram/lef/RM_IHPSG13_1P_1024x64_c2_bm_bist.lef
-read_lef ../pdk/ihp-sg13g2/ihp-sg13g2/libs.ref/sg13g2_sram/lef/RM_IHPSG13_1P_2048x64_c2_bm_bist.lef
-read_lef ../src/mc_delay/delay_line_D4_O1_6P000.abst.lef
+puts "Init cell-lef"
+read_lef ${pdk_cells_lef}/sg13g2_stdcell.lef
+read_lef ${pdk_io_lef}/sg13g2_iocell.lef
+read_lef ${pdk_sram_lef}/RM_IHPSG13_1P_64x64_c2_bm_bist.lef
+read_lef ${pdk_sram_lef}/RM_IHPSG13_1P_256x48_c2_bm_bist.lef
+read_lef ${pdk_sram_lef}/RM_IHPSG13_1P_256x64_c2_bm_bist.lef
+read_lef ${pdk_sram_lef}/RM_IHPSG13_1P_512x64_c2_bm_bist.lef
+read_lef ${pdk_sram_lef}/RM_IHPSG13_1P_1024x64_c2_bm_bist.lef
+read_lef ${pdk_sram_lef}/RM_IHPSG13_1P_2048x64_c2_bm_bist.lef
+read_lef ${dlyline_dir}/delay_line_D4_O1_6P000.abst.lef
 
 set ctsBuf [ list sg13g2_buf_16 sg13g2_buf_8 sg13g2_buf_4 ]
 set ctsBufRoot sg13g2_buf_16
