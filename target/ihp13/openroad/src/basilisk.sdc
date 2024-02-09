@@ -34,28 +34,57 @@ set CHS_DEBUG       $CHESHIRE.i_dbg_dmi_jtag
 set HYPERBUS        i_iguana_soc.i_hyperbus
 set HYPERBUS_PHY    $HYPERBUS/i_phy.genblk1.i_phy
 
+# NOTE:
+# OpenROAD flattens the hierarchy (but leaves '/' in the instance names)
+# this means for all ports, it always uses the name of the net connected to the port from the top
+# so for .port_o(blabla) it uses blabla and module/port_o is gone.
 
-set SLO_PHY_TCLK_CLK [get_pins $CHS_SLINK_TX*clk_slow_reg/$DFF_CLK_PIN]
-set SLO_PHY_TCLK_Q   [get_pins $CHS_SLINK_TX*clk_slow_reg/$DFF_OUTP_PIN]
-set SLO_PHY_RCLK_CLK [get_pins $CHS_SLINK/ddr_rcv_clk_o_reg/$DFF_CLK_PIN]
-set SLO_PHY_RCLK_Q   [get_pins $CHS_SLINK/ddr_rcv_clk_o_reg/$DFF_OUTP_PIN]
+# SYNTHESIS:
+# make sure net clk_slow is preserved by name (should be the case as its a clock)
+# preserve module-instance i_serial_link for ddr_rcv_clk_o
+set SLO_PHY_TCLK_REG [get_fanin -to $CHS_SLINK_TX/clk_slow -startpoints_only -only_cells]
+set SLO_PHY_TCLK_Q   [get_pins -of_objects $SLO_PHY_TCLK_REG -filter "name == $DFF_OUTP_PIN"]
+set SLO_PHY_TCLK_CLK [get_pins -of_objects $SLO_PHY_TCLK_REG -filter "name == $DFF_CLK_PIN"]
+
+# port i_serial_link/ddr_rcv_clk_o
+set SLO_PHY_RCLK_REG [get_fanin -to $CHESHIRE.slink_rcv_clk_o -startpoints_only -only_cells]
+set SLO_PHY_RCLK_Q   [get_pins -of_objects $SLO_PHY_RCLK_REG -filter "name == $DFF_OUTP_PIN"]
+set SLO_PHY_RCLK_CLK [get_pins -of_objects $SLO_PHY_RCLK_REG -filter "name == $DFF_CLK_PIN"]
+
+# SYNTHESIS:
+# preserve all modules of type 'cdc_?phase_*' (2phase and 4phase) 
+# so we can use the ports to find asyncs
+# preserver all modules of type 'clint_sync_*' so we can use serial_i to find the first register
+# (remember: OpenROAD flattens to ports are now nets)
+set ASYNC_PINS_DMIREQ [get_nets $CHS_DEBUG/i_dmi_cdc.i_cdc_req*async_*]
+set ASYNC_PINS_DMIRSP [get_nets $CHS_DEBUG/i_dmi_cdc.i_cdc_resp*async_*]
+set ASYNC_PINS_SLIN   [get_nets $CHS_SLINK_RX.i_cdc_in*async_*]
+# port i_clint/i_sync_edge/i_sync/serial_i
+set CLINT_ASYNC_REG   [lindex [get_fanout -from $CHESHIRE.rtc_i -endpoints_only -only_cells] 0]
+set ASYNC_PINS_CLINT  [get_pins $CLINT_ASYNC_REG -filter "name == $DFF_DATA_PIN"]
+
+# We define a single leaf register as a reference clock pin for master interfaces to avoid accumulating CTS delays
+# this can really be the clock pin of any register in the peripheral
+# port i_axi_vga/hsync_o
+set VGA_REF_REG  [lindex [get_fanin -to $CHESHIRE.vga_hsync_o -startpoints_only -only_cells] 0]
+set VGA_REFPIN   [get_pins -of_objects $VGA_REF_REG -filter "name == $DFF_CLK_PIN"]
+# port i_spi_host/cio_csk_o
+set SPIH_REF_REG [lindex [get_fanin -to $CHESHIRE.spih_sck_o -startpoints_only -only_cells] 0]
+set SPIH_REFPIN  [get_pins -of_objects $SPIH_REF_REG -filter "name == $DFF_CLK_PIN"]
+# port i_i2c/cio_scl_i
+set I2C_REF_REG  [lindex [get_fanout -from i_iguana_soc.i2c_scl_i -endpoints_only -only_cells] 0]
+set I2C_REFPIN   [get_pins -of_objects $I2C_REF_REG -filter "name == $DFF_CLK_PIN"]
+# port i_uart/sout_o
+set UART_REF_REG [lindex [get_fanin -to $CHESHIRE.uart_tx_o -startpoints_only -only_cells] 0]
+set UART_REFPIN  [get_pins -of_objects $UART_REF_REG -filter "name == $DFF_CLK_PIN"]
+# port i_gpio/cio_gpio_o_0_
+set GPIO_REF_REG [lindex [get_fanin -to i_iguana_soc.gpio32_o_0_ -startpoints_only -only_cells] 0]
+set GPIO_REFPIN  [get_pins -of_objects $GPIO_REF_REG -filter "name == $DFF_CLK_PIN"]
 
 set HYP_TX_DLINE  $HYPERBUS/*i_delay_tx_clk_90.i_delay.i_delay_line
 set HYP_RX_DLINE  $HYPERBUS_PHY*i_delay_rx_rwds_90.i_delay.i_delay_line
 set HYP_RX_DLINV  $HYPERBUS_PHY.i_trx.i_rwds_clk_inverter.i_inv
 set HYP_DDR_MUXES $HYPERBUS_PHY.i_trx.gen_ddr_tx_data.*.i_ddr_tx_data.i_ddrmux.i_mux
-
-set ASYNC_PINS_DMIREQ [get_nets $CHS_DEBUG/i_dmi_cdc.i_cdc_req*async_*]
-set ASYNC_PINS_DMIRSP [get_nets $CHS_DEBUG/i_dmi_cdc.i_cdc_resp*async_*]
-set ASYNC_PINS_SLIN   [get_nets $CHS_SLINK_RX.i_cdc_in*async_*]
-set ASYNC_PINS_CLINT  [get_pins $CHESHIRE.i_clint.i_sync_edge.i_sync.reg_q_0__reg/$DFF_DATA_PIN]
-
-# We define a single leaf register as a reference clock pin for master interfaces to avoid accumulating CTS delays
-set VGA_REFPIN  [get_pins $CHS_VGA/i_axi_vga_timing_fsm.hstate_q_0__reg/$DFF_CLK_PIN]
-set SPIH_REFPIN [get_pins $CHS_SPI/cio_sck_o_reg/$DFF_CLK_PIN]
-set I2C_REFPIN  [get_pins $CHS_I2C/i2c_core.u_i2c_fsm.scl_i_q_reg/$DFF_CLK_PIN]
-set UART_REFPIN [get_pins $CHS_UART/i_apb_uart.UART_TX.CState_0__reg/$DFF_CLK_PIN]
-set GPIO_REFPIN [get_pins $CHS_GPIO/data_in_q_0__reg/$DFF_CLK_PIN]
 
 
 #############################
@@ -83,7 +112,7 @@ set_load -min 9 ${PINS_HYP_FAST}
 ##################
 
 # We target 100 MHz
-set TCK_SYS 40.0
+set TCK_SYS 25.0
 create_clock -name clk_sys -period $TCK_SYS [get_ports clk_i]
 
 set TCK_JTG 50.0
@@ -113,11 +142,13 @@ create_clock -name clk_hyp_rwdsi -period $TCK_SYS -waveform $HYP_RWDSI_FORM [get
 ######################
 
 # Create slow clock driving TX output (worst case: divided by 4)
+puts "SLINK slow TX clk: [get_full_name $SLO_PHY_TCLK_CLK] & [get_full_name $SLO_PHY_TCLK_Q]"
 create_generated_clock -name clk_gen_slo_drv \
     -edges {1 5 9} \
     -source $SLO_PHY_TCLK_CLK $SLO_PHY_TCLK_Q
 
 # Create clock for serial link TX (worst case: divided by 4, +90 deg)
+puts "SLINK slow RX clk: [get_full_name $SLO_PHY_RCLK_CLK] & [get_full_name $SLO_PHY_RCLK_Q]"
 create_generated_clock -name clk_gen_slo \
     -edges {3 7 11} \
     -source $SLO_PHY_RCLK_CLK $SLO_PHY_RCLK_Q
@@ -169,16 +200,16 @@ set_clock_transition  0.2 [all_clocks]
 # * i_iguana/i_cheshire_soc/gen_i2c.i_i2c/i2c_core/u_i2c_sync_sda/gen_syncs[0].i_sync
 
 # Constrain `cdc_2phase` for DMI request
-set_false_path -hold                  -through $ASYNC_PINS_DMIREQ -through $ASYNC_PINS_DMIREQ
-set_max_delay  [expr $TCK_SYS * 0.35] -through $ASYNC_PINS_DMIREQ -through $ASYNC_PINS_DMIREQ -ignore_clock_latency
+set_false_path -hold                  -through $ASYNC_PINS_DMIREQ
+set_max_delay  [expr $TCK_SYS * 0.35] -through $ASYNC_PINS_DMIREQ -ignore_clock_latency
 
 # Constrain `cdc_2phase` for DMI response
-set_false_path -hold                  -through $ASYNC_PINS_DMIRSP -through $ASYNC_PINS_DMIRSP
-set_max_delay  [expr $TCK_SYS * 0.35] -through $ASYNC_PINS_DMIRSP -through $ASYNC_PINS_DMIRSP -ignore_clock_latency
+set_false_path -hold                  -through $ASYNC_PINS_DMIRSP
+set_max_delay  [expr $TCK_SYS * 0.35] -through $ASYNC_PINS_DMIRSP -ignore_clock_latency
 
 # Constrain `cdc_fifo_gray` for serial link in
-set_false_path -hold                  -through $ASYNC_PINS_SLIN -through $ASYNC_PINS_SLIN
-set_max_delay  [expr $TCK_SYS * 0.35] -through $ASYNC_PINS_SLIN -through $ASYNC_PINS_SLIN -ignore_clock_latency
+set_false_path -hold                  -through $ASYNC_PINS_SLIN
+set_max_delay  [expr $TCK_SYS * 0.35] -through $ASYNC_PINS_SLIN -ignore_clock_latency
 
 # Constrain CLINT RTC sync
 set_false_path -hold                  -to $ASYNC_PINS_CLINT
@@ -224,8 +255,8 @@ set VGA_IO_CYC 2
 # Time all IO (*including* generated hsync and vsync) with the internal system clock
 # which launches and captures it. Since we are the master and provide clocks (hsync
 # and vsync), IO timing w.r.t our own external clock is not a requirement
-# set_multicycle_path -setup $VGA_IO_CYC              -through [get_ports vga_*]
-# set_multicycle_path -hold  [ expr $VGA_IO_CYC - 1 ] -through [get_ports vga_*]
+set_multicycle_path -setup $VGA_IO_CYC              -to [get_ports vga_*]
+set_multicycle_path -hold  [ expr $VGA_IO_CYC - 1 ] -to [get_ports vga_*]
 
 set_output_delay -min -add_delay -clock clk_sys -reference_pin $VGA_REFPIN [expr $TCK_SYS * $VGA_IO_CYC * 0.10] [get_ports vga_*]
 set_output_delay -max -add_delay -clock clk_sys -reference_pin $VGA_REFPIN [expr $TCK_SYS * $VGA_IO_CYC * 0.35] [get_ports vga_*]
@@ -239,8 +270,8 @@ set_output_delay -max -add_delay -clock clk_sys -reference_pin $VGA_REFPIN [expr
 set SPIH_IO_CYC 2
 
 # Time all IO (*including* generated clock) with the system clock which launches and captures it
-# set_multicycle_path -setup $SPIH_IO_CYC              -through [get_ports spih*]
-# set_multicycle_path -hold  [ expr $SPIH_IO_CYC - 1 ] -through [get_ports spih*]
+set_multicycle_path -setup $SPIH_IO_CYC              -to [get_ports spih*]
+set_multicycle_path -hold  [ expr $SPIH_IO_CYC - 1 ] -to [get_ports spih*]
 
 set_input_delay  -min -add_delay -clock clk_sys -reference_pin $SPIH_REFPIN [ expr $TCK_SYS * $SPIH_IO_CYC * 0.10 ] [get_ports spih_sd*]
 set_input_delay  -max -add_delay -clock clk_sys -reference_pin $SPIH_REFPIN [ expr $TCK_SYS * $SPIH_IO_CYC * 0.35 ] [get_ports spih_sd*]
@@ -373,8 +404,8 @@ if { ![info exists ::env(HYPER_CONF)] || $::env(HYPER_CONF) ne "NO_HYPERBUS"} {
   set_output_delay -max -add_delay -clock clk_sys -reference_pin $HYP_OUT_CLK [expr $TCK_SYS / 2 - $HYP_MAX_SLEW] $HYP_CS
 
   # We multicycle the passthrough reset as it does not quite reach through the chip in one cycle
-  # set_multicycle_path -setup 2 -through $HYP_RST
-  # set_multicycle_path -hold  1 -through $HYP_RST
+  set_multicycle_path -setup 2 -to $HYP_RST
+  set_multicycle_path -hold  1 -to $HYP_RST
   set_output_delay -min -add_delay -clock clk_sys -reference_pin $HYP_OUT_CLK [expr $TCK_SYS * 2 * 0.10] $HYP_RST
   set_output_delay -max -add_delay -clock clk_sys -reference_pin $HYP_OUT_CLK [expr $TCK_SYS * 2 * 0.35] $HYP_RST
 }
