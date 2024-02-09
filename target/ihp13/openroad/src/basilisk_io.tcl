@@ -200,9 +200,9 @@ place_io_fill -row IO_EAST {*}$iofill
 # Connect built-in rings
 connect_by_abutment
 
-# The bond pads are integrated into the IO cell
 # We need to assign the terminals a location that aligns to the bond pad.
-# place_io_terminals *.i_pad/PAD
+# Otherwise OpenROAD doesn't find/see the IOs
+place_io_terminals *.i_pad/PAD
 
 remove_io_rows
 
