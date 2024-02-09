@@ -11,12 +11,20 @@
 # get environment variables
 source [file join [file dirname [info script]] yosys_common.tcl]
 
+# constraints file
+set abc_constr [file join [file dirname [info script]] ../src/abc.constr]
+
 # ABC script without DFF optimizations
 set abc_combinational_script [file join [file dirname [info script]] abc-speed-opt.script]
 # ABC script with sequential opt
 set abc_sequential_script [file join [file dirname [info script]] abc-sequential.script]
 # ABC script with retiming and sequential opt
 set abc_seq_retime_script [file join [file dirname [info script]] abc-sequential-retime.script]
+
+# process abc file (written to WORK directory)
+set abc_comb_script   [processAbcScript $abc_combinational_script]
+set abc_seq_script    [processAbcScript $abc_sequential_script]
+set abc_retime_script [processAbcScript $abc_seq_retime_script]
 
 # read library files
 foreach file $lib_list {
@@ -53,6 +61,11 @@ yosys hierarchy -check -top $top_design
 yosys proc
 yosys tee -q -o "${report_dir}/${proj_name}_initial.rpt" stat
 
+# map dont_touch attribute commonly applied to output-nets of async regs to keep
+yosys attrmap -rename dont_touch keep
+# copy the keep attribute to their driving cells (retain on net for debugging)
+yosys attrmvcp -copy -attr keep
+
 # synth - coarse:
 # yosys synth -run coarse -noalumacc
 yosys opt_expr
@@ -68,7 +81,7 @@ yosys opt_clean
 yosys share
 yosys opt
 yosys booth
-yosys opt -fast
+# yosys opt -fast removed to save time
 yosys memory -nomap
 yosys opt_clean
 
@@ -76,7 +89,7 @@ yosys opt_clean
 yosys memory_collect
 yosys opt -fast
 yosys memory_map
-yosys opt -full
+# yosys opt -full removed to save time
 
 yosys opt_dff -sat
 yosys share
@@ -145,25 +158,21 @@ if { [info exists ::env(YOSYS_REPORT_INSTS)] } {
     }
 }
 
-
 # mapping to technology
 if { [envVarValid "YOSYS_USE_ABC_SEQ"] } {
     puts "Using sequential abc optimizations"
     # sequential optimizations requires D-FF mapping after abc
-    set abc_seq_script [processAbcScript $abc_sequential_script]
-    yosys abc -dff -keepff -liberty "$tech_cells" -D $period_ps -script $abc_seq_script
+    yosys abc -dff -liberty "$tech_cells" -D $period_ps -script $abc_seq_script -constr $abc_constr -showtmp -dress
     yosys dfflibmap -liberty "$tech_cells"
 } elseif { [envVarValid "YOSYS_USE_ABC_RETIME"] } {
     puts "Using sequential abc optimizations with retiming"
-    # sequential optimizations requires D-FF mapping after abc
-    set abc_retime_script [processAbcScript $abc_seq_retime_script]
-    yosys abc -dff -keepff -liberty "$tech_cells" -D $period_ps -script $abc_retime_script
+    # retiming requires D-FF mapping after abc
+    yosys abc -dff -liberty "$tech_cells" -D $period_ps -script $abc_retime_script -constr $abc_constr -showtmp -dress
     yosys dfflibmap -liberty "$tech_cells"
 } else {
     puts "Using combinational-only abc optimizations"
-    set abc_comb_script [processAbcScript $abc_combinational_script]
     yosys dfflibmap -liberty "$tech_cells"
-    yosys abc -liberty "$tech_cells" -D $period_ps -script $abc_comb_script
+    yosys abc -liberty "$tech_cells" -D $period_ps -script $abc_comb_script -constr $abc_constr -showtmp -dress
 } 
 
 yosys clean -purge
