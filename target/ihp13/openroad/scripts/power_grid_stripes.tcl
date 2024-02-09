@@ -95,7 +95,7 @@ set pgcrOffset [expr ($PowRingSpace - $pgcrSpacing - 2 * $pgcrWidth) / 2]
 set tpgWidth    16; # arbitrary number
 set tpgPitch   280; # multiple of the x-axis pad-to-pad distance (140u)
 set tpgSpacing  [expr $tpgPitch/2 - $tpgWidth];  # equally spaced
-set tpgOffset  140; # fit between pins & start after the rotated macros
+set tpgOffset  135; # fit between pins & start after the rotated macros
 
 # Macro Power Rings -> M3 and M2
 ## Spacing must be larger than pitch of M2/M3
@@ -103,7 +103,7 @@ set mprSpacing 1
 ## Width
 set mprWidth 1
 ## Offset from Macro to power ring
-set mprOffsetX 2
+set mprOffsetX 2.1
 set mprOffsetY 2
 
 # macro power grid (stripes on TopMetal1/TopMetal2 depending on orientation)
@@ -112,7 +112,7 @@ set mprOffsetY 2
 # -> using a common 8 with 2 spacing + with snap to grid should work ok for both
 set mpgWidth 8
 set mpgSpacing 2
-set mpgOffset 10; # arbitrary 
+set mpgOffset 22; # arbitrary 
 
 ##########################################################################
 ##  SRAM power rings
@@ -122,13 +122,10 @@ proc sram_power { name macro } {
     # Macro Grid and Rings
     define_pdn_grid -macro -cells $macro -name ${name}_grid -orient "R0 R180 MY MX" \
         -grid_over_boundary -voltage_domains {CORE} \
-        -halo {4 4}
+        -halo {1 1}
 
-    # TODO: Ring is usually not complete -> relying on stripes for power next to macros
-    # Some sort of meta-macro-ring around an entire group of macros would be nice
-    # power-ring around a larger blockage?
     add_pdn_ring -grid ${name}_grid \
-        -layer        {Metal3 Metal2} \
+        -layer        {Metal3 Metal4} \
         -widths       "$mprWidth $mprWidth" \
         -spacings     "$mprSpacing $mprSpacing" \
         -core_offsets "$mprOffsetX $mprOffsetY" \
@@ -136,7 +133,7 @@ proc sram_power { name macro } {
 
     set sram  [[ord::get_db] findMaster $macro]
     set sramHeight  [ord::dbu_to_microns [$sram getHeight]]
-    set stripe_dist [expr $sramHeight - $mpgOffset - 2*$mpgWidth - $mpgSpacing]
+    set stripe_dist [expr $sramHeight - 2*$mpgOffset - $mpgWidth - $mpgSpacing]
     utl::report "stripe_dist of $macro: $stripe_dist"
 
     # for the large macros there is enough space for an additional stripe
@@ -148,36 +145,27 @@ proc sram_power { name macro } {
                    -pitch $stripe_dist -offset $mpgOffset -extend_to_core_ring -starts_with POWER -snap_to_grid
 
     # Connection of Macro Power Ring to standard-cell rails
-    add_pdn_connect -grid ${name}_grid -layers {Metal4 Metal1}
+    add_pdn_connect -grid ${name}_grid -layers {Metal3 Metal1}
     # Connection of Stripes on Macro to Macro Power Ring
-    add_pdn_connect -grid ${name}_grid -layers {TopMetal1 Metal2}
     add_pdn_connect -grid ${name}_grid -layers {TopMetal1 Metal3}
-    # Connection of Stripes on Macro to Macro Power Pins
     add_pdn_connect -grid ${name}_grid -layers {TopMetal1 Metal4}
+    # Connection of Stripes on Macro to Macro Power Pins
+    # add_pdn_connect -grid ${name}_grid -layers {TopMetal1 Metal4}
     # Connection of Stripes on Macro to Core Power Stripes
     add_pdn_connect -grid ${name}_grid -layers {TopMetal2 TopMetal1}
 }
 
 proc sram_power_rotated { name macro } {
     global mprWidth mprSpacing mprOffsetX mprOffsetY mpgWidth mpgSpacing mpgOffset
+    global floor_leftX floor_rightX coreArea_leftX
     # Macro Grid and Rings
     define_pdn_grid -macro -cells $macro -name ${name}_rot_grid -orient "R90 R270 MXR90" \
         -grid_over_boundary -voltage_domains {CORE} \
-        -halo {4 4}
-
-    # TODO: Ring is usually not complete -> relying on stripes for power next to macros
-    # Some sort of meta-macro-ring around an entire group of macros would be nice
-    # power-ring around a larger blockage?
-    add_pdn_ring -grid ${name}_rot_grid \
-        -layer        {Metal3 Metal2} \
-        -widths       "$mprWidth $mprWidth" \
-        -spacings     "$mprSpacing $mprSpacing" \
-        -core_offsets "$mprOffsetX $mprOffsetY" \
-        -add_connect
+        -halo {1 1}
 
     set sram  [[ord::get_db] findMaster $macro]
     set sramHeight [ord::dbu_to_microns [$sram getHeight]]
-    set stripe_dist [expr $sramHeight - $mpgOffset - 2*$mpgWidth - $mpgSpacing]
+    set stripe_dist [expr $sramHeight - 2*$mpgOffset - $mpgWidth - $mpgSpacing]
     utl::report "stripe_dist of $macro: $stripe_dist"
 
     # for the large macros there is enough space for an additional stripe-pair
@@ -185,19 +173,38 @@ proc sram_power_rotated { name macro } {
         set stripe_dist [expr $stripe_dist/2]
     }
 
-    add_pdn_stripe -grid ${name}_rot_grid -layer {TopMetal2} -width $mpgWidth -spacing $mpgSpacing \
-                   -pitch $stripe_dist -offset $mpgOffset -extend_to_core_ring -starts_with POWER -snap_to_grid
+    # local stripes only for the macro grid
+    # add_pdn_stripe -grid ${name}_rot_grid -layer {TopMetal2} -width $mpgWidth -spacing $mpgSpacing \
+    #                -pitch $stripe_dist -offset $mpgOffset -extend_to_core_ring -starts_with POWER -snap_to_grid
+
+    # assumption: the macros are on the left and right floor edges
+    # assumption: only one size of macro is there (otherwise the stripes might collapse)
+    # Todo: better solution (ideally check location and height of all given, then generate)
+    # pair of stripes over macro on core grid
+    add_pdn_stripe -grid core_grid -layer {TopMetal2} -width $mpgWidth -spacing $mpgSpacing \
+                   -pitch $stripe_dist -offset [expr $floor_leftX - $coreArea_leftX + $mpgOffset] -number_of_straps 2 \
+                   -extend_to_core_ring -starts_with POWER -snap_to_grid
+
+    add_pdn_stripe -grid core_grid -layer {TopMetal2} -width $mpgWidth -spacing $mpgSpacing \
+                   -pitch $stripe_dist -offset [expr $floor_rightX - $coreArea_leftX - $sramHeight + $mpgOffset] -number_of_straps 2 \
+                   -extend_to_core_ring -starts_with POWER -snap_to_grid
+
+    add_pdn_ring -grid ${name}_rot_grid \
+        -layer        {Metal3 Metal4} \
+        -widths       "$mprWidth $mprWidth" \
+        -spacings     "$mprSpacing $mprSpacing" \
+        -core_offsets "$mprOffsetX $mprOffsetY" \
+        -add_connect
 
     # Connection of Macro Power Ring to standard-cell rails
-    add_pdn_connect -grid ${name}_rot_grid -layers {Metal4 Metal1}
+    add_pdn_connect -grid ${name}_rot_grid -layers {Metal3 Metal1}
     # Connection of Stripes on Macro to Macro Power Ring
-    add_pdn_connect -grid ${name}_rot_grid -layers {TopMetal2 Metal2}
     add_pdn_connect -grid ${name}_rot_grid -layers {TopMetal2 Metal3}
-    # Connection of Stripes on Macro to Macro Power Pins
     add_pdn_connect -grid ${name}_rot_grid -layers {TopMetal2 Metal4}
-    # Connection of Stripes on Macro to Core Power Stripes
-    add_pdn_connect -grid ${name}_rot_grid -layers {TopMetal2 TopMetal1}
+    # Connection of Stripes on Macro to Macro Power Pins
+    # add_pdn_connect -grid ${name}_rot_grid -layers {TopMetal2 Metal4}
 }
+
 
 ##########################################################################
 ##  Core Power
@@ -226,6 +233,15 @@ add_pdn_ring -grid {core_grid} \
 add_pdn_stripe -grid {core_grid} -layer {Metal1} -width {0.44} -offset {0} \
                -followpins -extend_to_core_ring
 
+sram_power "sram_64x64"   "RM_IHPSG13_1P_64x64_c2_bm_bist"  
+sram_power "sram_256x48"  "RM_IHPSG13_1P_256x48_c2_bm_bist" 
+sram_power "sram_256x64"  "RM_IHPSG13_1P_256x64_c2_bm_bist" 
+sram_power "sram_512x64"  "RM_IHPSG13_1P_512x64_c2_bm_bist" 
+sram_power "sram_1024x64" "RM_IHPSG13_1P_1024x64_c2_bm_bist"
+sram_power "sram_2048x64" "RM_IHPSG13_1P_2048x64_c2_bm_bist"
+
+sram_power_rotated "sram_256x48"  "RM_IHPSG13_1P_256x48_c2_bm_bist" 
+
 # Top power grid
 # Top 2 Stripe
 add_pdn_stripe -grid {core_grid} -layer {TopMetal2} -width $tpgWidth \
@@ -253,20 +269,11 @@ add_pdn_connect -grid {core_grid} -layers {Metal3 Metal1}
 add_pdn_connect -grid {core_grid} -layers {Metal3 Metal2}
 
 
-sram_power "sram_64x64"   "RM_IHPSG13_1P_64x64_c2_bm_bist"  
-sram_power "sram_256x48"  "RM_IHPSG13_1P_256x48_c2_bm_bist" 
-sram_power "sram_256x64"  "RM_IHPSG13_1P_256x64_c2_bm_bist" 
-sram_power "sram_512x64"  "RM_IHPSG13_1P_512x64_c2_bm_bist" 
-sram_power "sram_1024x64" "RM_IHPSG13_1P_1024x64_c2_bm_bist"
-sram_power "sram_2048x64" "RM_IHPSG13_1P_2048x64_c2_bm_bist"
-
-sram_power_rotated "sram_256x48"  "RM_IHPSG13_1P_256x48_c2_bm_bist" 
-
 ##########################################################################
 ##  Generate
 ##########################################################################
 
-pdngen -failed_via_report ${report_dir}/${proj_name}_pdngen.rpt
+pdngen -failed_via_report ${report_dir}/${proj_name}_pdngen.rpt -dont_add_pins
 
 # setLayerDirection Metal1 VERTICAL
 
