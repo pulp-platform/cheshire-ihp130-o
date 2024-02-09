@@ -48,7 +48,7 @@ report_checks -format end -no_line_splits                >> ${report_dir}/${proj
 # floorplan -> Few seconds
 utl::report "Create Floorplan"
 if { [info exists ::env(L1CACHE_WAYS)] && $::env(L1CACHE_WAYS) eq "2"} {
-    source scripts/floorplan_slabs_2way.tcl
+    source scripts/floorplan_ring_2way.tcl
 } else {
     source scripts/floorplan_slabs.tcl
 }
@@ -61,79 +61,24 @@ source scripts/power_grid_stripes.tcl
 save_checkpoint ${proj_name}.power_grid
 report_image "${proj_name}.power" true
 
+
+###############################################################################
+# Initial Repair Netlist                                                      #
+###############################################################################
 # Used for estimate_parasitics
 set_wire_rc -clock -layer Metal4
 set_wire_rc -signal -layer Metal3
-
-
-###############################################################################
-# Restructure Netlist                                                         #
-###############################################################################
-utl::report "Repair tie fanout"
-source scripts/repair_tie.tcl
-
-report_metrics "${proj_name}.pre_opt_netlist"
-# Dont touch IO pads as "remove_buffers" removes some of them
-set_dont_touch [get_cells * -filter "ref_name == ixc013_i16x"]
-set_dont_touch [get_cells * -filter "ref_name == ixc013_b16m"]
-set_dont_touch [get_cells * -filter "ref_name == ixc013_b16mpup"]
-# Dont use pads for buffering during repair_design
+# Dont touch IO pads as "remove_buffers" removes them
+set_dont_touch [get_nets -of_objects [get_pins */PAD]]
 set_dont_use $dont_use_cells
 
 utl::report "Remove buffers"
 remove_buffers
 
-# Hangs if placement density overlay is enabled or timing path
-utl::report "Repair synth netlist"
+utl::report "Repair tie fanout"
+source scripts/repair_tie.tcl
+
 repair_design -verbose
-repair_timing -setup -repair_tns 80
-
-puts "Repaired synth area"
-report_design_area
-report_worst_slack -min -digits 3
-puts "Repaired synth wns"
-report_worst_slack -max -digits 3
-puts "Repaired synth tns"
-report_tns -digits 3
-
-file mkdir ${save_dir}/${proj_name}.restructure
-restructure -target timing \
-            -slack_threshold 5.0 \
-            -liberty_file "../pdk/ihp-sg13g2/ihp-sg13g2/libs.ref/sg13g2_stdcell/lib/sg13g2_stdcell_typ_1p20V_25C.lib" \
-            -tielo_port sg13g2_tielo/L_LO \
-            -tiehi_port sg13g2_tiehi/L_HI \
-            -work_dir ${save_dir}/${proj_name}.restructure
-
-puts "Restructured area"
-report_design_area
-report_worst_slack -min -digits 3
-puts "Restructured wns"
-report_worst_slack -max -digits 3
-puts "Restructured tns"
-report_tns -digits 3
-
-utl::report "Remove buffers"
-remove_buffers
-utl::report "Buffer ports"
-buffer_ports
-utl::report "Repair restructured netlist"
-repair_design -verbose
-repair_timing -setup -repair_tns 80
-
-puts "Restructured and repaired area"
-report_design_area
-report_worst_slack -min -digits 3
-puts "Restructured and repaired wns"
-report_worst_slack -max -digits 3
-puts "Restructured and repaired tns"
-report_tns -digits 3
-
-# Unset dont touch or repair_hold crashes
-unset_dont_touch [get_cells * -filter "ref_name == ixc013_i16x"]
-unset_dont_touch [get_cells * -filter "ref_name == ixc013_b16m"]
-unset_dont_touch [get_cells * -filter "ref_name == ixc013_b16mpup"]
-# Set dont touch for io nets -> repair_hold otherwise tries to insert hold buffer into that net
-set_dont_touch [get_nets *_io]
 
 report_metrics "${proj_name}.pre_place"
 save_checkpoint ${proj_name}.pre_place
@@ -142,9 +87,13 @@ save_checkpoint ${proj_name}.pre_place
 ###############################################################################
 # GLOBAL PLACEMENT                                                            #
 ###############################################################################
-set GPL_ARGS {  -density 0.55
+set GPL_ARGS {  -density 0.67
                 -pad_left 1
-                -pad_right 1 }
+                -pad_right 1 
+                -routability_driven
+                -routability_check_overflow 0.6
+                -routability_max_inflation_ratio 2.0
+                -routability_inflation_ratio_coef 2.0 }
 #                -timing_driven
 #                -skip_initial_place }
 # according to OR "on large designs" '-skip_initial_place' reduces the
@@ -159,16 +108,15 @@ save_checkpoint ${proj_name}.gpl
 utl::report "Estimate parasitics"
 estimate_parasitics -placement
 utl::report "Repair design"
-# needs to be after estimate_parasitics otherwise repair_design hangs
-repair_design -max_utilization 100 -verbose
-repair_timing -setup -repair_tns 80 -max_utilization 100
+repair_design -verbose
+utl::report "Repair setup"
+repair_timing -setup -skip_pin_swap -verbose -repair_tns 100
 
 utl::report "Global Placement (2)"
 global_placement {*}$GPL_ARGS
 report_metrics "${proj_name}.gpl2"
 report_image "${proj_name}.gpl2" true true
 save_checkpoint ${proj_name}.gpl2
-
 
 
 #############################################################################
@@ -189,7 +137,6 @@ report_metrics "${proj_name}.dpl"
 save_checkpoint ${proj_name}.dpl
 report_image "${proj_name}.dpl" true true
 
-# repair_timing if report is still bad
 
 ###############################################################################
 # CLOCK TREE SYNTHESIS                                                        #
@@ -217,12 +164,18 @@ estimate_parasitics -placement
 
 # repair all setup timing
 report_metrics "${proj_name}.cts_unrepaired"
-# This may be too early to try hold fixing and will create unnecessary hold buffers
+# Zerun thinks this is too early to try hold fixing and will create unnecessary hold buffers
 # We should wait until we have some routing info
 # utl::report "Repair hold"
-# repair_timing -hold -hold_margin 0.05 -repair_tns 80 -allow_setup_violations -max_utilization 75
+# repair_timing -hold -skip_pin_swap -hold_margin 0.05 -repair_tns 100 -allow_setup_violations -max_utilization 75
+
+# ToDo: Pin swapping also swaps A_N with B in nand2b and nor2b, this is obviously not equivalent
+# The issue is likely here somehwere: 
+# https://github.com/The-OpenROAD-Project/OpenROAD/blob/7e7e8350032c98752b0b015a86e34a08eba557fd/src/rsz/src/RepairSetup.cc#L886
+# Introduced in:  https://github.com/The-OpenROAD-Project/OpenROAD/pull/3215
+
 utl::report "Repair setup"
-repair_timing -setup -repair_tns 95 -max_utilization 100
+repair_timing -setup -skip_pin_swap -verbose -repair_tns 100 -max_utilization 75
 # place inserted cells
 utl::report "Detailed placement"
 detailed_placement {*}$DPL_ARGS
@@ -240,10 +193,15 @@ report_image "${proj_name}.cts" true false true
 ###############################################################################
 # GLOBAL ROUTE                                                                #
 ###############################################################################
-# reduce routing resources (max utilization) of layers by 10%
+# reduce routing resources (max utilization) of layers by 10-30%
 # to spread out a bit more to other layers
-set_global_routing_layer_adjustment Metal2-TopMetal2 0.10
-set_routing_layers -signal Metal2-TopMetal2 -clock Metal2-TopMetal1
+# OR strongly prefers routing with M2/M3 first and then when it
+# eventually needs M4/M5 it probably struggles with finding space to drop down
+# -> reduce M2 and M3 significantly
+set_global_routing_layer_adjustment Metal2 0.30
+set_global_routing_layer_adjustment Metal3 0.20
+set_global_routing_layer_adjustment Metal4-TopMetal1 0.10
+set_routing_layers -signal Metal2-TopMetal1 -clock Metal2-TopMetal1
 
 utl::report "Global route"
 global_route -guide_file ${report_dir}/${proj_name}_route.guide \
@@ -252,9 +210,6 @@ global_route -guide_file ${report_dir}/${proj_name}_route.guide \
     -allow_congestion
 # default params but -allow_congestion
 # it goes on even if it didn't find a solution (may be able to fix afterwards)
-
-# repair_antennas -iterations 5
-# check_placement -verbose
 
 utl::report "Estimate parasitics"
 estimate_parasitics -global_routing
@@ -273,10 +228,11 @@ if { $use_routing_repairs } {
     repair_design
 
     utl::report "GRT incremental..."
-    # Running DPL to fix overlapped instances
     # Run to get modified net by DPL
     global_route -start_incremental
+    # Running DPL to fix overlapped instances
     detailed_placement
+    check_placement
     # Route only the modified net by DPL
     global_route -end_incremental \
                 -congestion_report_file ${report_dir}/congestion_repaired_initial.rpt \
@@ -288,21 +244,22 @@ if { $use_routing_repairs } {
     # Repair timing using global route parasitics
     utl::report "Repair setup and hold violations..."
     estimate_parasitics -global_routing
-    repair_timing -setup -repair_tns 90 -max_utilization 100
+    repair_timing -setup -skip_pin_swap -verbose -repair_tns 100 -max_utilization 100
     report_metrics "${proj_name}.grt_repaired_setup"
     save_checkpoint ${proj_name}.grt_repaired_setup
 
     estimate_parasitics -global_routing
-    repair_timing -hold -hold_margin 0.05 -repair_tns 90 -allow_setup_violations -max_utilization 100 -verbose
+    repair_timing -hold -hold_margin 0.05 -skip_pin_swap -repair_tns 100 -max_utilization 100
     utl::report "Repair hold done"
     report_metrics "${proj_name}.grt_repaired_hold"
     save_checkpoint ${proj_name}.grt_repaired_hold
     report_image "${proj_name}.grt_hold_repair" true true false true
 
     utl::report "GRT incremental (2)..."
-    # Running DPL to fix overlapped instances
+    set_global_routing_layer_adjustment Metal2-Metal3 0.15
     # Run to get modified net by DPL
     global_route -start_incremental
+    # Running DPL to fix overlapped instances
     detailed_placement
     # Route only the modified net by DPL
     global_route -end_incremental \
@@ -315,17 +272,19 @@ if { $use_routing_repairs } {
 }
 
 # "No diode with LEF class CORE ANTENNACELL found"
-# repair_antennas -iterations 5
-# check_placement -verbose
-# check_antennas -report_file ${report_dir}/antenna.log
+repair_antennas -iterations 5
+check_antennas
 
+set_thread_count 32
 
 utl::report "Detailed route"
 detailed_route -output_drc ${report_dir}/${proj_name}_route_drc.rpt \
-               -output_maze ${report_dir}${proj_name}_maze.log \
+               -output_maze ${report_dir}/${proj_name}_maze.log \
                -bottom_routing_layer Metal2 \
-               -top_routing_layer TopMetal2 \
-               -droute_end_iter 5 \
+               -top_routing_layer TopMetal1 \
+               -droute_end_iter 40 \
+               -drc_report_iter_step 5 \
+               -clean_patches \
                -save_guide_updates \
                -verbose 1
 
@@ -335,19 +294,19 @@ report_image "${proj_name}.drt" true false false true
 report_design_area
 
 
-# utl::report "Filler placement"
-# filler_placement sg13g2_fill*
-# utl::report "Check placement"
-# check_placement
-# report_metrics "${proj_name}.grt_repaired"
-# save_checkpoint ${proj_name}.final
-# report_image "${proj_name}.final" true true false true
-# utl::report "Write DEF"
-# write_def out/${proj_name}.final.def
+utl::report "Filler placement"
+filler_placement sg13g2_fill*
+utl::report "Check placement"
+check_placement
+report_metrics "${proj_name}.final"
+save_checkpoint ${proj_name}.final
+report_image "${proj_name}.final" true true false true
+utl::report "Write DEF"
+write_def out/${proj_name}.final.def
 
-# ## Def to GDS
-# utl::report "Def to GDS"
-# exec klayout -zz -rm scripts/def2stream.py
-# set deltaT [expr [elapsed_run_time] - $time]
-# set time [elapsed_run_time]
-# utl::report "Time: $time sec deltaT: $deltaT"
+# # ## Def to GDS
+# # utl::report "Def to GDS"
+# # exec klayout -zz -rm scripts/def2stream.py
+# # set deltaT [expr [elapsed_run_time] - $time]
+# # set time [elapsed_run_time]
+# # utl::report "Time: $time sec deltaT: $deltaT"
