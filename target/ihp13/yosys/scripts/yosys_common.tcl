@@ -58,12 +58,14 @@ proc envVarValid {var_name} {
 
 proc processAbcScript {abc_script} {
     global work_dir period_ps
+    set src_dir [file join [file dirname [info script]] ../src]
     set abc_out_path $work_dir/[file tail $abc_script]
 
     set raw [read -nonewline [open $abc_script r]]
     set abc_script_delay [string map -nocase [list "{D}" [subst "-D $period_ps"]] $raw]
+    set abc_script_recaig [string map -nocase [list "{REC_AIG}" [subst "$src_dir/rec6Lib_final_filtered3_recanon.aig"]] $abc_script_delay]
     set abc_out [open $abc_out_path w]
-    puts -nonewline $abc_out $abc_script_delay
+    puts -nonewline $abc_out $abc_script_recaig
 
     flush $abc_out
     close $abc_out
