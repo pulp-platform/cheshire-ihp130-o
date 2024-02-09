@@ -6,4 +6,4 @@
 # - Philippe Sauter <phsauter@ethz.ch>
 
 set_driving_cell sg13g2_buf_1
-set_load [expr 10 * [load_of sg13g2_xor2_1/A]] [all_outputs]
+set_load 0.05
