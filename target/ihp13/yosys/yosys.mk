@@ -47,6 +47,8 @@ run-yosys:
 	@mkdir -p $(YOSYS_OUT)
 	@mkdir -p $(YOSYS_WORK)
 	@mkdir -p $(YOSYS_REPORTS)
+	@jq '. + { "Yosys CLK-Period (ns)": $(shell expr $(YOSYS_TARGET_PERIOD_PS) / 1000 ) }' $(PICKE_CONF) > $(NETLIST_CONF)
+	$(MAKE) yosys-run-snapshot
 	VLOG_FILES="$(VLOG_FILES)" \
 	TOP_DESIGN="$(SYNTH_TOP)" \
 	PROJ_NAME="$(RTL_NAME)" \
@@ -59,10 +61,16 @@ run-yosys:
 		| tee "$(YOSYS_DIR)/$(RTL_NAME).log" \
 		| tee "$(YOSYS_OUT_DIR)/$(RTL_NAME)_$(shell date +"%Y-%m-%d_%H_%M_%Z").log" \
 		| grep -E "\[.*\] [0-9\.]+ Executing";
-	@jq '. + { "Yosys CLK-Period (ns)": $(shell expr $(YOSYS_TARGET_PERIOD_PS) / 1000 ) }' $(PICKE_CONF) > $(NETLIST_CONF)
+
+yosys-run-snapshot:
+	zip -r $(YOSYS_OUT)/$(RTL_NAME)_source.zip \
+		    $(subst $(IG_ROOT)/,,$(IG_ROOT)/iguana.mk) \
+	        $(subst $(IG_ROOT)/,,$(NETLIST_CONF)) \
+	        $(subst $(IG_ROOT)/,,$(YOSYS_DIR)/scripts) \
+	        $(subst $(IG_ROOT)/,,$(YOSYS_DIR)/*.mk)
 
 
-# make netlist  YOSYS_WORKing dependency
+# make netlist working dependency
 $(NETLIST): $(SV2V_FILE)
 	@$(MAKE) run-yosys
 
@@ -76,7 +84,7 @@ run-sta: $(NETLIST)
 	YOSYS_REPORTS="$(YOSYS_REPORTS)" \
 	$(STA) $(YOSYS_DIR)/scripts/opensta_timings.tcl
 
-.PHONY: synth-all run-yosys run-sta 
+.PHONY: synth-all run-yosys run-sta yosys-run-snapshot
 
 
 # Hierarchically split synthesis
@@ -157,7 +165,7 @@ $(HIER_YOSYS_WORK)/%.mapped.v: $(HIER_YOSYS_WORK)/%.rtl.v
 		| tee -a "$(YOSYS_OUT_DIR)/$(RTL_NAME)-hier.log";
 
 # analyze timing of hier-synth netlist
-run-sta-hier: $(HIER_NETLIST)
+run-sta-hier:
 	@mkdir -p $(YOSYS_REPORTS)
 	@rm -f opensta.log
 	NETLIST="$(HIER_NETLIST)" \
