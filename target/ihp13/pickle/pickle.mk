@@ -74,7 +74,7 @@ SVASE_OUT := $(PICKLE_OUT)/$(RTL_NAME).svase.sv
 # Pre-elaborate SystemVerilog pickle
 $(SVASE_OUT): $(MORTY_OUT) $(wildcard $(PICKLE_DIR)/patches/svase/*)
 	$(SVASE) $(TOP_DESIGN) $@ $<
-	sed -i 's/module $(TOP_DESIGN)[[:digit:]_]\+/module $(TOP_DESIGN)/' $(SVASE_OUT)
+	sed -i 's/module $(TOP_DESIGN)__[[:digit:]]\+/module $(TOP_DESIGN)/' $(SVASE_OUT)
 	$(call apply-patches,svase)
 
 run-svase: $(SVASE_OUT)
