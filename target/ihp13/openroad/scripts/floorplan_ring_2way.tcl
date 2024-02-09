@@ -62,18 +62,19 @@ set padMargin         310.0
 # thickness of annular ring for power-ring
 set floorMargin       110.0
 # extra keepout annular ring inside floor (only applies to macros!)
-set floorPaddingX       1.0
-set floorPaddingY       1.0
+# large enough for a few standard cells between core-ring and macros
+set floorPaddingX       8.0
+set floorPaddingY      14.0
 
 set coreMargin        [expr $padMargin + $floorMargin]
 
 # minimum macro-to-macro distance
 set macroMargin        10.0
 # halo around each macro
-set haloBlockL         10.0
-set haloBlockR         10.0
-set haloBlockB         10.0
-set haloBlockT         10.0
+set haloBlockL         1.0
+set haloBlockR         1.0
+set haloBlockB         1.0
+set haloBlockT         1.0
 
 
 ##########################################################################
@@ -141,9 +142,9 @@ source scripts/macros_2way.tcl
 ##########################################################################
 utl::report "Place Macros"
 # routing channels between groups of side-by-side macros
-set channelX   20.0
+set channelX   32.0
 # routing channels between macros on-top of eachother
-set channelY   20.0
+set channelY   40.0
 
 
 ##########################################################################
@@ -224,19 +225,19 @@ addHaloToBlock $haloBlockL $haloBlockB $haloBlockR $haloBlockT $cva6_icache_tag_
 
 # cva6_icache_tag_0_high
 set X [expr $X ]
-set Y [expr $Y + $RamSize256x48_W + $channelX]
+set Y [expr $Y + $RamSize256x48_W + $channelY]
 placeInstance $cva6_icache_tag_0_high $X $Y R90
 addHaloToBlock $haloBlockL $haloBlockB $haloBlockR $haloBlockT $cva6_icache_tag_0_high
 
 # cva6_icache_tag_1_low
 set X [expr $X ]
-set Y [expr $Y + $RamSize256x48_W + $channelX]
+set Y [expr $Y + $RamSize256x48_W + $channelY]
 placeInstance $cva6_icache_tag_1_low $X $Y R90
 addHaloToBlock $haloBlockL $haloBlockB $haloBlockR $haloBlockT $cva6_icache_tag_1_low
 
 # cva6_icache_tag_1_high
 set X [expr $X ]
-set Y [expr $Y + $RamSize256x48_W + $channelX]
+set Y [expr $Y + $RamSize256x48_W + $channelY]
 placeInstance $cva6_icache_tag_1_high $X $Y R90
 addHaloToBlock $haloBlockL $haloBlockB $haloBlockR $haloBlockT $cva6_icache_tag_1_high
 
@@ -320,19 +321,19 @@ addHaloToBlock $haloBlockL $haloBlockB $haloBlockR $haloBlockT $cva6_wt_dcache_t
 
 # cva6_wt_dcache_tag_1_high
 set X [expr $X ]
-set Y [expr $Y + $RamSize256x48_W + $channelX]
+set Y [expr $Y + $RamSize256x48_W + $channelY]
 placeInstance $cva6_wt_dcache_tag_1_high $X $Y R270
 addHaloToBlock $haloBlockL $haloBlockB $haloBlockR $haloBlockT $cva6_wt_dcache_tag_1_high
 
 # cva6_wt_dcache_tag_0_low
 set X [expr $X ]
-set Y [expr $Y + $RamSize256x48_W + $channelX]
+set Y [expr $Y + $RamSize256x48_W + $channelY]
 placeInstance $cva6_wt_dcache_tag_0_low $X $Y R270
 addHaloToBlock $haloBlockL $haloBlockB $haloBlockR $haloBlockT $cva6_wt_dcache_tag_0_low
 
 # cva6_wt_dcache_tag_0_high
 set X [expr $X ]
-set Y [expr $Y + $RamSize256x48_W + $channelX]
+set Y [expr $Y + $RamSize256x48_W + $channelY]
 placeInstance $cva6_wt_dcache_tag_0_high $X $Y R270
 addHaloToBlock $haloBlockL $haloBlockB $haloBlockR $haloBlockT $cva6_wt_dcache_tag_0_high
 
@@ -340,7 +341,7 @@ addHaloToBlock $haloBlockL $haloBlockB $haloBlockR $haloBlockT $cva6_wt_dcache_t
 
 # the blockages on-top of the macro blocks do not remove the std-cell rows between them
 # when using pdngen, so we cut them manually with an extra X-halo
-cut_rows -halo_width_y 10 -halo_width_x 10
+cut_rows -halo_width_y 1 -halo_width_x 2
 
 
 ##########################################################################
