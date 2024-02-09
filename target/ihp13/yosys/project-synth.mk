@@ -26,28 +26,32 @@ export YOSYS_FLATTEN_HIER := 1
 # kept as a seperate hierarchical element, all others will be flattened
 # https://yosyshq.readthedocs.io/projects/yosys/en/latest/cmd/select.html
 export YOSYS_KEEP_HIER_INST :=  "*/gen_bootrom.i_bootrom" \
-								"*/i_bootrom_part*" \
-								"*/gen_asic_regfile.i_ariane_regfile" \
-								"*/float_regfile_gen*i_ariane_fp_regfile" \
+								"*/i_bootrom*/i_part*" \
+								"*/i_core_cva6" \
 								"*/i_cva6_icache" \
 								"*/i_wt_dcache" \
 								"*/i_scoreboard" \
 								"*/i_multiplier" \
+								"*/ex_stage_i" \
 								"*/fpu_gen.fpu_i" \
-								"*/gen_serial_link.i_serial_link" \
-								"*/i_hyperbus" \
+								"*/i_clint" \
+								"*/i_plic" \
 								"*/i_dbg_dmi_jtag" \
+								"*/gen_serial_link.i_serial_link" \
+								"*/i_serial_link_physical*" \
+								"*/i_hyperbus" \
 								"*/gen_uart.i_uart" \
 								"*/gen_gpio.i_gpio" \
 								"*/gen_i2c.i_i2c" \
 								"*/gen_spi_host.i_spi_host" \
 								"*/gen_vga.i_axi_vga" \
 								"*/gen_llc.i_llc" \
-								"t:*cdc_fifo_gray__*" \
-								"t:*cdc_2phase_src__*" \
-								"t:*cdc_2phase_dst__*" \
-								"t:*cdc_4phase_src__*" \
-								"t:*cdc_4phase_dst__*"
+								"t:*_regfile__*" \
+								"t:*_reg_top__*" \
+								"t:*cdc_fifo_gray_*" \
+								"t:*cdc_2phase_*" \
+								"t:*cdc_4phase_*" \
+								"t:*clint_sync_*"
 
 # the paths (full names) of all instances matching these strings is reported
 # for floorplaning or writing constraints
