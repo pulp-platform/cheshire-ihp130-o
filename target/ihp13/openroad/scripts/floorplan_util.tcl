@@ -38,7 +38,7 @@ proc create_vert_stripe_blockage {firstX lastX pitchX width minY maxY} {
   for {set x $firstX_dbu} {$x <= $lastX_dbu} {set x [expr $x + $pitchx_dbu]} {
     set x0 [expr $x - $width_dbu/2]
     set x1 [expr $x + $width_dbu/2]
-    puts "$x0 $x1 $minY_dbu $maxY_dbu"
+    puts "stripe blockage: x0:$x0, x1:$x1"
     set blockage [odb::dbBlockage_create $block $x0 $minY_dbu $x1 $maxY_dbu]
     set $blockage setSoft
   }
@@ -52,14 +52,6 @@ proc placeInstance { name x y orient } {
   set inst [$block findInst $name]
   if {$inst == "NULL"} {
     error "Cannot find instance $name"
-  }
-  
-  # ASK: adopted from iguna, why is this necessary?
-  if {$orient == "R90"} {
-    set orient MX
-  }
-  if {$orient == "MXR90"} {
-    set orient R0
   }
 
   $inst setLocationOrient $orient
