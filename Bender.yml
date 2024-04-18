@@ -31,6 +31,7 @@ sources:
       - hw/iguana_pkg.sv
       - hw/iguana_soc.sv
       - hw/iguana_chip.sv
+      - hw/fused_muladd.sv
 
   - target: any(test, simulation)
     files:
