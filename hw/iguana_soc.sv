@@ -78,9 +78,40 @@ module iguana_soc import iguana_pkg::*; import cheshire_pkg::*; (
   logic [31:0] gpio32_o;
   logic [31:0] gpio32_en_o;
 
-  assign gpio32_i   = gpio_i;
-  assign gpio_o     = gpio32_o;
-  assign gpio_en_o  = gpio32_en_o;
+  // assign gpio32_i   = gpio_i;
+  // assign gpio_o     = gpio32_o;
+  // assign gpio_en_o  = gpio32_en_o;
+
+  // USB
+  logic [UsbNumPorts-1:0] usb_dm_i;
+  logic [UsbNumPorts-1:0] usb_dm_o;
+  logic [UsbNumPorts-1:0] usb_dm_oe_o;
+  logic [UsbNumPorts-1:0] usb_dp_i;
+  logic [UsbNumPorts-1:0] usb_dp_o;
+  logic [UsbNumPorts-1:0] usb_dp_oe_o;
+
+  always_comb begin : io_mux
+    // default: connect GPIO
+    usb_dm_i = '0;
+    usb_dp_i = {UsbNumPorts{1'b1}};
+    gpio32_i  = gpio_i;
+    gpio_o    = gpio32_o;
+    gpio_en_o = gpio32_en_o;
+
+    // if USB-enable pin: connect USB
+    if(gpio_i[0]) begin
+      // Port 0
+      gpio_o[1] = usb_dm_o[0];
+      gpio_o[2] = usb_dp_o[0];
+      gpio_en_o[1] = usb_dm_oe_o[0];
+      gpio_en_o[2] = usb_dp_oe_o[0];
+      // Port 1
+      gpio_o[3] = usb_dm_o[1];
+      gpio_o[4] = usb_dp_o[1];
+      gpio_en_o[3] = usb_dm_oe_o[1];
+      gpio_en_o[4] = usb_dp_oe_o[1];
+    end
+  end
 
   // Global reset synchronizer
   logic synced_rst_n;
@@ -111,42 +142,53 @@ module iguana_soc import iguana_pkg::*; import cheshire_pkg::*; (
     .test_mode_i,
     .boot_mode_i,
     .rtc_i,
+    // External AXI LLC (DRAM) port
     .axi_llc_mst_req_o  ( axi_llc_mst_req ),
     .axi_llc_mst_rsp_i  ( axi_llc_mst_rsp ),
+    // External AXI crossbar ports
     .axi_ext_mst_req_i  ( '0 ),
     .axi_ext_mst_rsp_o  ( ),
     .axi_ext_slv_req_o  ( ),
     .axi_ext_slv_rsp_i  ( '0 ),
+    // External reg demux slaves
     .reg_ext_slv_req_o  ( reg_ext_slv_req ),
     .reg_ext_slv_rsp_i  ( reg_ext_slv_rsp ),
+    // Interrupts from and to external targets
     .intr_ext_i         ( '0 ),
     .intr_ext_o         ( ),
+    // Interrupt requests to external harts
     .xeip_ext_o         ( ),
     .mtip_ext_o         ( ),
     .msip_ext_o         ( ),
+    // Debug interface to external harts
     .dbg_active_o       ( ),
     .dbg_ext_req_o      ( ),
     .dbg_ext_unavail_i  ( '0 ),
+    // JTAG interface
     .jtag_tck_i,
     .jtag_trst_ni,
     .jtag_tms_i,
     .jtag_tdi_i,
     .jtag_tdo_o,
     .jtag_tdo_oe_o,
+    // UART interface
     .uart_tx_o,
     .uart_rx_i,
+    // UART modem flow control
     .uart_rts_no        ( ),
     .uart_dtr_no        ( ),
     .uart_cts_ni        ( 1'b0 ),
     .uart_dsr_ni        ( 1'b0 ),
     .uart_dcd_ni        ( 1'b0 ),
     .uart_rin_ni        ( 1'b0 ),
+    // I2C interface
     .i2c_sda_o,
     .i2c_sda_i,
     .i2c_sda_en_o,
     .i2c_scl_o,
     .i2c_scl_i,
     .i2c_scl_en_o,
+    // SPI host interface
     .spih_sck_o,
     .spih_sck_en_o,
     .spih_csb_o,
@@ -154,18 +196,30 @@ module iguana_soc import iguana_pkg::*; import cheshire_pkg::*; (
     .spih_sd_o,
     .spih_sd_en_o,
     .spih_sd_i,
+    // GPIO interface
     .gpio_i             ( gpio32_i    ),
     .gpio_o             ( gpio32_o    ),
     .gpio_en_o          ( gpio32_en_o ),
+    // Serial link interface
     .slink_rcv_clk_i,
     .slink_rcv_clk_o,
     .slink_i,
     .slink_o,
+    // VGA interface
     .vga_hsync_o,
     .vga_vsync_o,
     .vga_red_o,
     .vga_green_o,
-    .vga_blue_o
+    .vga_blue_o,
+    // USB interface
+    .usb_clk_i          ( clk_i        ),
+    .usb_rst_ni         ( synced_rst_n ),
+    .usb_dm_i,
+    .usb_dm_o,
+    .usb_dm_oe_o,
+    .usb_dp_i,
+    .usb_dp_o,
+    .usb_dp_oe_o
   );
 
   `ifndef NO_HYPERBUS

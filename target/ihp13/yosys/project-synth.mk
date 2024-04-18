@@ -42,6 +42,7 @@ export YOSYS_KEEP_HIER_INST :=  "*/gen_cva6_cores.__0.i_core_cva6" \
 								"*/gen_i2c.i_i2c" \
 								"*/gen_spi_host.i_spi_host" \
 								"*/gen_vga.i_axi_vga" \
+								"*/gen_usb.i_spinal_usb_ohci" \
 								"*/gen_llc.i_llc" \
 								"*/gen_dma.i_dma" \
 								"t:*cheshire_reg_top*" \
