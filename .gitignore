@@ -5,6 +5,7 @@
 *.history
 
 hw/generated
+hw/cheshire_bootrom_split.sv
 
 # target/sim
 target/sim/models
