@@ -8,82 +8,82 @@
 // - Paul Scheffler <paulsc@iis.ee.ethz.ch>
 
 module iguana_chip import iguana_pkg::*; import cheshire_pkg::*; (
-  inout wire clk_i,
-  inout wire rst_ni,
-  inout wire test_mode_i,
-  inout wire boot_mode_0_i,
-  inout wire boot_mode_1_i,
-  inout wire rtc_i,
+  input  wire clk_i,
+  input  wire rst_ni,
+  input  wire test_mode_i,
+  input  wire boot_mode_0_i,
+  input  wire boot_mode_1_i,
+  input  wire rtc_i,
   // JTAG interface
-  inout wire jtag_tck_i,
-  inout wire jtag_trst_ni,
-  inout wire jtag_tms_i,
-  inout wire jtag_tdi_i,
-  inout wire jtag_tdo_o,
+  input  wire jtag_tck_i,
+  input  wire jtag_trst_ni,
+  input  wire jtag_tms_i,
+  input  wire jtag_tdi_i,
+  output wire jtag_tdo_o,
   // UART interface
-  inout wire uart_tx_o,
-  inout wire uart_rx_i,
+  output wire uart_tx_o,
+  input  wire uart_rx_i,
   // I2C interface
-  inout wire i2c_sda_io,
-  inout wire i2c_scl_io,
+  inout  wire i2c_sda_io,
+  inout  wire i2c_scl_io,
   // SPI host interface
-  inout wire spih_sck_o,
-  inout wire spih_csb_0_o,
-  inout wire spih_csb_1_o,
-  inout wire spih_sd_0_io,
-  inout wire spih_sd_1_io,
-  inout wire spih_sd_2_io,
-  inout wire spih_sd_3_io,
+  output wire spih_sck_o,
+  output wire spih_csb_0_o,
+  output wire spih_csb_1_o,
+  inout  wire spih_sd_0_io,
+  inout  wire spih_sd_1_io,
+  inout  wire spih_sd_2_io,
+  inout  wire spih_sd_3_io,
   // GPIO interface
-  inout wire gpio_0_io,
-  inout wire gpio_1_io,
-  inout wire gpio_2_io,
-  inout wire gpio_3_io,
-  inout wire gpio_4_io,
-  inout wire gpio_5_io,
-  inout wire gpio_6_io,
-  inout wire gpio_7_io,
-  inout wire gpio_8_io,
-  inout wire gpio_9_io,
-  inout wire gpio_10_io,
-  inout wire gpio_11_io,
+  inout  wire gpio_0_io,
+  inout  wire gpio_1_io,
+  inout  wire gpio_2_io,
+  inout  wire gpio_3_io,
+  inout  wire gpio_4_io,
+  inout  wire gpio_5_io,
+  inout  wire gpio_6_io,
+  inout  wire gpio_7_io,
+  inout  wire gpio_8_io,
+  inout  wire gpio_9_io,
+  inout  wire gpio_10_io,
+  inout  wire gpio_11_io,
   // Serial link interface
-  inout wire slink_clk_i,
-  inout wire slink_0_i,
-  inout wire slink_1_i,
-  inout wire slink_2_i,
-  inout wire slink_3_i,
-  inout wire slink_clk_o,
-  inout wire slink_0_o,
-  inout wire slink_1_o,
-  inout wire slink_2_o,
-  inout wire slink_3_o,
+  input  wire slink_clk_i,
+  input  wire slink_0_i,
+  input  wire slink_1_i,
+  input  wire slink_2_i,
+  input  wire slink_3_i,
+  output wire slink_clk_o,
+  output wire slink_0_o,
+  output wire slink_1_o,
+  output wire slink_2_o,
+  output wire slink_3_o,
   // VGA interface
-  inout wire vga_hsync_o,
-  inout wire vga_vsync_o,
-  inout wire vga_red_0_o,
-  inout wire vga_red_1_o,
-  inout wire vga_red_2_o,
-  inout wire vga_green_0_o,
-  inout wire vga_green_1_o,
-  inout wire vga_green_2_o,
-  inout wire vga_blue_0_o,
-  inout wire vga_blue_1_o,
+  output wire vga_hsync_o,
+  output wire vga_vsync_o,
+  output wire vga_red_0_o,
+  output wire vga_red_1_o,
+  output wire vga_red_2_o,
+  output wire vga_green_0_o,
+  output wire vga_green_1_o,
+  output wire vga_green_2_o,
+  output wire vga_blue_0_o,
+  output wire vga_blue_1_o,
   // Hyperbus
-  inout wire hyper_reset_no,
-  inout wire hyper_cs_0_no,
-  inout wire hyper_cs_1_no,
-  inout wire hyper_ck_o,
-  inout wire hyper_ck_no,
-  inout wire hyper_rwds_io,
-  inout wire hyper_dq_0_io,
-  inout wire hyper_dq_1_io,
-  inout wire hyper_dq_2_io,
-  inout wire hyper_dq_3_io,
-  inout wire hyper_dq_4_io,
-  inout wire hyper_dq_5_io,
-  inout wire hyper_dq_6_io,
-  inout wire hyper_dq_7_io
+  output wire hyper_reset_no,
+  output wire hyper_cs_0_no,
+  output wire hyper_cs_1_no,
+  output wire hyper_ck_o,
+  output wire hyper_ck_no,
+  inout  wire hyper_rwds_io,
+  inout  wire hyper_dq_0_io,
+  inout  wire hyper_dq_1_io,
+  inout  wire hyper_dq_2_io,
+  inout  wire hyper_dq_3_io,
+  inout  wire hyper_dq_4_io,
+  inout  wire hyper_dq_5_io,
+  inout  wire hyper_dq_6_io,
+  inout  wire hyper_dq_7_io
 );
 
   // SoC IO
@@ -95,10 +95,10 @@ module iguana_chip import iguana_pkg::*; import cheshire_pkg::*; (
 
   mc_pad_in     pad_clk         ( .pad_io ( clk_i         ), .d_o ( soc_clk_i          ) );
   mc_pad_in     pad_rtc         ( .pad_io ( rtc_i         ), .d_o ( soc_rtc_i          ) );
-  mc_pad_io_pu  pad_rst_n       ( .pad_io ( rst_ni        ), .d_o ( soc_rst_ni         ), .d_i ( ), .oe_i ( 1'b0 ) );
-  mc_pad_io_pd  pad_test_mode   ( .pad_io ( test_mode_i   ), .d_o ( soc_test_mode_i    ), .d_i ( ), .oe_i ( 1'b0 ) );
-  mc_pad_io_pd  pad_boot_mode_0 ( .pad_io ( boot_mode_0_i ), .d_o ( soc_boot_mode_i[0] ), .d_i ( ), .oe_i ( 1'b0 ) );
-  mc_pad_io_pd  pad_boot_mode_1 ( .pad_io ( boot_mode_1_i ), .d_o ( soc_boot_mode_i[1] ), .d_i ( ), .oe_i ( 1'b0 ) );
+  mc_pad_io_pu  pad_rst_n       ( .pad_io ( rst_ni        ), .d_o ( soc_rst_ni         ), .d_i ( 1'b0 ), .oe_i ( 1'b0 ) );
+  mc_pad_io_pd  pad_test_mode   ( .pad_io ( test_mode_i   ), .d_o ( soc_test_mode_i    ), .d_i ( 1'b0 ), .oe_i ( 1'b0 ) );
+  mc_pad_io_pd  pad_boot_mode_0 ( .pad_io ( boot_mode_0_i ), .d_o ( soc_boot_mode_i[0] ), .d_i ( 1'b0 ), .oe_i ( 1'b0 ) );
+  mc_pad_io_pd  pad_boot_mode_1 ( .pad_io ( boot_mode_1_i ), .d_o ( soc_boot_mode_i[1] ), .d_i ( 1'b0 ), .oe_i ( 1'b0 ) );
 
   // JTAG interface
   logic soc_jtag_tck_i;
@@ -108,18 +108,18 @@ module iguana_chip import iguana_pkg::*; import cheshire_pkg::*; (
   logic soc_jtag_tdo_o;
   logic soc_jtag_tdo_oe_o;
 
-  mc_pad_io_pd  pad_jtag_tck    ( .pad_io ( jtag_tck_i   ), .d_o ( soc_jtag_tck_i   ), .d_i ( ), .oe_i ( 1'b0 ) );
-  mc_pad_io_pu  pad_jtag_trst_n ( .pad_io ( jtag_trst_ni ), .d_o ( soc_jtag_trst_ni ), .d_i ( ), .oe_i ( 1'b0 ) );
-  mc_pad_io_pd  pad_jtag_tms    ( .pad_io ( jtag_tms_i   ), .d_o ( soc_jtag_tms_i   ), .d_i ( ), .oe_i ( 1'b0 ) );
-  mc_pad_io_pd  pad_jtag_tdi    ( .pad_io ( jtag_tdi_i   ), .d_o ( soc_jtag_tdi_i   ), .d_i ( ), .oe_i ( 1'b0 ) );
-  mc_pad_io_pd  pad_jtag_tdo    ( .pad_io ( jtag_tdo_o   ), .d_i ( soc_jtag_tdo_o   ), .d_o ( ), .oe_i ( soc_jtag_tdo_oe_o ) );
+  mc_pad_io_pd  pad_jtag_tck    ( .pad_io ( jtag_tck_i   ), .d_o ( soc_jtag_tck_i   ), .d_i ( 1'b0 ), .oe_i ( 1'b0 ) );
+  mc_pad_io_pu  pad_jtag_trst_n ( .pad_io ( jtag_trst_ni ), .d_o ( soc_jtag_trst_ni ), .d_i ( 1'b0 ), .oe_i ( 1'b0 ) );
+  mc_pad_io_pd  pad_jtag_tms    ( .pad_io ( jtag_tms_i   ), .d_o ( soc_jtag_tms_i   ), .d_i ( 1'b0 ), .oe_i ( 1'b0 ) );
+  mc_pad_io_pd  pad_jtag_tdi    ( .pad_io ( jtag_tdi_i   ), .d_o ( soc_jtag_tdi_i   ), .d_i ( 1'b0 ), .oe_i ( 1'b0 ) );
+  mc_pad_io_pd  pad_jtag_tdo    ( .pad_io ( jtag_tdo_o   ), .d_i ( soc_jtag_tdo_o   ), .d_o (      ), .oe_i ( soc_jtag_tdo_oe_o ) );
 
   // UART interface
   logic soc_uart_tx_o;
   logic soc_uart_rx_i;
 
-  mc_pad_io_pu  pad_uart_tx  ( .pad_io ( uart_tx_o ), .d_i ( soc_uart_tx_o ), .d_o ( ), .oe_i ( 1'b1 ) );
-  mc_pad_io_pu  pad_uart_rx  ( .pad_io ( uart_rx_i ), .d_o ( soc_uart_rx_i ), .d_i ( ), .oe_i ( 1'b0 ) );
+  mc_pad_io_pu  pad_uart_tx  ( .pad_io ( uart_tx_o ), .d_i ( soc_uart_tx_o ), .d_o (      ), .oe_i ( 1'b1 ) );
+  mc_pad_io_pu  pad_uart_rx  ( .pad_io ( uart_rx_i ), .d_o ( soc_uart_rx_i ), .d_i ( 1'b0 ), .oe_i ( 1'b0 ) );
 
   // I2C interface
   logic soc_i2c_sda_o;
