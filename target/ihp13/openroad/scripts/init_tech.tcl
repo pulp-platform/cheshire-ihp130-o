@@ -68,11 +68,11 @@ read_lef ${pdk_sram_lef}/RM_IHPSG13_1P_1024x64_c2_bm_bist.lef
 read_lef ${pdk_sram_lef}/RM_IHPSG13_1P_2048x64_c2_bm_bist.lef
 read_lef ${dlyline_dir}/delay_line_D4_O1_6P000.abst.lef
 
-set ctsBuf [ list sg13g2_buf_16 sg13g2_buf_8 sg13g2_buf_4 ]
-set ctsBufRoot sg13g2_buf_16
+set ctsBuf [ list sg13g2_buf_16 sg13g2_buf_8 sg13g2_buf_4 sg13g2_buf_2 ]
+set ctsBufRoot sg13g2_buf_8
 
 set iocorner corner
 set iofill [ list filler10u filler4u filler2u filler1u ]
 
-# TODO: eventually re-enable sg13g2_dfrbp_2
-set dont_use_cells {ixc013_i16x ixc013_b16m ixc013_b16mpup ixc013_b16mpdn sg13g2_dfrbp_2}
+# the repair_timing/repair_design commands try to use IO cells as buffers...
+set dont_use_cells {ixc013_i16x ixc013_b16m ixc013_b16mpup ixc013_b16mpdn}
