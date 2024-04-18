@@ -15,7 +15,7 @@ source [file join [file dirname [info script]] yosys_common.tcl]
 set abc_constr [file join [file dirname [info script]] ../src/abc.constr]
 
 # ABC script without DFF optimizations
-set abc_combinational_script [file join [file dirname [info script]] abc-speed-opt.script]
+set abc_combinational_script [file join [file dirname [info script]] abc-speed-opt-new.script]
 # ABC script with sequential opt
 set abc_sequential_script [file join [file dirname [info script]] abc-sequential.script]
 # ABC script with retiming and sequential opt
@@ -54,17 +54,17 @@ if { [info exists ::env(YOSYS_KEEP_HIER_INST)] } {
     }
 }
 
+# map dont_touch attribute commonly applied to output-nets of async regs to keep
+yosys attrmap -rename dont_touch keep
+# copy the keep attribute to their driving cells (retain on net for debugging)
+yosys attrmvcp -copy -attr keep
+
 # -----------------------------------------------------------------------------
 # this section heavily borrows from the yosys synth command:
 # synth - check
 yosys hierarchy -check -top $top_design
 yosys proc
 yosys tee -q -o "${report_dir}/${proj_name}_initial.rpt" stat
-
-# map dont_touch attribute commonly applied to output-nets of async regs to keep
-yosys attrmap -rename dont_touch keep
-# copy the keep attribute to their driving cells (retain on net for debugging)
-yosys attrmvcp -copy -attr keep
 
 # synth - coarse:
 # yosys synth -run coarse -noalumacc
@@ -74,26 +74,22 @@ yosys check
 yosys opt -nodffe -nosdff
 yosys fsm -fm_set_fsm_file ${report_dir}/${proj_name}_fsm_map.log
 yosys opt -full
+yosys tee -q -o "${report_dir}/${proj_name}_initial_opt.rpt" stat
 yosys wreduce 
-# yosys peepopt -bmux
 yosys peepopt
 yosys opt_clean
 yosys share
 yosys opt
 yosys booth
+# yosys alumacc
 # yosys opt -fast removed to save time
-yosys memory -nomap
-yosys opt_clean
-
-#synth - fine:
-yosys memory_collect
+yosys memory
 yosys opt -fast
-yosys memory_map
-# yosys opt -full removed to save time
 
-yosys opt_dff -sat
+yosys opt_dff -sat -nodffe -nosdff
 yosys share
-yosys clean
+yosys opt -fast
+yosys clean -purge
 
 #yosys write_verilog -norename ${work_dir}/${proj_name}_abstract.yosys.v
 yosys tee -q -o "${report_dir}/${proj_name}_abstract.rpt" stat -tech cmos
@@ -110,6 +106,13 @@ if {[envVarValid "YOSYS_FLATTEN_HIER"]} {
 	yosys flatten
 }
 
+yosys clean -purge
+
+# the abc dress command currently has a problem when it optimizes away FFs and replaces them with
+# constant gates (generic tie-cells), it can't construct the miter-circuit for equivalence checking anymore
+# because the number of comb-inputs/outputs from before to after don't match (after has less of both due to the removed FFs)
+yosys opt_dff -nodffe -nosdff
+yosys techmap
 yosys clean -purge
 
 # -----------------------------------------------------------------------------
@@ -149,6 +152,8 @@ yosys autoname t:*DFF* %n
 yosys clean -purge
 
 # print paths to important instances
+yosys select -write ${report_dir}/${proj_name}_registers.rpt t:*DFF*
+
 set report [open ${report_dir}/${proj_name}_instances.rpt "w"]
 close $report
 if { [info exists ::env(YOSYS_REPORT_INSTS)] } {
@@ -158,21 +163,58 @@ if { [info exists ::env(YOSYS_REPORT_INSTS)] } {
     }
 }
 
+# -----------------------------------------------------------------------------
 # mapping to technology
+
 if { [envVarValid "YOSYS_USE_ABC_SEQ"] } {
     puts "Using sequential abc optimizations"
-    # sequential optimizations requires D-FF mapping after abc
-    yosys abc -dff -liberty "$tech_cells" -D $period_ps -script $abc_seq_script -constr $abc_constr -showtmp -dress
-    yosys dfflibmap -liberty "$tech_cells"
-} elseif { [envVarValid "YOSYS_USE_ABC_RETIME"] } {
-    puts "Using sequential abc optimizations with retiming"
-    # retiming requires D-FF mapping after abc
-    yosys abc -dff -liberty "$tech_cells" -D $period_ps -script $abc_retime_script -constr $abc_constr -showtmp -dress
-    yosys dfflibmap -liberty "$tech_cells"
+    # Notes on using sequential-abc:
+    # Sequential abc optimizations (and retiming) requires D-FF mapping after abc. However, Yosys has a large amount of internal FF variants
+    # and considers their connectivity when passing logic clouds to abc, we need to guide it.
+    # 
+    # Init-val:    Ideally, it should never be 1, this can be achieved using dfflegalize (https://yosyshq.readthedocs.io/projects/yosys/en/latest/cmd/dfflegalize.html)
+    #              another option is to include 'strash; scleanup' at the beginning of your abc-script, this seems to mitigate the problems with mixed init-val
+    # 
+    # Clk-Domains: Yosys considers each unique combination of clock, reset and enable signals (and also polarity) as its own clock domain
+    #              This can easily cause the logic-clouds given to abc to be very small, this needs to be mitigated.
+    #              dfflegalize has the -mince and -minsrst (minimum clk-enable/synch-reset) arguments. If a module contains 
+    #              a number of FFs in a clk-domain below this number, they are unmaped into simpler DFFs with muxes on the data-pin.
+    #              Another approach is to use dffunmap to turn ALL synch-reset and clk-enables into muxes on the data-pin.
+    #  
+    #              There is no similar option for async-resets and clk-polarity (as they can't be totally unmapped) but we can restrict which types
+    #              are used by using the -cell "" option in dfflegalize. With this we limit each async reset and clock to one polarity only (here the positive).
+    #              We need to list all cells otherwise it will think it can't use the unlisted cells.
+    #              dfflegalize -mince 100 -minsrst 100 \ 
+    #                          -cell \$_DFF_PP?_ 0    -cell \$_DFFE_PP??_ 0    -cell \$_ALDFF_P?_ 0    -cell \$_ALDFFE_P??_ 0 \
+    #                          -cell \$_SR_PP_ 0      -cell \$_DFFSR_PPP_ 0    -cell \$_DFFSRE_PPP?_ 0 \
+    #                          -cell \$_SDFF_P??_ 0   -cell \$_SDFFE_P???_ 0   -cell \$_SDFFCE_P???_ 0 \
+    #                          -cell \$_DLATCH_PP?_ 0 -cell \$_DLATCHSR_PPP_ 0
+    # 
+    # FF-mapping:  At the end all FFs need to be mapped to tech cells, using 'dfflibmap -info -liberty <file>' you can see which FFs your PDK has available.
+    #              Since we need to map FFs after abc and we unmap enable and rsts intentionally, the PDK requires a simple DFF cell to make sure everything can be mapped.
+    #              It may also be a valid approach to use dfflibmap -prepare instead of dfflegalize to make sure it only has cells present in the PDK.
+    
+    # since IHP130 only has one DFF type, I convert all FFs into this type instead of using dffunmap & dfflegalize
+    yosys dfflibmap -prepare -liberty "$tech_cells"
+
+    # # remove integrated enable and synch-resets from FFs
+    # yosys dffunmap
+    # # force init-value to 0 (and minimize clock and async-reset polarities used; here already handled by dfflibmap -prepare)
+    # yosys dfflegalize -cell \$_DFF_PN0_ 0
+
+    # now we should have the minimum number of clock-domains possible -> run abc
+    if { [envVarValid "YOSYS_USE_ABC_RETIME"] } {
+        puts "Using sequential abc optimizations with retiming"
+        yosys abc -dff -liberty "$tech_cells" -D $period_ps -script $abc_retime_script -constr $abc_constr -showtmp
+    } else {
+        yosys abc -dff -liberty $tech_cells -D $period_ps -script $abc_seq_script -constr $abc_constr -showtmp
+    }
+    yosys dfflibmap -liberty "$tech_cells"   
 } else {
     puts "Using combinational-only abc optimizations"
     yosys dfflibmap -liberty "$tech_cells"
-    yosys abc -liberty "$tech_cells" -D $period_ps -script $abc_comb_script -constr $abc_constr -showtmp -dress
+    yosys abc -liberty "$tech_cells" -D $period_ps -script $abc_comb_script -constr $abc_constr -liberty_args "-S 20 -G 3" -showtmp
+    # yosys abc -liberty "$tech_cells" -D $period_ps -script $abc_comb_script -constr $abc_constr -showtmp
 } 
 
 yosys clean -purge
