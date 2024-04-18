@@ -52,8 +52,9 @@ TOP_DESIGN 	:= iguana_chip
 HYPER_CONF			:= NO_HYPERBUS
 L1CACHE_WAYS 		:= 2
 SCOREBOARD_ENTRIES 	:= 4
-# default (empty or ORIG): use pre-generated from cheshire; SPLIT: bootrom split in four parts
+# default (empty or ORIG): monolithic cheshire bootrom; SPLIT: bootrom split into parts
 BOOTROM_CONF        := SPLIT
+BOOTROM_NUM_PARTS 	:= 2
 # name used for netlist/synthesis related files
 #RTL_NAME	:= basilisk
 RTL_NAME	 := basilisk_dkong
@@ -101,6 +102,8 @@ ig-hw-cva6:
 	done
 	$(MAKE) ig-hw-conf-json
 
+
+# BOOTROM CONFIGURATION
 IG_CHS_BOOTROM_DIR := $(shell $(BENDER) path cheshire)/hw/bootrom
 IG_CHS_BOOTROM_FILE := $(IG_CHS_BOOTROM_DIR)/cheshire_bootrom.sv
 
@@ -125,9 +128,13 @@ else
     $(error Invalid value for BOOTROM_CONF: $(BOOTROM_CONF))
 endif
 
-HW_CONF_TARGETS := ig-hw-cva6 $(BOOTROM_CONF_TARGET) ig-hw-conf-json
-MORTY_DEFINES := VERILATOR SYNTHESIS MORTY TARGET_ASIC $(HYPER_CONF)
-BENDER_PROJ_TARGETS := asic ihp13 cva6 $(IG_CVA6_CONFIG)
+ig-hw-gen-split-bootrom: $(CHS_ROOT)/hw/bootrom/cheshire_bootrom.bin
+	$(IG_ROOT)/scripts/gen_bootrom_split.py --sv-module cheshire_bootrom --num-parts $(BOOTROM_NUM_PARTS) $(CHS_ROOT)/hw/bootrom/cheshire_bootrom.bin > $(IG_ROOT)/hw/cheshire_bootrom_split.sv
+
+# these are used in pickle.mk
+HW_CONF_TARGETS 	 := ig-hw-cva6 $(BOOTROM_CONF_TARGET) $(FMA_CONF_TARGET) ig-hw-conf-json
+MORTY_DEFINES 		 := VERILATOR SYNTHESIS MORTY TARGET_ASIC $(HYPER_CONF)
+BENDER_PROJ_TARGETS  := asic ihp13 cva6 $(IG_CVA6_CONFIG)
 BENDER_SYNTH_TARGETS := rtl $(BENDER_PROJ_TARGETS)
 
 ########################
