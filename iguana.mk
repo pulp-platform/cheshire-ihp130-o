@@ -70,7 +70,7 @@ IG_CVA6_PKG_PARAMS := \
 	CVA6ConfigHExtEn=0 \
 	CVA6ConfigDcacheByteSize=16384 \
 	CVA6ConfigDcacheSetAssoc=$(L1CACHE_WAYS) \
-	CVA6ConfigDcacheType=WT \
+	CVA6ConfigDcacheType=config_pkg::WT \
 	CVA6ConfigDataUserWidth=64 \
 	CVA6ConfigIcacheByteSize=16384 \
 	CVA6ConfigIcacheSetAssoc=$(L1CACHE_WAYS) \
@@ -100,7 +100,7 @@ ig-hw-cva6:
 		value=$$(echo "$$param_val" | cut -d '=' -f 2); \
 		echo "param: $$param ; value: $$value"\
 		echo "cva6: setting $$param = $$value"; \
-		sed "s|\(\s*localparam\s*\)$$param\(\s*=\s*\)[a-zA-Z0-9_]*\(.*\)|\1$$param\2$$value\3|g" \
+		sed "s|\(\s*localparam\s*.*\)$$param\(\s*=\s*\)[a-zA-Z0-9_:]*\(.*\)|\1$$param\2$$value\3|g" \
 			$(IG_CVA6_PKG_FILE) > $(IG_CVA6_PKG_FILE).tmp; \
 		mv $(IG_CVA6_PKG_FILE).tmp $(IG_CVA6_PKG_FILE);  \
 	done
@@ -234,6 +234,7 @@ ig-sim-split-bootrom:
 	rm -rf target/sim/vsim/work
 	cd target/sim/vsim && questa-2022.3 vsim -c -do compile.bootrom.rtl.tcl
 	cd target/sim/vsim && questa-2022.3 vsim tb_cheshire_bootrom -c -do "run -all; exit"
+# for gui sim: -t 1ps -voptargs="+acc=np"
 
 IG_SIM_ALL += $(IG_SIM_DIR)/models/s27ks0641.sdf
 IG_SIM_ALL += $(IG_SIM_DIR)/vsim/compile.ihp13.rtl.tcl
