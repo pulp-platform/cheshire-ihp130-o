@@ -50,11 +50,14 @@ PROJ_NAME 	:= basilsik
 TOP_DESIGN 	:= iguana_chip
 # default (empty): use hyperbus, options: NO_HYPERBUS
 HYPER_CONF			:= NO_HYPERBUS
+HYPER_CONF			:= 
 L1CACHE_WAYS 		:= 2
 SCOREBOARD_ENTRIES 	:= 4
 # default (empty or ORIG): monolithic cheshire bootrom; SPLIT: bootrom split into parts
 BOOTROM_CONF        := SPLIT
 BOOTROM_NUM_PARTS 	:= 2
+# default (empty or ORIG): default fpnew_fma; OPT: hand optimized fused-muladd in fpnew_fma
+FMA_CONF        	:= OPT
 # name used for netlist/synthesis related files
 #RTL_NAME	:= basilisk
 RTL_NAME	 := basilisk_dkong
@@ -83,7 +86,8 @@ ig-hw-conf-json:
 		--argjson sbe $(SCOREBOARD_ENTRIES) \
 		--arg rtl "$(RTL_NAME)" \
 		--arg boot "$(BOOTROM_CONF)" \
-		'{ "Hyperbus": $$hyp, "Bootrom": $$boot, "L1-Cache Ways": $$l1, "Scoreboard Entries": $$sbe, "RTL name": $$rtl }' \
+		--arg fma "$(FMA_CONF)" \
+		'{ "Hyperbus": $$hyp, "Bootrom": $$boot, "FMA": $$fma, "L1-Cache Ways": $$l1, "Scoreboard Entries": $$sbe, "RTL name": $$rtl }' \
 		> $(RTL_CONF_JSON)
 
 # configure CVA6 for this project
@@ -130,6 +134,33 @@ endif
 
 ig-hw-gen-split-bootrom: $(CHS_ROOT)/hw/bootrom/cheshire_bootrom.bin
 	$(IG_ROOT)/scripts/gen_bootrom_split.py --sv-module cheshire_bootrom --num-parts $(BOOTROM_NUM_PARTS) $(CHS_ROOT)/hw/bootrom/cheshire_bootrom.bin > $(IG_ROOT)/hw/cheshire_bootrom_split.sv
+
+
+# FUSED-MULADD CONFIGURATION
+IG_CHS_FMA_DIR := $(shell $(BENDER) path fpnew)/src/
+IG_CHS_FMA_FILE := $(IG_CHS_FMA_DIR)/fpnew_fma.sv
+
+ig-hw-fma-opt:
+	@cp -n $(IG_CHS_FMA_FILE) $(IG_CHS_FMA_FILE).orig
+	cd $(IG_CHS_FMA_DIR) && ln -sfr $(IG_ROOT)/hw/fpnew_fma_opt.sv fpnew_fma.sv
+
+ig-hw-fma-orig:
+	if [ -e "$(IG_CHS_FMA_FILE).orig" ]; then \
+		rm $(IG_CHS_FMA_FILE); \
+        cp $(IG_CHS_FMA_FILE).orig $(IG_CHS_FMA_FILE); \
+    fi
+
+ifeq ($(FMA_CONF), ORIG)
+    FMA_CONF_TARGET = ig-hw-fma-orig
+else ifeq ($(FMA_CONF), OPT)
+    FMA_CONF_TARGET = ig-hw-fma-opt
+else ifeq ($(FMA_CONF),)
+    FMA_CONF_TARGET = ig-hw-fma-orig
+else
+    $(error Invalid value for FMA_CONF: $(FMA_CONF))
+endif
+
+.PHONY: ig-hw-bootrom-split ig-hw-bootrom-orig ig-hw-gen-split-bootrom ig-hw-fma-opt ig-hw-fma-orig
 
 # these are used in pickle.mk
 HW_CONF_TARGETS 	 := ig-hw-cva6 $(BOOTROM_CONF_TARGET) $(FMA_CONF_TARGET) ig-hw-conf-json
@@ -231,7 +262,7 @@ ig-nonfree:
 #################################
 
 .PHONY: ig-all ig-clean-deps ig-sw-all ig-hw-all ig-bootrom-all ig-sim-all 
-.PHONY: ig-hw-cva6 ig-hw-conf-json ig-hw-bootrom-split ig-hw-bootrom-orig ig-nonfree ig-sim-clean
+.PHONY: ig-hw-cva6 ig-hw-conf-json ig-nonfree ig-sim-clean
 
 IG_ALL += $(CHS_ALL) $(IG_SIM_ALL)
 
