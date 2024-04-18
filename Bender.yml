@@ -12,10 +12,10 @@ package:
     - "Philippe Sauter <phsauter@ethz.ch>"
 
 dependencies:
-  axi:                { git: https://github.com/pulp-platform/axi,                version: 0.39.1   }
-  cheshire:           { git: https://github.com/pulp-platform/cheshire,           rev:     d4b73a8  }
+  axi:                { git: https://github.com/pulp-platform/axi,                version: 0.39.2   }
+  cheshire:           { git: https://github.com/pulp-platform/cheshire,           rev:    ff950c1   }
   hyperbus:           { git: https://github.com/pulp-platform/hyperbus,           version: 0.0.4    }
-  register_interface: { git: https://github.com/pulp-platform/register_interface, version: 0.4.2    }
+  register_interface: { git: https://github.com/pulp-platform/register_interface, version: 0.4.4    }
 
 sources:
 
