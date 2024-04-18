@@ -19,6 +19,9 @@ set time [elapsed_run_time]
 
 set step_by_step_debug 0
 set use_routing_repairs 1
+set threads 32
+
+set_thread_count $threads
 
 source scripts/checkpoint.tcl
 source scripts/reports.tcl
@@ -45,7 +48,6 @@ report_checks -unconstrained -format end -no_line_splits >> ${report_dir}/${proj
 report_checks -format end -no_line_splits                >> ${report_dir}/${proj_name}_checks.rpt
 report_checks -format end -no_line_splits                >> ${report_dir}/${proj_name}_checks.rpt
 
-# floorplan -> Few seconds
 utl::report "Create Floorplan"
 if { [info exists ::env(L1CACHE_WAYS)] && $::env(L1CACHE_WAYS) eq "2"} {
     source scripts/floorplan_ring_2way.tcl
@@ -68,16 +70,17 @@ report_image "${proj_name}.power" true
 # Used for estimate_parasitics
 set_wire_rc -clock -layer Metal4
 set_wire_rc -signal -layer Metal3
-# Dont touch IO pads as "remove_buffers" removes them
+# Dont touch IO pads as "remove_buffers" removes them otherwise
 set_dont_touch [get_nets -of_objects [get_pins */PAD]]
 set_dont_use $dont_use_cells
-
-utl::report "Remove buffers"
-remove_buffers
 
 utl::report "Repair tie fanout"
 source scripts/repair_tie.tcl
 
+utl::report "Remove buffers"
+remove_buffers
+
+utl::report "Repair design"
 repair_design -verbose
 
 report_metrics "${proj_name}.pre_place"
@@ -87,19 +90,28 @@ save_checkpoint ${proj_name}.pre_place
 ###############################################################################
 # GLOBAL PLACEMENT                                                            #
 ###############################################################################
-set GPL_ARGS {  -density 0.67
-                -pad_left 1
-                -pad_right 1 
+set GPL_ARGS {  -density 0.55 }
+
+set GPL2_ARGS {  -density 0.60
                 -routability_driven
-                -routability_check_overflow 0.6
+                -routability_check_overflow 0.55
+                -routability_inflation_ratio_coef 1.2
                 -routability_max_inflation_ratio 2.0
-                -routability_inflation_ratio_coef 2.0 }
-#                -timing_driven
+                -routability_target_rc_metric 1.0
+                -timing_driven
+                -max_phi_coef 1.04 }
 #                -skip_initial_place }
 # according to OR "on large designs" '-skip_initial_place' reduces the
 # HPWL (half perimeter wire length) by roughly 5%
+# check_overflow: Higher means routability starts being considered earlier in placement
+#                 too early -> very dense regions, too late -> little to no effect
+# inflation_ratio: By how much the virtual area of offending cells is increased
+#                  this increases the calculated density they cause, reducing physical density
+# target_rc_metric: probably influences strength of the wire-force attracting cells
+#                   higher values cause more fluctuation in density (higher peaks), not necessarily bad
 
-utl::report "Global Placement"
+# rough placement to get parasitics for steiner-tree so we can run repair_timing
+utl::report "Global Placement (1)"
 global_placement {*}$GPL_ARGS
 report_metrics "${proj_name}.gpl"
 report_image "${proj_name}.gpl" true true
@@ -108,12 +120,18 @@ save_checkpoint ${proj_name}.gpl
 utl::report "Estimate parasitics"
 estimate_parasitics -placement
 utl::report "Repair design"
-repair_design -verbose
+repair_design
+
 utl::report "Repair setup"
 repair_timing -setup -skip_pin_swap -verbose -repair_tns 100
+# old versions of repair_timing may swap non-equal pins, deactivated for now to avoid problems
+# Likely introduced in:  https://github.com/The-OpenROAD-Project/OpenROAD/pull/3215
 
+save_checkpoint ${proj_name}.gpl_repaired
+
+# actual global placement
 utl::report "Global Placement (2)"
-global_placement {*}$GPL_ARGS
+global_placement {*}$GPL2_ARGS
 report_metrics "${proj_name}.gpl2"
 report_image "${proj_name}.gpl2" true true
 save_checkpoint ${proj_name}.gpl2
@@ -122,9 +140,7 @@ save_checkpoint ${proj_name}.gpl2
 #############################################################################
 # DETAILED PLACEMENT                                                        #
 #############################################################################
-# set_placement_padding -instances [get_cells *i_bootrom*] -right 3 -left 3
 set DPL_ARGS {}
-# set DPL_ARGS { -max_displacement {600 200} }
 
 utl::report "Detailed placement"
 detailed_placement {*}$DPL_ARGS
@@ -164,18 +180,10 @@ estimate_parasitics -placement
 
 # repair all setup timing
 report_metrics "${proj_name}.cts_unrepaired"
-# Zerun thinks this is too early to try hold fixing and will create unnecessary hold buffers
-# We should wait until we have some routing info
-# utl::report "Repair hold"
-# repair_timing -hold -skip_pin_swap -hold_margin 0.05 -repair_tns 100 -allow_setup_violations -max_utilization 75
 
-# ToDo: Pin swapping also swaps A_N with B in nand2b and nor2b, this is obviously not equivalent
-# The issue is likely here somehwere: 
-# https://github.com/The-OpenROAD-Project/OpenROAD/blob/7e7e8350032c98752b0b015a86e34a08eba557fd/src/rsz/src/RepairSetup.cc#L886
-# Introduced in:  https://github.com/The-OpenROAD-Project/OpenROAD/pull/3215
 
 utl::report "Repair setup"
-repair_timing -setup -skip_pin_swap -verbose -repair_tns 100 -max_utilization 75
+repair_timing -setup -skip_pin_swap -verbose -repair_tns 100
 # place inserted cells
 utl::report "Detailed placement"
 detailed_placement {*}$DPL_ARGS
@@ -193,14 +201,14 @@ report_image "${proj_name}.cts" true false true
 ###############################################################################
 # GLOBAL ROUTE                                                                #
 ###############################################################################
-# reduce routing resources (max utilization) of layers by 10-30%
+# reduce routing resources (max utilization) of lower layers by 20-35%
 # to spread out a bit more to other layers
 # OR strongly prefers routing with M2/M3 first and then when it
 # eventually needs M4/M5 it probably struggles with finding space to drop down
 # -> reduce M2 and M3 significantly
-set_global_routing_layer_adjustment Metal2 0.30
-set_global_routing_layer_adjustment Metal3 0.20
-set_global_routing_layer_adjustment Metal4-TopMetal1 0.10
+# also reduce TM1 as we do not want it to route there (bigger tracks etc)
+set_global_routing_layer_adjustment Metal2-Metal3 0.30
+set_global_routing_layer_adjustment TopMetal1 0.20
 set_routing_layers -signal Metal2-TopMetal1 -clock Metal2-TopMetal1
 
 utl::report "Global route"
@@ -232,11 +240,11 @@ if { $use_routing_repairs } {
     global_route -start_incremental
     # Running DPL to fix overlapped instances
     detailed_placement
-    check_placement
     # Route only the modified net by DPL
     global_route -end_incremental \
                 -congestion_report_file ${report_dir}/congestion_repaired_initial.rpt \
-                -allow_congestion
+                -guide_file ${report_dir}/${proj_name}_route.guide \
+                -verbose
     report_metrics "${proj_name}.grt_repaired_initial"
     save_checkpoint ${proj_name}.grt_repaired_initial
     report_image "${proj_name}.grt_repair_initial" true true false true
@@ -244,26 +252,22 @@ if { $use_routing_repairs } {
     # Repair timing using global route parasitics
     utl::report "Repair setup and hold violations..."
     estimate_parasitics -global_routing
-    repair_timing -setup -skip_pin_swap -verbose -repair_tns 100 -max_utilization 100
-    report_metrics "${proj_name}.grt_repaired_setup"
-    save_checkpoint ${proj_name}.grt_repaired_setup
-
-    estimate_parasitics -global_routing
-    repair_timing -hold -hold_margin 0.05 -skip_pin_swap -repair_tns 100 -max_utilization 100
-    utl::report "Repair hold done"
-    report_metrics "${proj_name}.grt_repaired_hold"
-    save_checkpoint ${proj_name}.grt_repaired_hold
-    report_image "${proj_name}.grt_hold_repair" true true false true
+    repair_timing -skip_pin_swap -verbose -repair_tns 100
+    report_metrics "${proj_name}.grt_repaired_timing"
+    save_checkpoint ${proj_name}.grt_repaired_timing
+    report_image "${proj_name}.grt_repaired_timing" true true false true
 
     utl::report "GRT incremental (2)..."
-    set_global_routing_layer_adjustment Metal2-Metal3 0.15
+    set_global_routing_layer_adjustment Metal2-Metal3 0.1
     # Run to get modified net by DPL
     global_route -start_incremental
     # Running DPL to fix overlapped instances
     detailed_placement
     # Route only the modified net by DPL
     global_route -end_incremental \
-                -congestion_report_file ${report_dir}/congestion_repaired.rpt
+                -congestion_report_file ${report_dir}/congestion_repaired.rpt \
+                -guide_file ${report_dir}/${proj_name}_route.guide \
+                -verbose
 
     estimate_parasitics -global_routing
     report_metrics "${proj_name}.grt_repaired"
@@ -271,13 +275,13 @@ if { $use_routing_repairs } {
     report_image "${proj_name}.grt_repaired" true true false true
 }
 
-# "No diode with LEF class CORE ANTENNACELL found"
-repair_antennas -iterations 5
-check_antennas
+# Requires LEF cell with class 'CORE ANTENNACELL', otherwise you need to give a cell
+repair_antennas
+# check_antennas
 
-set_thread_count 32
 
 utl::report "Detailed route"
+set_thread_count $threads
 detailed_route -output_drc ${report_dir}/${proj_name}_route_drc.rpt \
                -output_maze ${report_dir}/${proj_name}_maze.log \
                -bottom_routing_layer Metal2 \
@@ -304,9 +308,9 @@ report_image "${proj_name}.final" true true false true
 utl::report "Write DEF"
 write_def out/${proj_name}.final.def
 
-# # ## Def to GDS
-# # utl::report "Def to GDS"
-# # exec klayout -zz -rm scripts/def2stream.py
-# # set deltaT [expr [elapsed_run_time] - $time]
-# # set time [elapsed_run_time]
-# # utl::report "Time: $time sec deltaT: $deltaT"
+# ## Def to GDS
+# utl::report "Def to GDS"
+# exec klayout -zz -rm scripts/def2stream.py
+# set deltaT [expr [elapsed_run_time] - $time]
+# set time [elapsed_run_time]
+# utl::report "Time: $time sec deltaT: $deltaT"
