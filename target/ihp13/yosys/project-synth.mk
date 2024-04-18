@@ -6,7 +6,7 @@
 # - Philippe Sauter <phsauter@ethz.ch>
 
 # target clock-period in pico-seconds
-export YOSYS_TARGET_PERIOD_PS := 12000
+export YOSYS_TARGET_PERIOD_PS := 6000
 
 # modules Yosys will treat as blackboxes
 export YOSYS_BLACKBOX_MODULES := 
@@ -25,18 +25,15 @@ export YOSYS_FLATTEN_HIER := 1
 # a list of yosys selection strings, all selected instances will be 
 # kept as a seperate hierarchical element, all others will be flattened
 # https://yosyshq.readthedocs.io/projects/yosys/en/latest/cmd/select.html
-export YOSYS_KEEP_HIER_INST :=  "*/gen_bootrom.i_bootrom" \
-								"*/i_bootrom*/i_part*" \
-								"*/i_core_cva6" \
-								"*/i_cva6_icache" \
-								"*/i_wt_dcache" \
-								"*/i_scoreboard" \
-								"*/i_multiplier" \
-								"*/ex_stage_i" \
+export YOSYS_KEEP_HIER_INST :=  "*/gen_cva6_cores.__0.i_core_cva6" \
 								"*/fpu_gen.fpu_i" \
-								"*/i_clint" \
-								"*/i_plic" \
+								"*/gen_asic_regfile.i_ariane_regfile" \
+								"*/float_regfile_gen*i_ariane_fp_regfile" \
 								"*/i_dbg_dmi_jtag" \
+								"*/i_dbg_dm_top" \
+								"*/gen_clic.i_clic" \
+								"*/i_plic" \
+								"*/i_clint" \
 								"*/gen_serial_link.i_serial_link" \
 								"*/i_serial_link_physical*" \
 								"*/i_hyperbus" \
@@ -46,12 +43,17 @@ export YOSYS_KEEP_HIER_INST :=  "*/gen_bootrom.i_bootrom" \
 								"*/gen_spi_host.i_spi_host" \
 								"*/gen_vga.i_axi_vga" \
 								"*/gen_llc.i_llc" \
-								"t:*_regfile__*" \
-								"t:*_reg_top__*" \
-								"t:*cdc_fifo_gray_*" \
-								"t:*cdc_2phase_*" \
-								"t:*cdc_4phase_*" \
+								"*/gen_dma.i_dma" \
+								"t:*cheshire_reg_top*" \
+								"t:*cheshire_bootrom_part*" \
+								"t:*cdc*" \
 								"t:*clint_sync_*"
+# "*/issue_stage_i" \
+# "*/ex_stage_i" \
+# "*/i_multiplier" \
+# "*/fpu_gen.fpu_i" \
+# "*/csr_regfile_i" \
+
 
 # the paths (full names) of all instances matching these strings is reported
 # for floorplaning or writing constraints
