@@ -6,4 +6,4 @@
 # - Philippe Sauter <phsauter@ethz.ch>
 
 set_driving_cell sg13g2_buf_1
-set_load 0.05
+set_load 0.015
