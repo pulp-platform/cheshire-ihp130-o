@@ -45,11 +45,10 @@ include $(CHS_ROOT)/cheshire.mk
 # HW Configuration #
 ####################
 # name of the project/chip itself
-PROJ_NAME 	:= basilsik
+PROJ_NAME 	:= basilisk
 # name of the top-module in the design
 TOP_DESIGN 	:= iguana_chip
 # default (empty): use hyperbus, options: NO_HYPERBUS
-HYPER_CONF			:= NO_HYPERBUS
 HYPER_CONF			:= 
 L1CACHE_WAYS 		:= 2
 SCOREBOARD_ENTRIES 	:= 4
