@@ -11,7 +11,7 @@ ARG DOCKER_BASE_IMG=almalinux:8.9
 
 FROM ${DOCKER_BASE_IMG} AS builder
 ARG OR_REPO=https://github.com/The-OpenROAD-Project/OpenROAD
-ARG OR_COMMIT=c02333b7cf98b74a78ac70715d8157535046957c
+ARG OR_COMMIT=589dee1c8b0d678bd2989dbb1150df86a0b5271f
 # install packages
 COPY packages.txt /packages.txt
 RUN yum install -y $(cat /packages.txt)
