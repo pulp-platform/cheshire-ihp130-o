@@ -10,8 +10,8 @@
 ARG DOCKER_BASE_IMG=almalinux:8.9
 
 FROM ${DOCKER_BASE_IMG} AS builder
-ARG YOSYS_REPO=https://github.com/YosysHQ/yosys
-ARG YOSYS_COMMIT=yosys-0.36
+ARG YOSYS_REPO=https://github.com/phsauter/yosys.git
+ARG YOSYS_COMMIT=b6c520ad023fd16bbaa40a186fb51ba0d8b80dc1
 # install packages
 COPY packages.txt /packages.txt
 RUN yum install -y $(cat /packages.txt)
