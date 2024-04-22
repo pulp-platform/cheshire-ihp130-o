@@ -38,7 +38,8 @@ module iguana_soc import iguana_pkg::*; import cheshire_pkg::*; (
   output logic [ 3:0]           spih_sd_o,
   output logic [ 3:0]           spih_sd_en_o,
   input  logic [ 3:0]           spih_sd_i,
-  // GPIO interface
+  // GPIO/USB interface
+  input logic                     usb_clk_i,
   input  logic [GpioNumWired-1:0] gpio_i,
   output logic [GpioNumWired-1:0] gpio_o,
   output logic [GpioNumWired-1:0] gpio_en_o,
@@ -50,9 +51,9 @@ module iguana_soc import iguana_pkg::*; import cheshire_pkg::*; (
   // VGA interface
   output logic                                  vga_hsync_o,
   output logic                                  vga_vsync_o,
-  output logic [CheshireCfg.VgaRedWidth  -1:0]  vga_red_o,
-  output logic [CheshireCfg.VgaGreenWidth-1:0]  vga_green_o,
-  output logic [CheshireCfg.VgaBlueWidth -1:0]  vga_blue_o,
+  output logic [VgaOutRedWidth-1:0]  vga_red_o,
+  output logic [VgaOutRedWidth-1:0]  vga_green_o,
+  output logic [VgaOutRedWidth-1:0]  vga_blue_o,
   // Hyperbus
   output logic [HypNumPhys-1:0][HypNumChips-1:0]  hyper_cs_no,
   output logic [HypNumPhys-1:0]                   hyper_ck_o,
@@ -73,7 +74,15 @@ module iguana_soc import iguana_pkg::*; import cheshire_pkg::*; (
   reg_req_t [CheshireCfg.RegExtNumSlv-1:0] reg_ext_slv_req;
   reg_rsp_t [CheshireCfg.RegExtNumSlv-1:0] reg_ext_slv_rsp;
 
-  // GPIO width conversion (implicit)
+  logic [CheshireCfg.VgaRedWidth-1  :0] vga_red;
+  logic [CheshireCfg.VgaGreenWidth-1:0] vga_green;
+  logic [CheshireCfg.VgaBlueWidth-1 :0] vga_blue;
+
+  assign vga_red_o   = vga_red  [CheshireCfg.VgaRedWidth-1   -:VgaOutRedWidth  ];
+  assign vga_green_o = vga_green[CheshireCfg.VgaGreenWidth-1 -:VgaOutGreenWidth];
+  assign vga_blue_o  = vga_blue [CheshireCfg.VgaBlueWidth-1  -:VgaOutBlueWidth ];
+
+  // for GPIO width conversion (implicit)
   logic [31:0] gpio32_i;
   logic [31:0] gpio32_o;
   logic [31:0] gpio32_en_o;
@@ -92,25 +101,51 @@ module iguana_soc import iguana_pkg::*; import cheshire_pkg::*; (
 
   always_comb begin : io_mux
     // default: connect GPIO
-    usb_dm_i = '0;
-    usb_dp_i = {UsbNumPorts{1'b1}};
     gpio32_i  = gpio_i;
     gpio_o    = gpio32_o;
     gpio_en_o = gpio32_en_o;
+    // valid USB defaults
+    usb_dm_i = '0;
+    usb_dp_i = {UsbNumPorts{1'b1}};
 
-    // if USB-enable pin: connect USB
-    if(gpio_i[0]) begin
-      // Port 0
-      gpio_o[1] = usb_dm_o[0];
-      gpio_o[2] = usb_dp_o[0];
-      gpio_en_o[1] = usb_dm_oe_o[0];
-      gpio_en_o[2] = usb_dp_oe_o[0];
-      // Port 1
-      gpio_o[3] = usb_dm_o[1];
-      gpio_o[4] = usb_dp_o[1];
-      gpio_en_o[3] = usb_dm_oe_o[1];
-      gpio_en_o[4] = usb_dp_oe_o[1];
-    end
+    // if USB-enable bits in GPIO (MSBs) are set, connect USB
+    // Port 0
+    if(gpio32_o[28]) begin
+      usb_dm_i[0] = gpio_i[0];
+      usb_dp_i[0] = gpio_i[1];
+      gpio_o[0] = usb_dm_o[0];
+      gpio_o[1] = usb_dp_o[0];
+      gpio_en_o[0] = usb_dm_oe_o[0];
+      gpio_en_o[1] = usb_dp_oe_o[0];
+     end
+     // Port 1
+    if(gpio32_o[29]) begin
+      usb_dm_i[1] = gpio_i[2];
+      usb_dp_i[1] = gpio_i[3];
+      gpio_o[2] = usb_dm_o[1];
+      gpio_o[3] = usb_dp_o[1];
+      gpio_en_o[2] = usb_dm_oe_o[1];
+      gpio_en_o[3] = usb_dp_oe_o[1];
+     end
+     // Port 2
+    if(gpio32_o[30]) begin
+      usb_dm_i[2] = gpio_i[4];
+      usb_dp_i[2] = gpio_i[5];
+      gpio_o[4] = usb_dm_o[2];
+      gpio_o[5] = usb_dp_o[2];
+      gpio_en_o[4] = usb_dm_oe_o[2];
+      gpio_en_o[5] = usb_dp_oe_o[2];
+     end
+     // Port 3
+    if(gpio32_o[31]) begin
+      usb_dm_i[3] = gpio_i[6];
+      usb_dp_i[3] = gpio_i[7];
+      gpio_o[6] = usb_dm_o[3];
+      gpio_o[7] = usb_dp_o[3];
+      gpio_en_o[6] = usb_dm_oe_o[3];
+      gpio_en_o[7] = usb_dp_oe_o[3];
+     end
+     
   end
 
   // Global reset synchronizer
@@ -139,7 +174,7 @@ module iguana_soc import iguana_pkg::*; import cheshire_pkg::*; (
   ) i_cheshire_soc (
     .clk_i,
     .rst_ni             ( synced_rst_n ),
-    .test_mode_i,
+    .test_mode_i        ( 1'b0 ),
     .boot_mode_i,
     .rtc_i,
     // External AXI LLC (DRAM) port
@@ -208,11 +243,11 @@ module iguana_soc import iguana_pkg::*; import cheshire_pkg::*; (
     // VGA interface
     .vga_hsync_o,
     .vga_vsync_o,
-    .vga_red_o,
-    .vga_green_o,
-    .vga_blue_o,
+    .vga_red_o          ( vga_red   ),
+    .vga_green_o        ( vga_green ),
+    .vga_blue_o         ( vga_blue  ),
     // USB interface
-    .usb_clk_i          ( clk_i        ),
+    .usb_clk_i,
     .usb_rst_ni         ( synced_rst_n ),
     .usb_dm_i,
     .usb_dm_o,

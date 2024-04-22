@@ -10,7 +10,7 @@
 module iguana_chip import iguana_pkg::*; import cheshire_pkg::*; (
   input  wire clk_i,
   input  wire rst_ni,
-  input  wire test_mode_i,
+  // input  wire test_mode_i, internally tied to zero
   input  wire boot_mode_0_i,
   input  wire boot_mode_1_i,
   input  wire rtc_i,
@@ -34,7 +34,9 @@ module iguana_chip import iguana_pkg::*; import cheshire_pkg::*; (
   inout  wire spih_sd_1_io,
   inout  wire spih_sd_2_io,
   inout  wire spih_sd_3_io,
-  // GPIO interface
+
+  input wire usb_clk_i, // 48 MHz (replaces testmode)
+  // GPIO/USB interface
   inout  wire gpio_0_io,
   inout  wire gpio_1_io,
   inout  wire gpio_2_io,
@@ -96,7 +98,8 @@ module iguana_chip import iguana_pkg::*; import cheshire_pkg::*; (
   mc_pad_in     pad_clk         ( .pad_io ( clk_i         ), .d_o ( soc_clk_i          ) );
   mc_pad_in     pad_rtc         ( .pad_io ( rtc_i         ), .d_o ( soc_rtc_i          ) );
   mc_pad_io_pu  pad_rst_n       ( .pad_io ( rst_ni        ), .d_o ( soc_rst_ni         ), .d_i ( 1'b0 ), .oe_i ( 1'b0 ) );
-  mc_pad_io_pd  pad_test_mode   ( .pad_io ( test_mode_i   ), .d_o ( soc_test_mode_i    ), .d_i ( 1'b0 ), .oe_i ( 1'b0 ) );
+  assign soc_test_mode_i = 1'b0;
+  //mc_pad_io_pd  pad_test_mode   ( .pad_io ( test_mode_i   ), .d_o ( soc_test_mode_i    ), .d_i ( 1'b0 ), .oe_i ( 1'b0 ) );
   mc_pad_io_pd  pad_boot_mode_0 ( .pad_io ( boot_mode_0_i ), .d_o ( soc_boot_mode_i[0] ), .d_i ( 1'b0 ), .oe_i ( 1'b0 ) );
   mc_pad_io_pd  pad_boot_mode_1 ( .pad_io ( boot_mode_1_i ), .d_o ( soc_boot_mode_i[1] ), .d_i ( 1'b0 ), .oe_i ( 1'b0 ) );
 
@@ -150,9 +153,12 @@ module iguana_chip import iguana_pkg::*; import cheshire_pkg::*; (
   mc_pad_io     pad_spih_sd_3  ( .pad_io ( spih_sd_3_io ), .d_i ( soc_spih_sd_o[3]  ), .oe_i ( soc_spih_sd_en_o[3]  ), .d_o ( soc_spih_sd_i[3] ) );
 
   // GPIO interface
+  logic                     soc_usb_clk_i;
   logic [GpioNumWired-1:0]  soc_gpio_i;
   logic [GpioNumWired-1:0]  soc_gpio_o;
   logic [GpioNumWired-1:0]  soc_gpio_en_o;
+
+  mc_pad_io_pd  pad_usb_clk ( .pad_io ( usb_clk_i  ), .d_o ( soc_usb_clk_i  ), .d_i ( 1'b0 ), .oe_i ( 1'b0 ) );
 
   mc_pad_io     pad_gpio_0  ( .pad_io ( gpio_0_io  ), .d_i ( soc_gpio_o[0]  ), .d_o ( soc_gpio_i[0]  ), .oe_i ( soc_gpio_en_o[0]  ) );
   mc_pad_io     pad_gpio_1  ( .pad_io ( gpio_1_io  ), .d_i ( soc_gpio_o[1]  ), .d_o ( soc_gpio_i[1]  ), .oe_i ( soc_gpio_en_o[1]  ) );
@@ -185,11 +191,11 @@ module iguana_chip import iguana_pkg::*; import cheshire_pkg::*; (
   mc_pad_io     pad_slink_3_o   ( .pad_io ( slink_3_o   ), .d_i ( soc_slink_o[0][3]  ), .oe_i ( 1'b1 ), .d_o ( ) );
 
   // VGA interface
-  logic                                 soc_vga_hsync_o;
-  logic                                 soc_vga_vsync_o;
-  logic [CheshireCfg.VgaRedWidth  -1:0] soc_vga_red_o;
-  logic [CheshireCfg.VgaGreenWidth-1:0] soc_vga_green_o;
-  logic [CheshireCfg.VgaBlueWidth -1:0] soc_vga_blue_o;
+  logic                      soc_vga_hsync_o;
+  logic                      soc_vga_vsync_o;
+  logic [VgaOutRedWidth-1:0] soc_vga_red_o;
+  logic [VgaOutRedWidth-1:0] soc_vga_green_o;
+  logic [VgaOutRedWidth-1:0] soc_vga_blue_o;
 
   mc_pad_io     pad_vga_hsync   ( .pad_io ( vga_hsync_o   ), .d_i ( soc_vga_hsync_o    ), .oe_i ( 1'b1 ), .d_o ( ) );
   mc_pad_io     pad_vga_vsync   ( .pad_io ( vga_vsync_o   ), .d_i ( soc_vga_vsync_o    ), .oe_i ( 1'b1 ), .d_o ( ) );
@@ -257,6 +263,7 @@ module iguana_chip import iguana_pkg::*; import cheshire_pkg::*; (
     .spih_sd_o        ( soc_spih_sd_o     ),
     .spih_sd_en_o     ( soc_spih_sd_en_o  ),
     .spih_sd_i        ( soc_spih_sd_i     ),
+    .usb_clk_i        ( soc_usb_clk_i ),
     .gpio_i           ( soc_gpio_i    ),
     .gpio_o           ( soc_gpio_o    ),
     .gpio_en_o        ( soc_gpio_en_o ),
