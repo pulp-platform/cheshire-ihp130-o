@@ -36,31 +36,35 @@ package iguana_pkg;
     ret.LlcNumBlocks = 8;
 
     // Tame atomic filters
-    ret.RegMaxReadTxns      = 1;
-    ret.RegMaxWriteTxns     = 1;
+    ret.RegMaxReadTxns      = 2;
+    ret.RegMaxWriteTxns     = 2;
     ret.RegAmoNumCuts       = 0;
-    ret.DbgMaxReqs          = 1;
-    ret.DbgMaxReadTxns      = 1;
-    ret.DbgMaxWriteTxns     = 1;
+    ret.DbgMaxReqs          = 2;
+    ret.DbgMaxReadTxns      = 2;
+    ret.DbgMaxWriteTxns     = 2;
     ret.DbgAmoNumCuts       = 0;
     ret.LlcAmoNumCuts       = 0;
     ret.LlcAmoPostCut       = 1;
-    ret.LlcMaxReadTxns      = 8;
-    ret.LlcMaxWriteTxns     = 8;
+    ret.LlcMaxReadTxns      = 16;
+    ret.LlcMaxWriteTxns     = 16;
     ret.DmaConfMaxReadTxns  = 1;
     ret.DmaConfMaxWriteTxns = 1;
     ret.DmaConfAmoNumCuts   = 0;
 
     // reduce axi-xbar a smidge
-    ret.AxiMaxMstTrans      = 12;
-    ret.AxiMaxSlvTrans      = 12;
+    ret.AxiMaxMstTrans      = 16;
+    ret.AxiMaxSlvTrans      = 16;
 
     ret.DmaNumAxInFlight    = 8;
 
+    // 16 bit for Linux compatibility, only MSB bits are connected to pins
+    ret.VgaRedWidth   = 5;
+    ret.VgaGreenWidth = 6;
+    ret.VgaBlueWidth  = 5;
+
     // if you change this you may have to change the number of regbus coming out of
     // cheshire (RegOut.num_out) in the patch at target/ihp13/picle/patch/svase/svase.sed
-    ret.Clic = 1;
-    ret.BusErr = 0;
+    ret.BusErr = 0; // too large
 
     // Hyberbus configuration port
     ret.RegExtNumSlv          = 1;
@@ -72,6 +76,10 @@ package iguana_pkg;
   endfunction
 
   localparam cheshire_cfg_t CheshireCfg = gen_cheshire_cfg();
+
+  localparam int unsigned VgaOutRedWidth   = 3;
+  localparam int unsigned VgaOutGreenWidth = 3;
+  localparam int unsigned VgaOutBlueWidth  = 2;
 
   // Define used types
   `CHESHIRE_TYPEDEF_ALL(, CheshireCfg)
