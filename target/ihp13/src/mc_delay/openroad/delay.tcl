@@ -33,8 +33,8 @@ link_design ${DESIGN_NAME}
 read_sdc delay_line_D4_O1_6P000.sdc
 
 
-set ASPECT 2.0
-set UTIL 80
+set ASPECT 1.0
+set UTIL 75
 set DENSITY [expr (1.0*$UTIL)/100]
 
 # --- TRIAL PLACEMENT ---
@@ -55,14 +55,13 @@ set_wire_rc -clock  -layer Metal3
 
 # global placement
 # low final overflow so global-place actually solves it instead of detailed_placement
-global_placement -density $DENSITY -skip_io -routability_driven -overflow 0.00000001
+global_placement -density $DENSITY -skip_io -overflow 0.00000001
 detailed_placement
 optimize_mirroring
 
 estimate_parasitics -placement
-repair_design -max_utilization 100
+repair_timing -allow_setup_violations -hold -hold_margin 0.4 -repair_tns 100
 repair_timing -setup -repair_tns 100
-repair_timing -hold  -repair_tns 100
 
 # detail placement
 detailed_placement
@@ -110,7 +109,8 @@ global_route -guide_file reports/route.guide -verbose
 
 # final timing repair
 estimate_parasitics -global_routing
-repair_timing -repair_tns 100
+repair_timing -allow_setup_violations -hold -repair_tns 100
+repair_timing -setup -repair_tns 100
 global_route -start_incremental
 detailed_placement
 optimize_mirroring
