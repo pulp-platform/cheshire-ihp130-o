@@ -62,7 +62,7 @@ set ASYNC_PINS_DMIREQ [get_nets $CHS_DEBUG/i_dmi_cdc/i_cdc_req/*async_*]
 set ASYNC_PINS_DMIRSP [get_nets $CHS_DEBUG/i_dmi_cdc/i_cdc_resp/*async_*]
 set ASYNC_PINS_SLIN   [get_nets $CHS_SLINK_RX/i_cdc_in/async_*]
 # port i_clint/i_sync_edge/i_sync/serial_i
-set CLINT_ASYNC_REG   [lindex [get_fanout -from $CHS_CLINT/rtc_i -endpoints_only -only_cells] 0]
+set CLINT_ASYNC_REG   [lindex [get_fanout -from $CHESHIRE.rtc_i -endpoints_only -only_cells] 0]
 set ASYNC_PINS_CLINT  [get_pins -of_objects $CLINT_ASYNC_REG -filter "name == $DFF_DATA_PIN"]
 
 # We define a single leaf register as a reference clock pin for master interfaces to avoid accumulating CTS delays
@@ -127,6 +127,9 @@ create_clock -name clk_rtc -period $TCK_RTC [get_ports rtc_i]
 set TCK_SLI [expr 4 * $TCK_SYS]
 create_clock -name clk_sli -period $TCK_SLI [get_ports slink_clk_i]
 
+set TCK_USB [expr 1000/48]
+create_clock -name clk_usb -period $TCK_USB [get_ports test_mode_i]
+
 # Model incoming Hyperbus RWDS clock as shifted system clock leaving chip via Hyperbus CK pad, 
 # going through a HyperRAM device, and back to our RWDS pad (defined on pad to enable RWDS output delay constraint):
 # * System clock pad input delay (TT 0.9ns @ hyper capacities)
@@ -185,7 +188,8 @@ set_clock_groups -asynchronous -name clk_groups_async \
      -group {clk_rtc} \
      -group {clk_jtg} \
      -group {clk_sys clk_gen_slo clk_gen_slo_drv clk_hyp_rwdsi} \
-     -group {clk_sli}
+     -group {clk_sli} \
+     -group {clk_usb}
 
 # We set reasonable uncertainties and transitions for all nonvirtual clocks
 set_clock_uncertainty 0.1 [all_clocks]
@@ -234,14 +238,14 @@ set_max_delay  [expr $TCK_SYS * 0.35] -to $ASYNC_PINS_CLINT -ignore_clock_latenc
 puts "Input/Outputs..."
 
 # We assume test mode is disabled. This is required to stop spurious clock propagation at some muxes
-set_case_analysis 0 [get_ports test_mode_i]
+# set_case_analysis 0 [get_ports test_mode_i]
 
 # Reset and boot mode should propagate to system domain within a clock cycle.
 # the reset synchronizer makes sure de-assertion should be within the first clock half-cycle
 # `network_latency_included` ensures IO timing w.r.t. the *externally applied*
 # clock (i.e. the one at the clock pad_instead of the internal clock tree.
-set_input_delay -min -add_delay -clock clk_sys 0 [get_ports {rst_ni boot_mode_*_i}]
-set_input_delay -max -add_delay -clock clk_sys [ expr $TCK_SYS * 0.50 ] [get_ports {rst_ni boot_mode_*_i}]
+set_input_delay -min -add_delay -clock clk_sys -network_latency_included [ expr $TCK_SYS * 0.10 ] [get_ports {rst_ni boot_mode_*_i}]
+set_input_delay -max -add_delay -clock clk_sys -network_latency_included [ expr $TCK_SYS * 0.50 ] [get_ports {rst_ni boot_mode_*_i}]
 
 # Test mode can propagate to all domains within reasonable delay
 set_false_path -hold                    -from [get_ports test_mode_i]
@@ -252,10 +256,10 @@ set_max_delay  [ expr $TCK_SYS * 0.75 ] -from [get_ports test_mode_i]
 ##########
 puts "JTAG..."
 
-set_input_delay  -min -add_delay -clock clk_jtg 0 [get_ports {jtag_tdi_i jtag_tms_i}]
-set_input_delay  -max -add_delay -clock clk_jtg [ expr $TCK_JTG * 0.50 ]     [get_ports {jtag_tdi_i jtag_tms_i}]
-set_output_delay -min -add_delay -clock clk_jtg [ expr $TCK_JTG * 0.10 / 2 ] [get_ports jtag_tdo_o]
-set_output_delay -max -add_delay -clock clk_jtg [ expr $TCK_JTG * 0.50 / 2 ] [get_ports jtag_tdo_o]
+set_input_delay  -min -add_delay -clock clk_jtg -network_latency_included [ expr $TCK_JTG * 0.10 ]     [get_ports {jtag_tdi_i jtag_tms_i}]
+set_input_delay  -max -add_delay -clock clk_jtg -network_latency_included [ expr $TCK_JTG * 0.50 ]     [get_ports {jtag_tdi_i jtag_tms_i}]
+set_output_delay -min -add_delay -clock clk_jtg -network_latency_included [ expr $TCK_JTG * 0.10 / 2 ] [get_ports jtag_tdo_o]
+set_output_delay -max -add_delay -clock clk_jtg -network_latency_included [ expr $TCK_JTG * 0.50 / 2 ] [get_ports jtag_tdo_o]
 
 set_max_delay $TCK_JTG  -from [get_ports jtag_trst_ni]
 set_false_path -hold    -from [get_ports jtag_trst_ni]
@@ -291,7 +295,7 @@ set SPIH_IO_CYC 2
 set_multicycle_path -setup $SPIH_IO_CYC              -to [get_ports spih*]
 set_multicycle_path -hold  [ expr $SPIH_IO_CYC - 1 ] -to [get_ports spih*]
 
-set_input_delay  -min -add_delay -clock clk_sys 0 [get_ports spih_sd*]
+set_input_delay  -min -add_delay -clock clk_sys -reference_pin $SPIH_REFPIN [ expr $TCK_SYS * $SPIH_IO_CYC * 0.10 ] [get_ports spih_sd*]
 set_input_delay  -max -add_delay -clock clk_sys -reference_pin $SPIH_REFPIN [ expr $TCK_SYS * $SPIH_IO_CYC * 0.35 ] [get_ports spih_sd*]
 set_output_delay -min -add_delay -clock clk_sys -reference_pin $SPIH_REFPIN [ expr $TCK_SYS * $SPIH_IO_CYC * 0.10 ] [get_ports {spih_sck_o spih_sd* spih_csb*}]
 set_output_delay -max -add_delay -clock clk_sys -reference_pin $SPIH_REFPIN [ expr $TCK_SYS * $SPIH_IO_CYC * 0.35 ] [get_ports {spih_sck_o spih_sd* spih_csb*}]
@@ -301,7 +305,7 @@ set_output_delay -max -add_delay -clock clk_sys -reference_pin $SPIH_REFPIN [ ex
 #########
 puts "I2C..."
 
-set_input_delay  -min -add_delay -clock clk_sys 0 [get_ports i2c_*_io]
+set_input_delay  -min -add_delay -clock clk_sys -reference_pin $I2C_REFPIN [ expr $TCK_SYS * 0.10 ] [get_ports i2c_*_io]
 set_input_delay  -max -add_delay -clock clk_sys -reference_pin $I2C_REFPIN [ expr $TCK_SYS * 0.35 ] [get_ports i2c_*_io]
 set_output_delay -min -add_delay -clock clk_sys -reference_pin $I2C_REFPIN [ expr $TCK_SYS * 0.10 ] [get_ports i2c_*_io]
 set_output_delay -max -add_delay -clock clk_sys -reference_pin $I2C_REFPIN [ expr $TCK_SYS * 0.35 ] [get_ports i2c_*_io]
@@ -312,7 +316,7 @@ set_output_delay -max -add_delay -clock clk_sys -reference_pin $I2C_REFPIN [ exp
 ##########
 puts "UART..."
 
-set_input_delay  -min -add_delay -clock clk_sys 0 [get_ports uart_rx_i]
+set_input_delay  -min -add_delay -clock clk_sys -reference_pin $UART_REFPIN [ expr $TCK_SYS * 0.10 ] [get_ports uart_rx_i]
 set_input_delay  -max -add_delay -clock clk_sys -reference_pin $UART_REFPIN [ expr $TCK_SYS * 0.35 ] [get_ports uart_rx_i]
 set_output_delay -min -add_delay -clock clk_sys -reference_pin $UART_REFPIN [ expr $TCK_SYS * 0.10 ] [get_ports uart_tx_o]
 set_output_delay -max -add_delay -clock clk_sys -reference_pin $UART_REFPIN [ expr $TCK_SYS * 0.35 ] [get_ports uart_tx_o]
@@ -323,7 +327,7 @@ set_output_delay -max -add_delay -clock clk_sys -reference_pin $UART_REFPIN [ ex
 ##########
 puts "GPIO..."
 
-set_input_delay  -min -add_delay -clock clk_sys 0 [get_ports gpio_*_io]
+set_input_delay  -min -add_delay -clock clk_sys -reference_pin $GPIO_REFPIN [ expr $TCK_SYS * 0.10 ] [get_ports gpio_*_io]
 set_input_delay  -max -add_delay -clock clk_sys -reference_pin $GPIO_REFPIN [ expr $TCK_SYS * 0.35 ] [get_ports gpio_*_io]
 set_output_delay -min -add_delay -clock clk_sys -reference_pin $GPIO_REFPIN [ expr $TCK_SYS * 0.10 ] [get_ports gpio_*_io]
 set_output_delay -max -add_delay -clock clk_sys -reference_pin $GPIO_REFPIN [ expr $TCK_SYS * 0.35 ] [get_ports gpio_*_io]
@@ -342,10 +346,10 @@ set SL_OUT_CLK  [get_ports slink_clk_o]
 # DDR Input: Maximize assumed *transition* (unstable) interval by maximizing input delay span.
 # Transitions happen *between* sampling input clock edges, so centered around T/4 *after* sampling edges.
 # We assume that the transition takes up almost a full half period, so (T/4 - (T/4-skew), T/4 + (T/4-skew)).
-set_input_delay -min -add_delay             -clock clk_sli [expr               + $SL_MAX_SKEW] $SL_IN
-set_input_delay -min -add_delay -clock_fall -clock clk_sli [expr               + $SL_MAX_SKEW] $SL_IN
-set_input_delay -max -add_delay             -clock clk_sli [expr  $TCK_SLI / 2 -1.5 - $SL_MAX_SKEW] $SL_IN
-set_input_delay -max -add_delay -clock_fall -clock clk_sli [expr  $TCK_SLI / 2 -1.5 - $SL_MAX_SKEW] $SL_IN
+set_input_delay -min -add_delay             -clock clk_sli -network_latency_included [expr               + $SL_MAX_SKEW] $SL_IN
+set_input_delay -min -add_delay -clock_fall -clock clk_sli -network_latency_included [expr               + $SL_MAX_SKEW] $SL_IN
+set_input_delay -max -add_delay             -clock clk_sli -network_latency_included [expr  $TCK_SLI / 2 -1.5 - $SL_MAX_SKEW] $SL_IN
+set_input_delay -max -add_delay -clock_fall -clock clk_sli -network_latency_included [expr  $TCK_SLI / 2 -1.5 - $SL_MAX_SKEW] $SL_IN
 
 # DDR Output: Maximize *stable* interval we provide by maximizing output delay span (i.e. range in
 # which the target device may sample). This allows our outputs to transition only in a small margin.
@@ -390,10 +394,10 @@ if { ![info exists ::env(HYPER_CONF)] || $::env(HYPER_CONF) ne "NO_HYPERBUS"} {
   # DDR Input: As for serial link, maximize the assumed *transition* interval by maximizing input delay span.
   # However here, transitions happen *at* edge-aligned input clock edges, so they are centered *at* the edges.
   # Therefore, the input transition interval becomes (T/4 - (T/4-skew), T/4 + (T/4-skew)).
-  set_input_delay -min -add_delay             -clock clk_hyp_rwdsi [expr -$TCK_SYS / 4 + $HYP_MAX_SLEW] $HYP_IO
-  set_input_delay -min -add_delay -clock_fall -clock clk_hyp_rwdsi [expr -$TCK_SYS / 4 + $HYP_MAX_SLEW] $HYP_IO
-  set_input_delay -max -add_delay             -clock clk_hyp_rwdsi [expr  $TCK_SYS / 4 - $HYP_MAX_SLEW] $HYP_IO
-  set_input_delay -max -add_delay -clock_fall -clock clk_hyp_rwdsi [expr  $TCK_SYS / 4 - $HYP_MAX_SLEW] $HYP_IO
+  set_input_delay -min -add_delay             -clock clk_hyp_rwdsi -network_latency_included [expr -$TCK_SYS / 4 + $HYP_MAX_SLEW] $HYP_IO
+  set_input_delay -min -add_delay -clock_fall -clock clk_hyp_rwdsi -network_latency_included [expr -$TCK_SYS / 4 + $HYP_MAX_SLEW] $HYP_IO
+  set_input_delay -max -add_delay             -clock clk_hyp_rwdsi -network_latency_included [expr  $TCK_SYS / 4 - $HYP_MAX_SLEW] $HYP_IO
+  set_input_delay -max -add_delay -clock_fall -clock clk_hyp_rwdsi -network_latency_included [expr  $TCK_SYS / 4 - $HYP_MAX_SLEW] $HYP_IO
 
   # DDR Output: Maximize *stable* interval we provide by maximizing output delay span.
   # This is exactly analogous to the serial link case, as the sending clock is center-aligned with data.
