@@ -48,7 +48,8 @@ export YOSYS_KEEP_HIER_INST :=  "*/gen_cva6_cores.__0.i_core_cva6" \
 								"t:*cheshire_reg_top*" \
 								"t:*cheshire_bootrom_part*" \
 								"t:*cdc*" \
-								"t:*clint_sync_*"
+								"t:*clint_sync_*" \
+								"t:*BufferCC*"
 # "*/issue_stage_i" \
 # "*/ex_stage_i" \
 # "*/i_multiplier" \
