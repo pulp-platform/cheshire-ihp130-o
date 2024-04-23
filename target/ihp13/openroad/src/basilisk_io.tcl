@@ -84,8 +84,8 @@ place_pad -row IO_SOUTH -location 1555.0 "pad_slink_0_i.i_pad"     ; # pin no: 2
 place_pad -row IO_SOUTH -location 1695.0 "pad_slink_1_i.i_pad"     ; # pin no: 28
 place_pad -row IO_SOUTH -location 1835.0 "pad_slink_2_i.i_pad"     ; # pin no: 29
 place_pad -row IO_SOUTH -location 1975.0 "pad_slink_3_i.i_pad"     ; # pin no: 30
-place_pad -row IO_SOUTH -location 2115.0 "pad_gpio_6.i_pad"        ; # pin no: 31
-place_pad -row IO_SOUTH -location 2255.0 "pad_gpio_7.i_pad"        ; # pin no: 32
+place_pad -row IO_SOUTH -location 2115.0 "pad_boot_mode_0.i_pad"   ; # pin no: 31
+place_pad -row IO_SOUTH -location 2255.0 "pad_boot_mode_1.i_pad"   ; # pin no: 32
 place_pad -row IO_SOUTH -location 2395.0 "pad_gndco_6.i_pad"       ; #
 place_pad -row IO_SOUTH -location 2535.0 "pad_gndco_7.i_pad"       ; #
 place_pad -row IO_SOUTH -location 2675.0 "pad_vddco_6.i_pad"       ; # pin no: 33
@@ -161,8 +161,8 @@ place_pad -row IO_NORTH -location 4775.0 "pad_jtag_tdo.i_pad"      ; # pin no: 7
 place_pad -row IO_NORTH -location 4635.0 "pad_jtag_tdi.i_pad"      ; # pin no: 71
 place_pad -row IO_NORTH -location 4495.0 "pad_jtag_tms.i_pad"      ; # pin no: 72
 place_pad -row IO_NORTH -location 4355.0 "pad_rtc.i_pad"           ; # pin no: 73
-place_pad -row IO_NORTH -location 4215.0 "pad_boot_mode_0.i_pad"   ; # pin no: 74
-place_pad -row IO_NORTH -location 4075.0 "pad_boot_mode_1.i_pad"   ; # pin no: 75
+place_pad -row IO_NORTH -location 4215.0 "pad_gpio_6.i_pad"        ; # pin no: 74
+place_pad -row IO_NORTH -location 4075.0 "pad_gpio_7.i_pad"        ; # pin no: 75
 place_pad -row IO_NORTH -location 3935.0 "pad_rst_n.i_pad"         ; # pin no: 76
 place_pad -row IO_NORTH -location 3795.0 "pad_gndco_18.i_pad"      ; #
 place_pad -row IO_NORTH -location 3655.0 "pad_gndco_19.i_pad"      ; #
