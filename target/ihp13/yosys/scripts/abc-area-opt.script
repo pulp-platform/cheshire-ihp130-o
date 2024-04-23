@@ -1,0 +1,33 @@
+# Copyright (c) 2022 ETH Zurich and University of Bologna.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Authors:
+# - Philippe Sauter <phsauter@ethz.ch>
+#
+
+print_stats
+
+strash
+dch -x
+map -B 0.9
+topo
+stime
+print_level
+print_stats -t
+
+write_blif "{tmpdir}/tmp.blif";
+read_lib  -w "{TECH_CELLS}" ;
+read_blif "{tmpdir}/tmp.blif";
+
+echo "buffering for delay and fanout..."
+buffer -p
+echo "resizing cells..."
+upsize {D}
+dnsize {D}
+upsize {D}
+dnsize {D}
+
+echo "Final timing:"
+stime
+print_stats -t
