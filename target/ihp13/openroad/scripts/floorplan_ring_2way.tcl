@@ -241,6 +241,8 @@ set Y [expr $Y + $RamSize256x48_W + $channelY]
 placeInstance $cva6_icache_tag_1_high $X $Y R90
 addHaloToBlock $haloBlockL $haloBlockB $haloBlockR $haloBlockT $cva6_icache_tag_1_high
 
+set dLineY [expr $Y + $RamSize256x48_W + $channelY]
+
 
 ##########################################################################
 # Place cva6_icache_data
@@ -338,7 +340,6 @@ placeInstance $cva6_wt_dcache_tag_0_high $X $Y R270
 addHaloToBlock $haloBlockL $haloBlockB $haloBlockR $haloBlockT $cva6_wt_dcache_tag_0_high
 
 
-
 # the blockages on-top of the macro blocks do not remove the std-cell rows between them
 # when using pdngen, so we cut them manually with an extra X-halo
 cut_rows -halo_width_y 1 -halo_width_x 2
@@ -350,8 +351,16 @@ cut_rows -halo_width_y 1 -halo_width_x 2
 # delay lines after cut since they are essentially multi-row standard cells
 
 if { ![info exists ::env(HYPER_CONF)] || $::env(HYPER_CONF) ne "NO_HYPERBUS"} {
+  set dLineMaster  [[ord::get_db] findMaster "delay_line_D4_O1_6P000"]
+  set dLineSize_H  [ord::dbu_to_microns [$dLineMaster getHeight]]
+
+  set dLineY_numSites [expr {ceil($dLineY / $siteHeight)}]
+  set dLineY_rounded  [expr $dLineY_numSites * $siteHeight]
+  set dLineY2_numSites [expr {ceil($dLineSize_H / $siteHeight)} + $dLineY_numSites]
+  set dLineY2_rounded  [expr $dLineY2_numSites * $siteHeight]
+
   set X [expr $coreArea_leftX]
   # 785 cell-rows above first (bottom of core-area)
-  placeInstance $delay_line_rx $X [expr $coreArea_bottomY + $siteHeight*785] R0
-  placeInstance $delay_line_tx $X [expr $coreArea_bottomY + $siteHeight*800] R0
+  placeInstance $delay_line_rx $X [expr $coreArea_bottomY + $dLineY_rounded] R0
+  placeInstance $delay_line_tx $X [expr $coreArea_bottomY + $dLineY2_rounded] R0
 }
