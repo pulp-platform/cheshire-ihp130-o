@@ -1,10 +1,8 @@
-# Iguana
+# Basilisk
 
-Iguana is an end-to-end open source Linux-capable SoC targeting IHP's [130nm BiCMOS Open Source PDK](https://github.com/IHP-GmbH/IHP-Open-PDK). It is based on our Linux-capable toolkit called [Cheshire](https://github.com/pulp-platform/cheshire). Iguana is part of the [PULP (Parallel Ultra-Low-Power) platform](https://pulp-platform.org/).
+Basilisk is an end-to-end open source Linux-capable SoC targeting IHP's [130nm BiCMOS Open Source PDK](https://github.com/IHP-GmbH/IHP-Open-PDK). It is based on our Linux-capable toolkit called [Cheshire](https://github.com/pulp-platform/cheshire). Basilisk is part of the [PULP (Parallel Ultra-Low-Power) platform](https://pulp-platform.org/).
 
-Iguana is currently being developed further as Basilisk. The RTL is based on a newer version of Cheshire, otherwise it is the same. The main difference are the physical dimension of the chip.
-
-The top-level design is called `ìguana_chip`, the current project name (and with it the file names) is `basilisk`.
+Basilisk was initially developed under the name *Iguana*; hence, the top-level design is called `iguana_chip`, but the current project name (used in most scripts) is `basilisk`.
 
 
 ## Disclaimer
