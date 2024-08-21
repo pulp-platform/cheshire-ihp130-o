@@ -25,7 +25,7 @@ foreach inst $delay_lines {
 # Used for manual macro placement
 
 set CHESHIRE        i_iguana_soc.i_cheshire_soc
-set CHS_L1_CACHE  	$CHESHIRE.gen_cva6_cores.__0.i_core_cva6.gen_cache_wt.i_cache_subsystem
+set CHS_L1_CACHE  	$CHESHIRE.gen_cva6_cores.__0.i_core_cva6/gen_cache_wt.i_cache_subsystem
 set CHS_ICACHE 		$CHS_L1_CACHE.i_cva6_icache
 set CHS_DCACHE 		$CHS_L1_CACHE.i_wt_dcache.i_wt_dcache_mem
 set CHS_LLC_CACHE	$CHESHIRE.gen_llc.i_llc/i_axi_llc_top_raw
