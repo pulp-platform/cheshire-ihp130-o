@@ -13,80 +13,7 @@
 ## Global ##
 ############
 
-# technology dependent
-set DFF_CLK_PIN CLK
-set DFF_DATA_PIN D
-set DFF_OUTP_PIN Q
-
-set MUX_CONTROL_PIN S
-
-# top-level cheshire paths
-set CHESHIRE        i_iguana_soc.i_cheshire_soc
-set CHS_CLINT       $CHESHIRE.i_clint
-set CHS_SLINK       $CHESHIRE.gen_serial_link.i_serial_link
-set CHS_SLINK_PHY0  $CHS_SLINK/gen_phy_channels.__0.i_serial_link_physical
-set CHS_SLINK_TX    $CHS_SLINK_PHY0.i_serial_link_physical_tx
-set CHS_SLINK_RX    $CHS_SLINK_PHY0.i_serial_link_physical_rx
-set CHS_VGA         $CHESHIRE.gen_vga.i_axi_vga
-set CHS_SPI         $CHESHIRE.gen_spi_host.i_spi_host
-set CHS_I2C         $CHESHIRE.gen_i2c.i_i2c
-set CHS_UART        $CHESHIRE.gen_uart.i_uart
-set CHS_GPIO        $CHESHIRE.gen_gpio.i_gpio
-set CHS_DEBUG       $CHESHIRE.i_dbg_dmi_jtag
-set HYPERBUS        i_iguana_soc.i_hyperbus
-set HYPERBUS_PHY    $HYPERBUS/i_phy.genblk1.i_phy
-
-# NOTE:
-# OpenROAD flattens the hierarchy (but leaves '/' in the instance names)
-# this means for all ports, it always uses the name of the net connected to the port from the top
-# so for .port_o(blabla) it uses blabla and module/port_o is gone.
-
-# SYNTHESIS:
-# make sure net clk_slow is preserved by name (should be the case as its a clock)
-# preserve module-instance i_serial_link for ddr_rcv_clk_o
-set SLO_PHY_TCLK_REG [get_fanin -to $CHS_SLINK_TX/clk_slow -startpoints_only -only_cells]
-set SLO_PHY_TCLK_Q   [get_pins -of_objects $SLO_PHY_TCLK_REG -filter "name == $DFF_OUTP_PIN"]
-set SLO_PHY_TCLK_CLK [get_pins -of_objects $SLO_PHY_TCLK_REG -filter "name == $DFF_CLK_PIN"]
-
-# port i_serial_link/ddr_rcv_clk_o
-set SLO_PHY_RCLK_REG [get_fanin -to $CHESHIRE.slink_rcv_clk_o -startpoints_only -only_cells]
-set SLO_PHY_RCLK_Q   [get_pins -of_objects $SLO_PHY_RCLK_REG -filter "name == $DFF_OUTP_PIN"]
-set SLO_PHY_RCLK_CLK [get_pins -of_objects $SLO_PHY_RCLK_REG -filter "name == $DFF_CLK_PIN"]
-
-# SYNTHESIS:
-# preserve all modules of type 'cdc_?phase_*' (2phase and 4phase) 
-# so we can use the ports to find asyncs
-# preserver all modules of type 'clint_sync_*' so we can use serial_i to find the first register
-# (remember: OpenROAD flattens to ports are now nets)
-set ASYNC_PINS_DMIREQ [get_nets $CHS_DEBUG/i_dmi_cdc/i_cdc_req/*async_*]
-set ASYNC_PINS_DMIRSP [get_nets $CHS_DEBUG/i_dmi_cdc/i_cdc_resp/*async_*]
-set ASYNC_PINS_SLIN   [get_nets $CHS_SLINK_RX/i_cdc_in/async_*]
-# port i_clint/i_sync_edge/i_sync/serial_i
-set CLINT_ASYNC_REG   [lindex [get_fanout -from $CHESHIRE.rtc_i -endpoints_only -only_cells] 0]
-set ASYNC_PINS_CLINT  [get_pins -of_objects $CLINT_ASYNC_REG -filter "name == $DFF_DATA_PIN"]
-
-# We define a single leaf register as a reference clock pin for master interfaces to avoid accumulating CTS delays
-# this can really be the clock pin of any register in the peripheral
-# port i_axi_vga/hsync_o
-set VGA_REF_REG  [lindex [get_fanin -to $CHESHIRE.vga_hsync_o -startpoints_only -only_cells] 0]
-set VGA_REFPIN   [get_pins -of_objects $VGA_REF_REG -filter "name == $DFF_CLK_PIN"]
-# port i_spi_host/cio_csk_o
-set SPIH_REF_REG [lindex [get_fanin -to $CHESHIRE.spih_sck_o -startpoints_only -only_cells] 0]
-set SPIH_REFPIN  [get_pins -of_objects $SPIH_REF_REG -filter "name == $DFF_CLK_PIN"]
-# port i_i2c/cio_scl_i
-set I2C_REF_REG  [lindex [get_fanout -from i_iguana_soc.i2c_scl_i -endpoints_only -only_cells] 0]
-set I2C_REFPIN   [get_pins -of_objects $I2C_REF_REG -filter "name == $DFF_CLK_PIN"]
-# port i_uart/sout_o
-set UART_REF_REG [lindex [get_fanin -to $CHESHIRE.uart_tx_o -startpoints_only -only_cells] 0]
-set UART_REFPIN  [get_pins -of_objects $UART_REF_REG -filter "name == $DFF_CLK_PIN"]
-# port i_gpio/cio_gpio_o_0_
-set GPIO_REF_REG [lindex [get_fanin -to i_iguana_soc.gpio32_o_0_ -startpoints_only -only_cells] 0]
-set GPIO_REFPIN  [get_pins -of_objects $GPIO_REF_REG -filter "name == $DFF_CLK_PIN"]
-
-set HYP_TX_DLINE  $HYPERBUS/*i_delay_tx_clk_90.i_delay.i_delay_line
-set HYP_RX_DLINE  $HYPERBUS_PHY*i_delay_rx_rwds_90.i_delay.i_delay_line
-set HYP_RX_DLINV  $HYPERBUS_PHY.i_trx.i_rwds_clk_inverter.i_inv
-set HYP_DDR_MUXES $HYPERBUS_PHY.i_trx.gen_ddr_tx_data.*.i_ddr_tx_data.i_ddrmux.i_mux
+source src/basilisk_instances.sdc
 
 
 #############################
@@ -94,19 +21,20 @@ set HYP_DDR_MUXES $HYPERBUS_PHY.i_trx.gen_ddr_tx_data.*.i_ddr_tx_data.i_ddrmux.i
 #############################
 
 # As a default, drive multiple GPIO pads and be driven by such a pad.
-# ixc013_i16x PAD Pin = 1.10943 pF; accomodate for driving up to 12 such pads
-set_load [expr 12 * 1.10943] [all_outputs]
+# ixc013_i16x PAD Pin = 1.10943 pF; accomodate for driving up to 12 such pads plus 7pF trace
+set_load [expr 12 * 1.10943 + 7.0] [all_outputs]
 set_driving_cell [all_inputs] -lib_cell ixc013_b16m -pin PAD
 
 # Serial link drives one pad per IO, but may have larger capacity (e.g. FPGA)
 set PINS_SL_FAST [get_ports {slink_clk_o slink_*_o}]
-set_load -min 3 ${PINS_SL_FAST}
-set_load -max 9 ${PINS_SL_FAST}
+set_load -min 4 ${PINS_SL_FAST}
+set_load -max 16 ${PINS_SL_FAST}
 
-# See S*KL* family hyperram data sheet
+# See S*KL* family hyperram data sheet + 7pF traces (pretty heavy)
+# trace: 2cm length, 150um width, 4-layer stackup 150um trace-to-plane, permitivity: 4
 set PINS_HYP_FAST [get_ports hyper_*]
-set_load -min 3 ${PINS_HYP_FAST}
-set_load -max 9 ${PINS_HYP_FAST}
+set_load -min 4 ${PINS_HYP_FAST}
+set_load -max 16 ${PINS_HYP_FAST}
 
 
 ##################
@@ -114,11 +42,11 @@ set_load -max 9 ${PINS_HYP_FAST}
 ##################
 puts "Clocks..."
 
-# We target 90 MHz
-set TCK_SYS 11.0
+# We target 80 MHz
+set TCK_SYS 12.5
 create_clock -name clk_sys -period $TCK_SYS [get_ports clk_i]
 
-set TCK_JTG 50.0
+set TCK_JTG 40.0
 create_clock -name clk_jtg -period $TCK_JTG [get_ports jtag_tck_i]
 
 set TCK_RTC 50.0
@@ -128,7 +56,10 @@ set TCK_SLI [expr 4 * $TCK_SYS]
 create_clock -name clk_sli -period $TCK_SLI [get_ports slink_clk_i]
 
 set TCK_USB [expr 1000/48]
-create_clock -name clk_usb -period $TCK_USB [get_ports test_mode_i]
+create_clock -name clk_usb -period $TCK_USB [get_ports usb_clk_i]
+
+create_clock -name clk_sens -period $TCK_SYS [get_ports sens_clk_i]
+create_clock -name clk_sens_ind -period $TCK_SYS [get_ports sens_ind_clk_i]
 
 # Model incoming Hyperbus RWDS clock as shifted system clock leaving chip via Hyperbus CK pad, 
 # going through a HyperRAM device, and back to our RWDS pad (defined on pad to enable RWDS output delay constraint):
@@ -138,11 +69,14 @@ create_clock -name clk_usb -period $TCK_USB [get_ports test_mode_i]
 # * HyperRAM device read CK -> RWDS flank delay (avg. 5.75ns) 
 # * Round-trip PCB wiring delay (1.04ns, 2*8cm at 0.5c).
 # Datasheet: https://www.infineon.com/dgdl/Infineon-S27KL0642_S27KS0642_3.0_V_1.8_V_64_Mb_(8_MB)_HyperRAM_Self-Refresh_DRAM-DataSheet-v09_00-EN.pdf?fileId=8ac78c8c7d0d8da4017d0ee8a1c47164
-set HYP_TGT_DLY [expr $TCK_SYS / 4]
+# set HYP_TGT_DLY [expr $TCK_SYS / 4] -> dline generated with max of 6ns -> target is middle at 3.5ns + 0.3ns estimated load
+set HYP_TGT_DLY 3.8
 set HYP_ASM_RTT [expr fmod(0.9 + $HYP_TGT_DLY + 3.2 + 5.75 + 1.04, $TCK_SYS)]
 set HYP_RWDSI_FORM [list [expr $HYP_ASM_RTT] [expr $HYP_ASM_RTT + $TCK_SYS / 2]]
 create_clock -name clk_hyp_rwdsi -period $TCK_SYS -waveform $HYP_RWDSI_FORM [get_pins pad_hyper_rwds.i_pad/PAD]
 
+# a reasonable amount less than HYP_TGT_DLY to model fast-fast vs typical-typical
+set HYP_MIN_DLY 3.5
 
 ######################
 ## Generated Clocks ##
@@ -162,7 +96,8 @@ create_generated_clock -name clk_gen_slo \
     -source $SLO_PHY_RCLK_CLK \
     $SLO_PHY_RCLK_Q
 
-set HYP_MIN_DLY 0.5
+# We define delays through delay_line instead of using a generated_clock so it properly checks min/max delay (hold/setup)
+# this also replaces timings from libs
 set_assigned_delay -corner ff -from [get_pins $HYP_TX_DLINE/clk_i] -to [get_pins $HYP_TX_DLINE/clk_o] -cell $HYP_MIN_DLY
 set_assigned_delay -corner ff -from [get_pins $HYP_RX_DLINE/clk_i] -to [get_pins $HYP_RX_DLINE/clk_o] -cell $HYP_MIN_DLY
 set_assigned_delay -corner tt -from [get_pins $HYP_TX_DLINE/clk_i] -to [get_pins $HYP_TX_DLINE/clk_o] -cell $HYP_TGT_DLY
@@ -174,25 +109,26 @@ set_false_path -from [get_clocks clk_hyp_rwdsi] -to [get_ports hyper_rwds_io]
 # ToDo: This looks extremely suspicious to me, doesn't this false-path all paths from hyper_rwds_io to everywhere
 # meaning it is only timed as an output and even then with big exceptions?
 
-# the clk is used to mux between output data (to make it double-data rate)
-# this makes sure the clock-tree does not bleed through the mux into the data paths
-set_sense -clock -stop_propagation [get_pins $HYP_DDR_MUXES/S]
-
-
 ##################################
 ## Clock Groups & Uncertainties ##
 ##################################
 
 # Define which collections of clocks are asynchronous to each other
+# 'allow_paths' re-activates checks on datapaths between clock domains
+# this way we must constrain them seperately or we get unmet timings
 set_clock_groups -asynchronous -name clk_groups_async \
      -group {clk_rtc} \
      -group {clk_jtg} \
      -group {clk_sys clk_gen_slo clk_gen_slo_drv clk_hyp_rwdsi} \
      -group {clk_sli} \
-     -group {clk_usb}
+     -group {clk_usb} \
+     -group {clk_sens} \
+     -group {clk_sens_ind} \
+     -allow_paths
 
 # We set reasonable uncertainties and transitions for all nonvirtual clocks
-set_clock_uncertainty 0.1 [all_clocks]
+set CLK_UNCERTAINTY   0.1
+set_clock_uncertainty $CLK_UNCERTAINTY [all_clocks]
 set_clock_transition  0.2 [all_clocks]
 
 
@@ -216,21 +152,42 @@ puts "CDC/Sync..."
 # * i_iguana/i_cheshire_soc/gen_i2c.i_i2c/i2c_core/u_i2c_sync_scl/gen_syncs[0].i_sync
 # * i_iguana/i_cheshire_soc/gen_i2c.i_i2c/i2c_core/u_i2c_sync_sda/gen_syncs[0].i_sync
 
+# REASONING:
+# max_delay checks should be as short as possible so the crossing paths are also short 
+# -> maximize state-resolution time of flops (avoid metastability)
+# min_delay checks are slightly negative to compensate for clock uncertainty,
+# this should ideally prevent the tool from adding hold-fixing buffers in the path
+# https://gist.github.com/brabect1/7695ead3d79be47576890bbcd61fe426#encouraged-sdc-techniques
+
 # Constrain `cdc_2phase` for DMI request
-set_false_path -hold                  -through $ASYNC_PINS_DMIREQ
-set_max_delay  [expr $TCK_SYS * 0.35] -through $ASYNC_PINS_DMIREQ -ignore_clock_latency
+set_max_delay [expr $TCK_SYS * 0.20   ] -through $ASYNC_PINS_DMIREQ -ignore_clock_latency
+set_min_delay [expr - $CLK_UNCERTAINTY] -through $ASYNC_PINS_DMIREQ -ignore_clock_latency
 
 # Constrain `cdc_2phase` for DMI response
-set_false_path -hold                  -through $ASYNC_PINS_DMIRSP
-set_max_delay  [expr $TCK_SYS * 0.35] -through $ASYNC_PINS_DMIRSP -ignore_clock_latency
+set_max_delay [expr $TCK_SYS * 0.20   ] -through $ASYNC_PINS_DMIRSP -ignore_clock_latency
+set_min_delay [expr - $CLK_UNCERTAINTY] -through $ASYNC_PINS_DMIRSP -ignore_clock_latency
 
 # Constrain `cdc_fifo_gray` for serial link in
-set_false_path -hold                  -through $ASYNC_PINS_SLIN
-set_max_delay  [expr $TCK_SYS * 0.35] -through $ASYNC_PINS_SLIN -ignore_clock_latency
+set_max_delay [expr $TCK_SYS * 0.20   ] -through $ASYNC_PINS_SLIN -ignore_clock_latency
+set_min_delay [expr - $CLK_UNCERTAINTY] -through $ASYNC_PINS_SLIN -ignore_clock_latency
 
 # Constrain CLINT RTC sync
-set_false_path -hold                  -to $ASYNC_PINS_CLINT
-set_max_delay  [expr $TCK_SYS * 0.35] -to $ASYNC_PINS_CLINT -ignore_clock_latency
+set_max_delay [expr $TCK_SYS * 0.20   ] -to $ASYNC_PINS_CLINT -ignore_clock_latency
+set_min_delay [expr - $CLK_UNCERTAINTY] -to $ASYNC_PINS_CLINT -ignore_clock_latency
+
+# Constrain USB CDCs
+# the USB CDCs for data and enable are handled differently for some reason
+# so we abandon trying to explicitly set every path
+set_max_delay -from clk_sys -to clk_usb [expr $TCK_USB * 0.30]    -ignore_clock_latency
+set_min_delay -from clk_sys -to clk_usb [expr - $CLK_UNCERTAINTY] -ignore_clock_latency
+
+#############
+## Sensors ##
+#############
+puts "Aging sensors..."
+set_output_delay -max -add_delay -clock clk_jtg -network_latency_included [ expr $TCK_SYS * 0.25 ] [get_ports sens_error_0_o]
+set_output_delay -max -add_delay -clock clk_jtg -network_latency_included [ expr $TCK_SYS * 0.25 ] [get_ports sens_error_1_o]
+
 
 #############
 ## SoC Ins ##
@@ -248,8 +205,8 @@ set_input_delay -min -add_delay -clock clk_sys -network_latency_included [ expr 
 set_input_delay -max -add_delay -clock clk_sys -network_latency_included [ expr $TCK_SYS * 0.50 ] [get_ports {rst_ni boot_mode_*_i}]
 
 # Test mode can propagate to all domains within reasonable delay
-set_false_path -hold                    -from [get_ports test_mode_i]
-set_max_delay  [ expr $TCK_SYS * 0.75 ] -from [get_ports test_mode_i]
+# set_false_path -hold                    -from [get_ports test_mode_i]
+# set_max_delay  [ expr $TCK_SYS * 0.75 ] -from [get_ports test_mode_i]
 
 ##########
 ## JTAG ##
@@ -300,6 +257,11 @@ set_input_delay  -max -add_delay -clock clk_sys -reference_pin $SPIH_REFPIN [ ex
 set_output_delay -min -add_delay -clock clk_sys -reference_pin $SPIH_REFPIN [ expr $TCK_SYS * $SPIH_IO_CYC * 0.10 ] [get_ports {spih_sck_o spih_sd* spih_csb*}]
 set_output_delay -max -add_delay -clock clk_sys -reference_pin $SPIH_REFPIN [ expr $TCK_SYS * $SPIH_IO_CYC * 0.35 ] [get_ports {spih_sck_o spih_sd* spih_csb*}]
 
+# The data pins are bidirectional, output-enable should not arrive before output-data as to not cause problems (setup)
+# similarly data should be stable while OE switches the pad back to being an input (hold)
+# We have OE-negative so rise and fall are flipped
+
+
 #########
 ## I2C ##
 #########
@@ -309,6 +271,14 @@ set_input_delay  -min -add_delay -clock clk_sys -reference_pin $I2C_REFPIN [ exp
 set_input_delay  -max -add_delay -clock clk_sys -reference_pin $I2C_REFPIN [ expr $TCK_SYS * 0.35 ] [get_ports i2c_*_io]
 set_output_delay -min -add_delay -clock clk_sys -reference_pin $I2C_REFPIN [ expr $TCK_SYS * 0.10 ] [get_ports i2c_*_io]
 set_output_delay -max -add_delay -clock clk_sys -reference_pin $I2C_REFPIN [ expr $TCK_SYS * 0.35 ] [get_ports i2c_*_io]
+
+# output enable shuld toggle while data is stable see SPI for full reasoning
+foreach pad [get_cells pad_i2c*.i_pad] {
+  set oen [get_pins -of_objects $pad -filter "name == OEN"]
+  set din [get_pins -of_objects $pad -filter "name == DIN"]
+  set_data_check -fall_from $oen -to $din -clock clk_sys -setup [ expr $TCK_SYS * 0.10 ]
+  set_data_check -rise_from $oen -to $din -clock clk_sys -hold  [ expr $TCK_SYS * 0.10 ]
+}
 
 
 ##########
@@ -332,6 +302,35 @@ set_input_delay  -max -add_delay -clock clk_sys -reference_pin $GPIO_REFPIN [ ex
 set_output_delay -min -add_delay -clock clk_sys -reference_pin $GPIO_REFPIN [ expr $TCK_SYS * 0.10 ] [get_ports gpio_*_io]
 set_output_delay -max -add_delay -clock clk_sys -reference_pin $GPIO_REFPIN [ expr $TCK_SYS * 0.35 ] [get_ports gpio_*_io]
 
+
+##########
+## USB  ##
+##########
+puts "USB..."
+# the paths can go from GPIO to the pad and because its bidir back to the USB inputs -> false_path
+foreach pad [list 0 1 2 3 4 5 6 7] {
+    set_false_path -from clk_sys -through [get_pins *pad_gpio_$pad.i_pad/PAD] -to clk_usb
+    set_false_path -from clk_usb -through [get_pins *pad_gpio_$pad.i_pad/PAD] -to clk_sys
+    set_false_path -from [get_ports gpio_${pad}_io] -to clk_usb
+}
+
+# a negative setup means the constraint signal must arrive no later than the value after the reference goes high
+# a negative hold means the constraint signal must arrive no earler than the value after the reference goes low
+# if we swap which is the constraint and reference signal, it creates a window of legality for each transition
+foreach port [list 0 1 2 3] {
+  set cells [get_fanout -only_cells -from [get_nets $CHESHIRE.usb_dm_o_${port}*]]
+  set dm_pad [lsearch -inline -glob [lmap cell $cells {get_name $cell}] "*i_pad"]
+  set dm [get_pins -of_objects $dm_pad -filter "name == DIN"]
+
+  set cells [get_fanout -only_cells -from [get_nets $CHESHIRE.usb_dp_o_${port}*]]
+  set dp_pad [lsearch -inline -glob [lmap cell $cells {get_name $cell}] "*i_pad"]
+  set dp [get_pins -of_objects $dp_pad -filter "name == DIN"]
+
+  set_data_check -fall_from $dm -to $dp -clock clk_usb -setup [ expr -$CLK_UNCERTAINTY - $TCK_USB * 0.1 ]
+  set_data_check -fall_from $dm -to $dp -clock clk_usb -hold  [ expr -$CLK_UNCERTAINTY - $TCK_USB * 0.1 ]
+  set_data_check -fall_from $dp -to $dm -clock clk_usb -setup [ expr -$CLK_UNCERTAINTY - $TCK_USB * 0.1 ]
+  set_data_check -fall_from $dp -to $dm -clock clk_usb -hold  [ expr -$CLK_UNCERTAINTY - $TCK_USB * 0.1 ]
+}
 
 #################
 ## Serial Link ##
@@ -390,6 +389,9 @@ if { ![info exists ::env(HYPER_CONF)] || $::env(HYPER_CONF) ne "NO_HYPERBUS"} {
   set HYP_CS       [get_ports hyper_cs_*]
   set HYP_RST      [get_ports hyper_reset_no]
   set HYP_OUT_CLK  [get_ports hyper_ck_o]
+  set HYP_OUT_DOUT [get_pins {pad_hyper_dq*.i_pad/DIN pad_hyper_rwds.i_pad/DIN}]
+  set HYP_OUT_DOEN [get_pins {pad_hyper_dq*.i_pad/OEN pad_hyper_rwds.i_pad/OEN}]
+  set HYP_OUT_COUT [get_pins pad_hyper_ck.i_pad/DIN]
 
   # DDR Input: As for serial link, maximize the assumed *transition* interval by maximizing input delay span.
   # However here, transitions happen *at* edge-aligned input clock edges, so they are centered *at* the edges.
@@ -401,18 +403,60 @@ if { ![info exists ::env(HYPER_CONF)] || $::env(HYPER_CONF) ne "NO_HYPERBUS"} {
 
   # DDR Output: Maximize *stable* interval we provide by maximizing output delay span.
   # This is exactly analogous to the serial link case, as the sending clock is center-aligned with data.
-  set_output_delay -min -add_delay             -clock clk_sys -reference_pin $HYP_OUT_CLK [expr -$TCK_SYS / 4 + $HYP_MAX_SLEW] $HYP_IO
-  set_output_delay -min -add_delay -clock_fall -clock clk_sys -reference_pin $HYP_OUT_CLK [expr -$TCK_SYS / 4 + $HYP_MAX_SLEW] $HYP_IO
-  set_output_delay -max -add_delay             -clock clk_sys -reference_pin $HYP_OUT_CLK [expr  $TCK_SYS / 4 - $HYP_MAX_SLEW] $HYP_IO
-  set_output_delay -max -add_delay -clock_fall -clock clk_sys -reference_pin $HYP_OUT_CLK [expr  $TCK_SYS / 4 - $HYP_MAX_SLEW] $HYP_IO
+  # We carefully *exclude* the output enable here by using pre-pad timing.
+  set_output_delay -min -add_delay             -clock clk_sys -reference_pin $HYP_OUT_COUT [expr -$TCK_SYS / 4 + $HYP_MAX_SLEW] $HYP_OUT_DOUT
+  set_output_delay -min -add_delay -clock_fall -clock clk_sys -reference_pin $HYP_OUT_COUT [expr -$TCK_SYS / 4 + $HYP_MAX_SLEW] $HYP_OUT_DOUT
+  set_output_delay -max -add_delay             -clock clk_sys -reference_pin $HYP_OUT_COUT [expr  $TCK_SYS / 4 - $HYP_MAX_SLEW] $HYP_OUT_DOUT
+  set_output_delay -max -add_delay -clock_fall -clock clk_sys -reference_pin $HYP_OUT_COUT [expr  $TCK_SYS / 4 - $HYP_MAX_SLEW] $HYP_OUT_DOUT
+
+  # The output enable is *not* DDR timed! It should *not* respect falling edge deadlines, only the rising-edge one!
+  # Failing to constrain this correctly will result in buggy IO timing, as the OE is designed to control *two* data beats!
+  set_output_delay -min -add_delay -clock clk_sys -reference_pin $HYP_OUT_COUT [expr -(3 *$TCK_SYS) / 4 + $HYP_MAX_SLEW] $HYP_OUT_DOEN
+  set_output_delay -max -add_delay -clock clk_sys -reference_pin $HYP_OUT_COUT [expr      $TCK_SYS  / 4 - $HYP_MAX_SLEW] $HYP_OUT_DOEN
 
   # CS is *synchronous* (edge aligned) with output clock at pad, *not* DDR
   set_output_delay -min -add_delay -clock clk_sys -reference_pin $HYP_OUT_CLK [expr              + $HYP_MAX_SLEW] $HYP_CS
   set_output_delay -max -add_delay -clock clk_sys -reference_pin $HYP_OUT_CLK [expr $TCK_SYS / 2 - $HYP_MAX_SLEW] $HYP_CS
+
+  # for all outputs, assuming rising launch is edge 0 and falling is 0'
+  # we always specify capture to setup (max) 0' and also edge 1
+  # as well as hold (min) from data coming from -1 and being captured at 0 (must be stable a bit after edge) and same for 0'
+  # the hold condition for 0' is false (it unnecessary increases the minimum hold to a half cycle) as the data  launching at 0' would use it, not 0
+  # similarly (but less important) the setup check from launching 0 to capturing 1 is unnecessary because its captured at falling edge 0' instead
+  # the setup should be ocluded but is still a false check so we remove it
+
+  # Do not allow PHY (System) clock to leak to DDR outputs and be timed as output transitions
+  # the clk is used to mux between output data (to make it double-data rate)
+  # this makes sure the clock-tree does not bleed through the mux into the data paths
+  set_sense -clock -stop_propagation [get_pins $HYP_DDR_DATA_MUXES/S]
+
+  # the clk is now stopped and doesn't bleed through but the paths gets timed as a data-path instead
+  # this is fine but only produces reasonable results after CTS, before CTS it misleads repair_timing into erroneously placing buffers in the clock net
+  # IMPORTANT!!!!! remove these false paths post-CTS via unset_path_exceptions
+  foreach mux [get_cells $HYP_DDR_DATA_MUXES] {
+    set mux_out [get_name $mux]/$MUX_OUT_PIN
+    set mux_ctrl [get_name $mux]/$MUX_CONTROL_PIN
+    set pad [get_name [get_fanout -from $mux_out -only_cells -endpoints_only]]
+    set_false_path -from clk_i -through $mux_ctrl -through $mux_out -to $pad/DIN
+  }
+
+  set mux_out $HYP_DDR_RWDS_MUX/$MUX_OUT_PIN
+  set mux_ctrl $HYP_DDR_RWDS_MUX/$MUX_CONTROL_PIN
+  set pad [get_name [get_fanout -from $mux_out -only_cells -endpoints_only]]
+  set_false_path -from clk_i -through $mux_ctrl -through $mux_out -to $pad/DIN
+
 
   # We multicycle the passthrough reset as it does not quite reach through the chip in one cycle
   set_multicycle_path -setup 2 -to $HYP_RST
   set_multicycle_path -hold  1 -to $HYP_RST
   set_output_delay -min -add_delay -clock clk_sys -reference_pin $HYP_OUT_CLK [expr $TCK_SYS * 2 * 0.10] $HYP_RST
   set_output_delay -max -add_delay -clock clk_sys -reference_pin $HYP_OUT_CLK [expr $TCK_SYS * 2 * 0.35] $HYP_RST
+
+  group_path -name "Hyper90degCS" -to [get_pins -of_objects "*hyper_cs_no_*__reg" -filter "name == $DFF_DATA_PIN"]
+  set_multicycle_path -setup 0 -to [get_pins -of_objects "*hyper_cs_no_*__reg" -filter "name == $DFF_DATA_PIN"]
+  set_multicycle_path -hold 0 -to [get_pins -of_objects "*hyper_cs_no_*__reg" -filter "name == $DFF_DATA_PIN"]
+  
+  group_path -name "Hyper90degClkGate" -to [get_pins -of_objects "*i_clock_diff_out.i_hyper_ck_gating.i_clkgate" -filter "name == $CLKGATE_GATE_PIN"]
+  set_multicycle_path -setup 0 -to [get_pins -of_objects "*i_clock_diff_out.i_hyper_ck_gating.i_clkgate" -filter "name == $CLKGATE_GATE_PIN"]
+  set_multicycle_path -hold 0 -to [get_pins -of_objects "*i_clock_diff_out.i_hyper_ck_gating.i_clkgate" -filter "name == $CLKGATE_GATE_PIN"]
 }
