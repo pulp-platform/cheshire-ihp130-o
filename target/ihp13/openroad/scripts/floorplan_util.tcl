@@ -26,12 +26,13 @@ proc add_macro_blockage {negative_padding name1 name2} {
   return $blockage
 }
 
-proc create_vert_stripe_blockage {firstX lastX pitchX width minY maxY} {
+proc create_vert_stripe_blockage {firstX lastX pitchX spacingX width minY maxY} {
   set firstX_dbu [ord::microns_to_dbu $firstX]
   set minY_dbu   [ord::microns_to_dbu $minY]
   set lastX_dbu  [ord::microns_to_dbu $lastX]
   set maxY_dbu   [ord::microns_to_dbu $maxY]
   set pitchx_dbu [ord::microns_to_dbu $pitchX]
+  set spacingX_dbu  [ord::microns_to_dbu $spacingX]
   set width_dbu  [ord::microns_to_dbu $width]
   set block      [ord::get_db_block]
 
@@ -40,6 +41,11 @@ proc create_vert_stripe_blockage {firstX lastX pitchX width minY maxY} {
     set x1 [expr $x + $width_dbu/2]
     puts "stripe blockage: x0:$x0, x1:$x1"
     set blockage [odb::dbBlockage_create $block $x0 $minY_dbu $x1 $maxY_dbu]
+    set x0 [expr $x1 + $spacingX_dbu]
+    set x1 [expr $x0 + $width_dbu]
+    puts "stripe blockage2: x0:$x0, x1:$x1"
+    set blockage [odb::dbBlockage_create $block $x0 $minY_dbu $x1 $maxY_dbu]
+    
     set $blockage setSoft
   }
 }
