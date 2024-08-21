@@ -13,7 +13,7 @@ package:
 
 dependencies:
   axi:                { git: https://github.com/pulp-platform/axi,                version: 0.39.2   }
-  cheshire:           { git: https://github.com/pulp-platform/cheshire,           rev:    7f3ecaa   }
+  cheshire:           { git: https://github.com/pulp-platform/cheshire,           rev:    4a270afccf27bed49779d11d88e4bbb69d335c8a }
   hyperbus:           { git: https://github.com/pulp-platform/hyperbus,           version: 0.0.4    }
   register_interface: { git: https://github.com/pulp-platform/register_interface, version: 0.4.4    }
 
