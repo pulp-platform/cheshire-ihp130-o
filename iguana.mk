@@ -44,22 +44,21 @@ include $(CHS_ROOT)/cheshire.mk
 ####################
 # HW Configuration #
 ####################
-# name of the project/chip itself
-PROJ_NAME 	:= basilisk
 # name of the top-module in the design
 TOP_DESIGN 	:= iguana_chip
+# name used for netlist/synthesis related files
+RTL_NAME    ?= basilisk
+# name of the project/chip itself
+PROJ_NAME 	:= basilisk
 # default (empty): use hyperbus, options: NO_HYPERBUS
 HYPER_CONF			:= 
-L1CACHE_WAYS 		:= 2
+L1CACHE_WAYS 		:= 4
 SCOREBOARD_ENTRIES 	:= 4
 # default (empty or ORIG): monolithic cheshire bootrom; SPLIT: bootrom split into parts
 BOOTROM_CONF        := SPLIT
 BOOTROM_NUM_PARTS 	:= 2
 # default (empty or ORIG): default fpnew_fma; OPT: hand optimized fused-muladd in fpnew_fma
 FMA_CONF        	:= OPT
-# name used for netlist/synthesis related files
-#RTL_NAME	:= basilisk
-RTL_NAME	 := basilisk_dkong
 
 
 IG_CVA6_CONFIG := cv64a6_imafdcsclic_sv39
