@@ -83,36 +83,33 @@ set verify 0
 ##########################################################################
 # Core Power Ring
 ## Space between pads and core -> used for power ring
-set PowRingSpace  110
-## Spacing must be larger than pitch of TopMetal2
-set pgcrSpacing 10
+set PowRingSpace  70
+## Spacing must be larger than min-space of long wires of TopMetal2
+set pgcrSpacing 5
 ## Width must be within constraints for TopMetal2
-set pgcrWidth 30
+set pgcrWidth 26
 ## Offset from Core to power ring
 set pgcrOffset [expr ($PowRingSpace - $pgcrSpacing - 2 * $pgcrWidth) / 2]
 
-# TopMetal Core Power Grid
-set tpgWidth    16; # arbitrary number
-set tpgPitch   280; # multiple of the x-axis pad-to-pad distance (140u)
-set tpgSpacing  [expr $tpgPitch/2 - $tpgWidth];  # equally spaced
-set tpgOffset  135; # fit between pins & start after the rotated macros
+# TopMetal2 Core Power Grid
+set tpg2Width     6; # arbitrary number
+set tpg2Pitch   138; # multiple of the x-axis pad-to-pad distance (138u)
+set tpg2Spacing  48;  # equally spaced
+set tpg2Offset  138; # fit between pins & start after the rotated macros
 
 # Macro Power Rings -> M3 and M2
 ## Spacing must be larger than pitch of M2/M3
-set mprSpacing 1
+set mprSpacing 0.6
 ## Width
-set mprWidth 1
+set mprWidth 2
 ## Offset from Macro to power ring
-set mprOffsetX 2.1
-set mprOffsetY 2
+set mprOffsetX 2.0
+set mprOffsetY 0.6
 
 # macro power grid (stripes on TopMetal1/TopMetal2 depending on orientation)
-# TM1: 3.28 pitch, 1.64 half-pitch -> a stripe 3 tracks wide is 2*3.28+1.64 = 8.2
-# TM2: 4 pitch, 2 half-pitch -> a stripe 3 tracks wide is 2*4+2 = 10
-# -> using a common 8 with 2 spacing + with snap to grid should work ok for both
 set mpgWidth 8
-set mpgSpacing 2
-set mpgOffset 22; # arbitrary 
+set mpgSpacing 5; # min spacing for long TM2 stripes
+set mpgOffset 20; # chosen to properly connect to power pads 
 
 ##########################################################################
 ##  SRAM power rings
@@ -136,13 +133,14 @@ proc sram_power { name macro } {
     set stripe_dist [expr $sramHeight - 2*$mpgOffset - $mpgWidth - $mpgSpacing]
     utl::report "stripe_dist of $macro: $stripe_dist"
 
-    # for the large macros there is enough space for an additional stripe
-    if {$stripe_dist > 180} {
-        set stripe_dist [expr $stripe_dist/2]
+    # for the large macros there is enough space for additional stripes
+    if {$stripe_dist > 300} {
+        set number_of_gaps [expr {floor($stripe_dist / 150)}]
+        set stripe_dist [expr {floor( ($stripe_dist - 2*$mpgWidth - $mpgSpacing)/$number_of_gaps )}]
     }
 
     add_pdn_stripe -grid ${name}_grid -layer {TopMetal1} -width $mpgWidth -spacing $mpgSpacing \
-                   -pitch $stripe_dist -offset $mpgOffset -extend_to_core_ring -starts_with POWER -snap_to_grid
+                   -pitch $stripe_dist -offset $mpgOffset -extend_to_core_ring -starts_with POWER
 
     # Connection of Macro Power Ring to standard-cell rails
     add_pdn_connect -grid ${name}_grid -layers {Metal3 Metal1}
@@ -183,11 +181,11 @@ proc sram_power_rotated { name macro } {
     # pair of stripes over macro on core grid
     add_pdn_stripe -grid core_grid -layer {TopMetal2} -width $mpgWidth -spacing $mpgSpacing \
                    -pitch $stripe_dist -offset [expr $floor_leftX - $coreArea_leftX + $mpgOffset] -number_of_straps 2 \
-                   -extend_to_core_ring -starts_with POWER -snap_to_grid
+                   -extend_to_core_ring -starts_with POWER
 
     add_pdn_stripe -grid core_grid -layer {TopMetal2} -width $mpgWidth -spacing $mpgSpacing \
                    -pitch $stripe_dist -offset [expr $floor_rightX - $coreArea_leftX - $sramHeight + $mpgOffset] -number_of_straps 2 \
-                   -extend_to_core_ring -starts_with POWER -snap_to_grid
+                   -extend_to_core_ring -starts_with POWER
 
     add_pdn_ring -grid ${name}_rot_grid \
         -layer        {Metal3 Metal4} \
@@ -241,17 +239,15 @@ sram_power "sram_1024x64" "RM_IHPSG13_1P_1024x64_c2_bm_bist"
 sram_power "sram_2048x64" "RM_IHPSG13_1P_2048x64_c2_bm_bist"
 
 sram_power_rotated "sram_256x48"  "RM_IHPSG13_1P_256x48_c2_bm_bist" 
+sram_power_rotated "sram_256x64"  "RM_IHPSG13_1P_256x64_c2_bm_bist" 
 
 # Top power grid
 # Top 2 Stripe
-add_pdn_stripe -grid {core_grid} -layer {TopMetal2} -width $tpgWidth \
-               -pitch $tpgPitch -spacing $tpgSpacing -offset $tpgOffset \
+add_pdn_stripe -grid {core_grid} -layer {TopMetal2} -width $tpg2Width \
+               -pitch $tpg2Pitch -spacing $tpg2Spacing -offset $tpg2Offset \
                -extend_to_core_ring
 
-# Top 1 Stripe
-# Deactivated to increase routing resources above/around macros (they occupy M1-M4)
-# add_pdn_stripe -grid {core_grid} -layer {TopMetal1} -width $tpgWidth \
-#                -pitch $tpgPitch -spacing $tpgSpacing -offset {30.0} -extend_to_core_ring
+# Top1 is not possible since it would block vias of the other rail to reach standard cell rails below it
 
 # "The add_pdn_connect command is used to define which layers in the power grid are to be connected together. 
 #  During power grid generation, vias will be added for overlapping power nets and overlapping ground nets."
@@ -261,9 +257,6 @@ add_pdn_connect -grid {core_grid} -layers {TopMetal2 Metal1}
 add_pdn_connect -grid {core_grid} -layers {TopMetal2 Metal2}
 add_pdn_connect -grid {core_grid} -layers {TopMetal2 Metal4}
 # add_pdn_connect -grid {core_grid} -layers {TopMetal2 TopMetal1}
-# Power-ring to power-ring connection
-add_pdn_connect -grid {core_grid} -layers {TopMetal1 Metal2}
-add_pdn_connect -grid {core_grid} -layers {TopMetal2 Metal3}
 # Power-ring to standardcell rails
 add_pdn_connect -grid {core_grid} -layers {Metal3 Metal1}
 add_pdn_connect -grid {core_grid} -layers {Metal3 Metal2}
@@ -278,8 +271,8 @@ pdngen -failed_via_report ${report_dir}/${proj_name}_pdngen.rpt -dont_add_pins
 # setLayerDirection Metal1 VERTICAL
 
 # blockages under TM2 core grid
-set first_stripX [expr $tpgOffset + $coreArea_leftX]
-create_vert_stripe_blockage $first_stripX $coreArea_rightX [expr $tpgPitch/2] $tpgWidth $coreArea_bottomY $coreArea_topY
+set first_stripX [expr $tpg2Offset + $coreArea_leftX]
+create_vert_stripe_blockage $first_stripX $coreArea_rightX $tpg2Pitch $tpg2Spacing $tpg2Width $coreArea_bottomY $coreArea_topY
 
 
 ##########################################################################
