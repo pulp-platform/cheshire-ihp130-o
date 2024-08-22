@@ -1,7 +1,7 @@
 autoconf
 automake
-clang-16.0*
-clang-devel-16.0*
+clang
+clang-devel
 gcc
 gcc-c++
 gdb

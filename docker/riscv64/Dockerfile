@@ -10,20 +10,19 @@
 ARG DOCKER_BASE_IMG=almalinux:8.9
 
 FROM ${DOCKER_BASE_IMG} AS builder
-ARG YOSYS_REPO=https://github.com/phsauter/yosys
-ARG YOSYS_COMMIT=3ce5059a88c987cab4df665ab347bc88e8401824
+ARG RISCV64_REPO=https://github.com/riscv-collab/riscv-gnu-toolchain
+ARG RISCV64_COMMIT=23d031ef253bbdf1c551f86a3fbf3e24bc842f7d
 # install packages
 COPY packages.txt /packages.txt
 RUN yum install -y yum-utils
 RUN yum config-manager --set-enabled powertools && yum update -y
 RUN yum install -y $(cat /packages.txt)
 
-WORKDIR /yosys
+WORKDIR /riscv
 # pull and build
-RUN curl -L ${YOSYS_REPO}/archive/${YOSYS_COMMIT}.tar.gz | tar -xzC . --strip-components=1 && \
-    make config-clang && \
-    make -j && \
-    make PREFIX=/build install
+RUN mkdir -p /build
+RUN git clone --recursive ${RISCV64_REPO}.git && cd riscv-gnu-toolchain && git checkout ${RISCV64_COMMIT}
+RUN cd riscv-gnu-toolchain && ./configure --prefix=/build && make -j
 
 # copy into runnner
 FROM ${DOCKER_BASE_IMG} AS runner

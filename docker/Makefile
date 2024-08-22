@@ -15,11 +15,12 @@ IMG_TAG = dev
 pull:
 	docker pull $(IMG_NAME):$(IMG_TAG)
 
-build: build-pickle build-yosys build-openroad
+build: build-pickle build-yosys build-openroad build-riscv64
 	cd $(DOCKER_DIR)/all && \
 	docker build --build-arg PICKLE_IMG=pulp-iguana-pickle:$(IMG_TAG) \
 				 --build-arg YOSYS_IMG=pulp-iguana-yosys:$(IMG_TAG) \
 				 --build-arg OPENROAD_IMG=pulp-iguana-openroad:$(IMG_TAG) \
+				 --build-arg RISCV64_IMG=pulp-iguana-riscv64:$(IMG_TAG) \
 				 -t $(IMG_NAME):$(IMG_TAG) .
 
 
@@ -34,5 +35,9 @@ build-yosys:
 build-openroad:
 	cd $(DOCKER_DIR)/openroad && \
 	docker build -t pulp-iguana-openroad:$(IMG_TAG) .
+
+build-riscv64:
+	cd $(DOCKER_DIR)/riscv64 && \
+	docker build -t pulp-iguana-riscv64:$(IMG_TAG) .
 	
-.PHONY: pull build build-pickle build-yosys build-openroad
+.PHONY: pull build build-pickle build-yosys build-openroad build-riscv64
