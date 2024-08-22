@@ -111,7 +111,7 @@ IG_CHS_BOOTROM_DIR := $(shell $(BENDER) path cheshire)/hw/bootrom
 IG_CHS_BOOTROM_FILE := $(IG_CHS_BOOTROM_DIR)/cheshire_bootrom.sv
 
 # use split default-bootrom instead for better routability
-ig-hw-bootrom-split:
+ig-hw-bootrom-split: $(IG_ROOT)/hw/cheshire_bootrom_split.sv
 	@cp -n $(IG_CHS_BOOTROM_FILE) $(IG_CHS_BOOTROM_FILE).orig
 	cd $(IG_CHS_BOOTROM_DIR) && ln -sfr $(IG_ROOT)/hw/cheshire_bootrom_split.sv cheshire_bootrom.sv
 
@@ -131,7 +131,7 @@ else
     $(error Invalid value for BOOTROM_CONF: $(BOOTROM_CONF))
 endif
 
-ig-hw-gen-split-bootrom: $(CHS_ROOT)/hw/bootrom/cheshire_bootrom.bin
+$(IG_ROOT)/hw/cheshire_bootrom_split.sv: $(CHS_ROOT)/hw/bootrom/cheshire_bootrom.bin
 	$(IG_ROOT)/scripts/gen_bootrom_split.py --sv-module cheshire_bootrom --num-parts $(BOOTROM_NUM_PARTS) $(CHS_ROOT)/hw/bootrom/cheshire_bootrom.bin > $(IG_ROOT)/hw/cheshire_bootrom_split.sv
 
 
@@ -268,7 +268,7 @@ IG_ALL += $(CHS_ALL) $(IG_SIM_ALL)
 
 ig-all:         $(CHS_ALL)
 ig-sw-all:      $(CHS_SW_ALL)
-ig-hw-all:      $(CHS_HW_ALL) ig-hw-cva6
+ig-hw-all:      $(CHS_HW_ALL) $(HW_CONF_TARGETS)
 ig-bootrom-all: $(CHS_BOOTROM_ALL)
 ig-sim-all:     $(CHS_SIM_ALL) $(IG_SIM_ALL)
 
