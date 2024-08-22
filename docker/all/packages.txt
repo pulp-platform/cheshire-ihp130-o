@@ -15,3 +15,4 @@ qt5-qtimageformats
 patch
 zip
 jq
+which

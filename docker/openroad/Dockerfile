@@ -15,6 +15,8 @@ ARG OR_COMMIT=589dee1c8b0d678bd2989dbb1150df86a0b5271f
 # install packages
 COPY packages.txt /packages.txt
 RUN yum install -y $(cat /packages.txt)
+RUN yum install -y yum-utils
+RUN yum config-manager --set-enabled powertools && yum update -y
 
 # following dependencies from:
 # https://github.com/The-OpenROAD-Project/OpenLane/blob/master/docker/openroad_app/Dockerfile
@@ -65,7 +67,6 @@ RUN curl -L https://github.com/google/or-tools/archive/refs/tags/v9.5.tar.gz | t
     cmake --build build -j $(nproc) --target install
 
 WORKDIR /openroad
-RUN  yum config-manager --set-enabled powertools && yum update
 RUN yum install -y doxygen
 
 # ToDo: submodules lose their correct versions if done via archive -> OpenLane uses util.py, copy?
