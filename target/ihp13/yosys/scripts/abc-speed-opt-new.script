@@ -23,7 +23,7 @@ alias rs resub
 alias rsz resub -z
 alias resyn2      "b; rw; rf; b; rw; rwz; b; rfz; rwz; b"
 
-resyn2
+# resyn2
 
 rec_start3 {REC_AIG}
 
