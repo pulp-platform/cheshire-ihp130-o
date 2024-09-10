@@ -28,7 +28,7 @@ resyn2
 rec_start3 {REC_AIG}
 
 # main optimization iteration:
-alias &opt_iter "&st; &if -y -K 6; &syn2; &if -K 6; &st; &b -d"
+alias &opt_iter "&st; &if -y -K 6; &syn2; &b; &st; &dch -x; &if -K 6;"
 # &if -y -K 6; &syn2; &if -K 6, see LMS paper
 # &dc2 AIG rewriting (greedy minimization)
 # &b   balance structure for depth
@@ -37,7 +37,7 @@ alias &opt_iter "&st; &if -y -K 6; &syn2; &if -K 6; &st; &b -d"
 # &nf  select choice and map to tech
 # &ps  print statistics
 # mapping iteration
-alias &map_iter "&st; &nf {D}; &ps"
+alias &map_iter "&st; &dch -x; &nf {D};"
 
 # initial mapping iteration
 &get -n
@@ -55,9 +55,6 @@ echo "High effort delay optimization..."
 # in my experience it seems to get 99% there after 5-6 with a lower runtime
 &get -n
 echo "Opt+mapping Iterations..."
-&opt_iter; &map_iter;
-&opt_iter; &map_iter;
-&opt_iter; &map_iter;
 &opt_iter; &map_iter;
 &opt_iter; &map_iter;
 &opt_iter; &map_iter;

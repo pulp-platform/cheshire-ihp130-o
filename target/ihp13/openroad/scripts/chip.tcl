@@ -21,8 +21,6 @@ set step_by_step_debug 0
 set use_routing_repairs 1
 set threads 32
 
-set_thread_count $threads
-
 source scripts/checkpoint.tcl
 source scripts/reports.tcl
 
@@ -52,7 +50,7 @@ utl::report "Create Floorplan"
 if { [info exists ::env(L1CACHE_WAYS)] && $::env(L1CACHE_WAYS) eq "2"} {
     source scripts/floorplan_ring_2way.tcl
 } else {
-    source scripts/floorplan_slabs.tcl
+    source scripts/floorplan_ring_4way.tcl
 }
 save_checkpoint ${proj_name}.floorplan
 report_image "${proj_name}.floorplan" true
@@ -69,9 +67,11 @@ report_image "${proj_name}.power" true
 ###############################################################################
 # Used for estimate_parasitics
 set_wire_rc -clock -layer Metal4
-set_wire_rc -signal -layer Metal3
+set_wire_rc -signal -layer Metal4
 # Dont touch IO pads as "remove_buffers" removes them otherwise
 set_dont_touch [get_nets -of_objects [get_pins */PAD]]
+set clock_nets [get_nets -of_objects [get_pins -of_objects "*_reg" -filter "name == CLK"]]
+set_dont_touch $clock_nets
 set_dont_use $dont_use_cells
 
 utl::report "Repair tie fanout"
@@ -80,8 +80,8 @@ source scripts/repair_tie.tcl
 utl::report "Remove buffers"
 remove_buffers
 
-utl::report "Repair design"
-repair_design -verbose
+# utl::report "Repair design"
+# repair_design -verbose
 
 report_metrics "${proj_name}.pre_place"
 save_checkpoint ${proj_name}.pre_place
@@ -90,19 +90,22 @@ save_checkpoint ${proj_name}.pre_place
 ###############################################################################
 # GLOBAL PLACEMENT                                                            #
 ###############################################################################
-set GPL_ARGS {  -density 0.55 }
+set_thread_count $threads
 
-set GPL2_ARGS {  -density 0.60
+set GPL_ARGS {  -density 0.65 
                 -routability_driven
-                -routability_check_overflow 0.55
+                -routability_check_overflow 0.40
                 -routability_inflation_ratio_coef 1.2
-                -routability_max_inflation_ratio 2.0
-                -routability_target_rc_metric 1.0
-                -timing_driven
+                -routability_max_inflation_ratio 1.2
                 -max_phi_coef 1.04 }
-#                -skip_initial_place }
-# according to OR "on large designs" '-skip_initial_place' reduces the
-# HPWL (half perimeter wire length) by roughly 5%
+
+set GPL2_ARGS {  -density 0.65
+                -routability_driven
+                -routability_check_overflow 0.60
+                -routability_inflation_ratio_coef 1.2
+                -routability_max_inflation_ratio 1.2
+                -timing_driven
+                -max_phi_coef 1.02 }
 # check_overflow: Higher means routability starts being considered earlier in placement
 #                 too early -> very dense regions, too late -> little to no effect
 # inflation_ratio: By how much the virtual area of offending cells is increased
@@ -120,10 +123,11 @@ save_checkpoint ${proj_name}.gpl
 utl::report "Estimate parasitics"
 estimate_parasitics -placement
 utl::report "Repair design"
-repair_design
-
+save_checkpoint ${proj_name}.gpl_fix
+repair_design -verbose
 utl::report "Repair setup"
-repair_timing -setup -skip_pin_swap -verbose -repair_tns 100
+repair_timing -setup -skip_pin_swap -verbose -repair_tns 70
+
 # old versions of repair_timing may swap non-equal pins, deactivated for now to avoid problems
 # Likely introduced in:  https://github.com/The-OpenROAD-Project/OpenROAD/pull/3215
 
@@ -157,6 +161,7 @@ report_image "${proj_name}.dpl" true true
 ###############################################################################
 # CLOCK TREE SYNTHESIS                                                        #
 ###############################################################################
+unset_dont_touch $clock_nets
 utl::report "Repair clock inverters"
 repair_clock_inverters
 
@@ -166,11 +171,11 @@ clock_tree_synthesis -buf_list $ctsBuf -root_buf $ctsBufRoot \
                      -sink_clustering_enable \
                      -obstruction_aware
 
-set_propagated_clock [all_clocks]
-
 # Repair wire length between clock pad and clock-tree root
 utl::report "Repair clock nets"
 repair_clock_nets
+
+source src/basilisk_postcts.sdc
 
 # legalize cts cells
 utl::report "Detailed placement"
@@ -183,7 +188,7 @@ report_metrics "${proj_name}.cts_unrepaired"
 
 
 utl::report "Repair setup"
-repair_timing -setup -skip_pin_swap -verbose -repair_tns 100
+repair_timing -setup -skip_pin_swap -verbose -repair_tns 90
 # place inserted cells
 utl::report "Detailed placement"
 detailed_placement {*}$DPL_ARGS
@@ -214,7 +219,7 @@ set_routing_layers -signal Metal2-TopMetal1 -clock Metal2-TopMetal1
 utl::report "Global route"
 global_route -guide_file ${report_dir}/${proj_name}_route.guide \
     -congestion_report_file ${report_dir}/${proj_name}_congestion.rpt \
-    -congestion_iterations 30 \
+    -congestion_iterations 80 \
     -allow_congestion
 # default params but -allow_congestion
 # it goes on even if it didn't find a solution (may be able to fix afterwards)
@@ -233,7 +238,7 @@ if { $use_routing_repairs } {
     grt::set_verbose 0
     # Repair design using global route parasitics
     utl::report "Perform buffer insertion..."
-    repair_design
+    repair_design -verbose
 
     utl::report "GRT incremental..."
     # Run to get modified net by DPL
@@ -252,24 +257,30 @@ if { $use_routing_repairs } {
     # Repair timing using global route parasitics
     utl::report "Repair setup and hold violations..."
     estimate_parasitics -global_routing
-    repair_timing -skip_pin_swap -verbose -repair_tns 100
+    repair_timing -skip_pin_swap -recover_power 80 -verbose
+    repair_timing -skip_pin_swap -setup -verbose -repair_tns 100
+    repair_timing -skip_pin_swap -hold  -verbose -repair_tns 100
+
     report_metrics "${proj_name}.grt_repaired_timing"
     save_checkpoint ${proj_name}.grt_repaired_timing
-    report_image "${proj_name}.grt_repaired_timing" true true false true
+    # report_image "${proj_name}.grt_repaired_timing" true true false true
 
-    utl::report "GRT incremental (2)..."
-    set_global_routing_layer_adjustment Metal2-Metal3 0.1
-    # Run to get modified net by DPL
+    utl::report "GRT (2)..."
+    # Running DPL to fix overlapped instances
+    detailed_placement
+    global_route -guide_file ${report_dir}/${proj_name}_route.guide \
+        -congestion_report_file ${report_dir}/${proj_name}_congestion.rpt \
+        -congestion_iterations 80
+    estimate_parasitics -global_routing
+    repair_timing -skip_pin_swap -hold -hold_margin 0.1 -verbose -repair_tns 100
     global_route -start_incremental
     # Running DPL to fix overlapped instances
     detailed_placement
     # Route only the modified net by DPL
     global_route -end_incremental \
-                -congestion_report_file ${report_dir}/congestion_repaired.rpt \
+                -congestion_report_file ${report_dir}/congestion_repaired_initial.rpt \
                 -guide_file ${report_dir}/${proj_name}_route.guide \
                 -verbose
-
-    estimate_parasitics -global_routing
     report_metrics "${proj_name}.grt_repaired"
     save_checkpoint ${proj_name}.grt_repaired
     report_image "${proj_name}.grt_repaired" true true false true
@@ -283,7 +294,6 @@ repair_antennas
 utl::report "Detailed route"
 set_thread_count $threads
 detailed_route -output_drc ${report_dir}/${proj_name}_route_drc.rpt \
-               -output_maze ${report_dir}/${proj_name}_maze.log \
                -bottom_routing_layer Metal2 \
                -top_routing_layer TopMetal1 \
                -droute_end_iter 40 \
@@ -292,7 +302,6 @@ detailed_route -output_drc ${report_dir}/${proj_name}_route_drc.rpt \
                -save_guide_updates \
                -verbose 1
 
-report_metrics "${proj_name}.drt"
 save_checkpoint ${proj_name}.drt
 report_image "${proj_name}.drt" true false false true
 report_design_area
@@ -302,15 +311,7 @@ utl::report "Filler placement"
 filler_placement sg13g2_fill*
 utl::report "Check placement"
 check_placement
-report_metrics "${proj_name}.final"
 save_checkpoint ${proj_name}.final
 report_image "${proj_name}.final" true true false true
 utl::report "Write DEF"
 write_def out/${proj_name}.final.def
-
-# ## Def to GDS
-# utl::report "Def to GDS"
-# exec klayout -zz -rm scripts/def2stream.py
-# set deltaT [expr [elapsed_run_time] - $time]
-# set time [elapsed_run_time]
-# utl::report "Time: $time sec deltaT: $deltaT"

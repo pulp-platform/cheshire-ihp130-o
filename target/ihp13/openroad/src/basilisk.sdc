@@ -43,7 +43,7 @@ set_load -max 16 ${PINS_HYP_FAST}
 puts "Clocks..."
 
 # We target 80 MHz
-set TCK_SYS 12.5
+set TCK_SYS 11.0
 create_clock -name clk_sys -period $TCK_SYS [get_ports clk_i]
 
 set TCK_JTG 40.0
@@ -57,9 +57,6 @@ create_clock -name clk_sli -period $TCK_SLI [get_ports slink_clk_i]
 
 set TCK_USB [expr 1000/48]
 create_clock -name clk_usb -period $TCK_USB [get_ports usb_clk_i]
-
-create_clock -name clk_sens -period $TCK_SYS [get_ports sens_clk_i]
-create_clock -name clk_sens_ind -period $TCK_SYS [get_ports sens_ind_clk_i]
 
 # Model incoming Hyperbus RWDS clock as shifted system clock leaving chip via Hyperbus CK pad, 
 # going through a HyperRAM device, and back to our RWDS pad (defined on pad to enable RWDS output delay constraint):
@@ -122,8 +119,6 @@ set_clock_groups -asynchronous -name clk_groups_async \
      -group {clk_sys clk_gen_slo clk_gen_slo_drv clk_hyp_rwdsi} \
      -group {clk_sli} \
      -group {clk_usb} \
-     -group {clk_sens} \
-     -group {clk_sens_ind} \
      -allow_paths
 
 # We set reasonable uncertainties and transitions for all nonvirtual clocks
@@ -180,13 +175,6 @@ set_min_delay [expr - $CLK_UNCERTAINTY] -to $ASYNC_PINS_CLINT -ignore_clock_late
 # so we abandon trying to explicitly set every path
 set_max_delay -from clk_sys -to clk_usb [expr $TCK_USB * 0.30]    -ignore_clock_latency
 set_min_delay -from clk_sys -to clk_usb [expr - $CLK_UNCERTAINTY] -ignore_clock_latency
-
-#############
-## Sensors ##
-#############
-puts "Aging sensors..."
-set_output_delay -max -add_delay -clock clk_jtg -network_latency_included [ expr $TCK_SYS * 0.25 ] [get_ports sens_error_0_o]
-set_output_delay -max -add_delay -clock clk_jtg -network_latency_included [ expr $TCK_SYS * 0.25 ] [get_ports sens_error_1_o]
 
 
 #############

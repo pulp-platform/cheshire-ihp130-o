@@ -9,9 +9,10 @@
 
 include tools.mk
 
-IG_ROOT  ?= $(shell $(BENDER) path iguana)
-CHS_ROOT := $(shell $(BENDER) path cheshire)
-HYP_ROOT := $(shell $(BENDER) path hyperbus)
+IG_ROOT   ?= $(shell $(BENDER) path iguana)
+CHS_ROOT  := $(shell $(BENDER) path cheshire)
+HYP_ROOT  := $(shell $(BENDER) path hyperbus)
+CHS_SW_CC := riscv64-linux-gnu-gcc
 
 .PHONY: ig-clean-deps ig-all ig-sim-all hyp-sim-all
 
