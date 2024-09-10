@@ -75,7 +75,8 @@ yosys opt -nodffe -nosdff
 yosys fsm -fm_set_fsm_file ${report_dir}/${proj_name}_fsm_map.log
 yosys opt -full
 yosys tee -q -o "${report_dir}/${proj_name}_initial_opt.rpt" stat
-yosys wreduce 
+yosys wreduce
+yosys pmux2shiftx
 yosys peepopt
 yosys opt_clean
 yosys share

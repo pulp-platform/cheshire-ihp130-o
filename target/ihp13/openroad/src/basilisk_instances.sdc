@@ -87,6 +87,6 @@ set GPIO_REFPIN  [get_pins -of_objects $GPIO_REF_REG -filter "name == $DFF_CLK_P
 
 set HYP_TX_DLINE  $HYPERBUS/*i_delay_tx_clk_90.i_delay.i_delay_line
 set HYP_RX_DLINE  $HYPERBUS_PHY*i_delay_rx_rwds_90.i_delay.i_delay_line
-set HYP_RX_DLINV  $HYPERBUS_PHY.i_trx/i_rwds_clk_inverter.i_inv
-set HYP_DDR_DATA_MUXES $HYPERBUS_PHY.i_trx/gen_ddr_tx_data.*.i_ddr_tx_data.i_ddrmux.i_mux
-set HYP_DDR_RWDS_MUX $HYPERBUS_PHY.i_trx/i_ddr_tx_rwds.i_ddrmux.i_mux
+set HYP_RX_DLINV  $HYPERBUS_PHY.i_trx.i_rwds_clk_inverter.i_inv
+set HYP_DDR_DATA_MUXES $HYPERBUS_PHY.i_trx.gen_ddr_tx_data.*.i_ddr_tx_data.i_ddrmux.i_mux
+set HYP_DDR_RWDS_MUX $HYPERBUS_PHY.i_trx.i_ddr_tx_rwds.i_ddrmux.i_mux
