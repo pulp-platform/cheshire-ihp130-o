@@ -51,9 +51,9 @@ module iguana_soc import iguana_pkg::*; import cheshire_pkg::*; (
   // VGA interface
   output logic                                  vga_hsync_o,
   output logic                                  vga_vsync_o,
-  output logic [VgaOutRedWidth-1:0]  vga_red_o,
-  output logic [VgaOutRedWidth-1:0]  vga_green_o,
-  output logic [VgaOutRedWidth-1:0]  vga_blue_o,
+  output logic [  VgaOutRedWidth-1:0]  vga_red_o,
+  output logic [VgaOutGreenWidth-1:0]  vga_green_o,
+  output logic [ VgaOutBlueWidth-1:0]  vga_blue_o,
   // Hyperbus
   output logic [HypNumPhys-1:0][HypNumChips-1:0]  hyper_cs_no,
   output logic [HypNumPhys-1:0]                   hyper_ck_o,
