@@ -191,11 +191,11 @@ module iguana_chip import iguana_pkg::*; import cheshire_pkg::*; (
   mc_pad_io     pad_slink_3_o   ( .pad_io ( slink_3_o   ), .d_i ( soc_slink_o[0][3]  ), .oe_i ( 1'b1 ), .d_o ( ) );
 
   // VGA interface
-  logic                      soc_vga_hsync_o;
-  logic                      soc_vga_vsync_o;
-  logic [VgaOutRedWidth-1:0] soc_vga_red_o;
-  logic [VgaOutRedWidth-1:0] soc_vga_green_o;
-  logic [VgaOutRedWidth-1:0] soc_vga_blue_o;
+  logic                        soc_vga_hsync_o;
+  logic                        soc_vga_vsync_o;
+  logic [  VgaOutRedWidth-1:0] soc_vga_red_o;
+  logic [VgaOutGreenWidth-1:0] soc_vga_green_o;
+  logic [ VgaOutBlueWidth-1:0] soc_vga_blue_o;
 
   mc_pad_io     pad_vga_hsync   ( .pad_io ( vga_hsync_o   ), .d_i ( soc_vga_hsync_o    ), .oe_i ( 1'b1 ), .d_o ( ) );
   mc_pad_io     pad_vga_vsync   ( .pad_io ( vga_vsync_o   ), .d_i ( soc_vga_vsync_o    ), .oe_i ( 1'b1 ), .d_o ( ) );
