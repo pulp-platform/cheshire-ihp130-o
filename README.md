@@ -37,8 +37,7 @@ Then check `tools.mk`, it contains the paths to all tools. They either need to b
 - [Morty](https://github.com/pulp-platform/morty#install): SystemVerilog pickler
 - [SVase](https://github.com/pulp-platform/svase#install--build): SystemVerilog pre-elaborator
 - [SV2V](https://github.com/zachjs/sv2v#installation): SystemVerilog to Verilog
-- [Yosys](https://github.com/YosysHQ/yosys#building-from-source): Synthesis tool; The used version must include [PR-4343](https://github.com/YosysHQ/yosys/pull/4343) to be able to use the newest synthesis script. 
-At time of writing this means it must be built from source as there is no newer release version.
+- [Yosys](https://github.com/YosysHQ/yosys#building-from-source): Synthesis tool; The used version must be >= 0.65.
 - [OpenRoad](https://github.com/The-OpenROAD-Project/OpenROAD/blob/master/docs/user/Build.md): Backend tool
 
 The following tools are only required to build software and simulate the design:
